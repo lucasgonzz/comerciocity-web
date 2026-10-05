@@ -85,7 +85,7 @@ Write-Host "== Subiendo index.html" -ForegroundColor Cyan
 if ($LASTEXITCODE -ne 0) { throw "La subida de index.html falló (exit $LASTEXITCODE)." }
 
 Write-Host "== Verificando" -ForegroundColor Cyan
-$html = (Invoke-WebRequest -Uri 'https://comerciocity.com/?nocache=' + $fecha -UseBasicParsing).Content
+$html = (Invoke-WebRequest -Uri "https://comerciocity.com/?nocache=$fecha" -UseBasicParsing).Content
 $esperado = Select-String -Path (Join-Path $dist 'index.html') -Pattern 'assets/index-[A-Za-z0-9_-]+\.js' | ForEach-Object { $_.Matches[0].Value } | Select-Object -First 1
 if ($html -match [regex]::Escape($esperado)) {
     Write-Host "OK: comerciocity.com sirve $esperado" -ForegroundColor Green
