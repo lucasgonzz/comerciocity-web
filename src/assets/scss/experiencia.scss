@@ -1,0 +1,369 @@
+// Identidad visual y sistema de secciones de la página pública de ComercioCity.
+//
+// Es la hoja de la página de experiencia del admin (`admin-spa/src/assets/scss/
+// demo-experiencia.scss`), recortada a lo que esta web usa (4/10/2026, misión
+// `web-unificada`). Se mantuvo la historia de decisiones solo donde cambia cómo hay que
+// tocar una regla; el resto está en el archivo original del admin.
+//
+// Toda regla vive bajo `.demo-experiencia-page` o clases prefijadas `demo-`: los nombres
+// se conservaron idénticos a los del admin para que los componentes portados
+// (FondoSeccionSticky, SeccionClientes, SeccionResenas, CtaDemo, avance-guiado) sigan
+// funcionando sin renombrar un selector.
+//
+// La tipografía (Geist) se carga desde index.html, no desde acá: en la web pública es la
+// única hoja, y un <link> con preconnect llega antes que un @import dentro del CSS.
+
+.demo-experiencia-page {
+	// Azul ancla de marca, medido del logo (marca/identidad.md, cerrado 3/8/2026).
+	--demo-color-azul: #0b84f8;
+	// Violeta de pasaje para los degradés (azul -> violeta), medido del mismo logo.
+	--demo-color-violeta: #3a31fc;
+	// Naranja: acento puntual ÚNICO. Regla de marca: nunca en serie ni repetido.
+	--demo-color-naranja: #fa7e06;
+	--demo-color-fondo: #f8f9fc;
+	--demo-color-texto: #1c2333;
+	--demo-color-texto-suave: #566078;
+	--demo-gradient-marca: linear-gradient(135deg, var(--demo-color-azul) 0%, var(--demo-color-violeta) 100%);
+	--demo-font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+	font-family: var(--demo-font-family);
+	color: var(--demo-color-texto);
+	background: var(--demo-color-fondo);
+	min-height: 100vh;
+	width: 100%;
+	// "clip" y no "hidden": overflow-x: hidden fuerza a overflow-y a computar "auto" y
+	// convierte esta página en su propio scroll container, lo que rompe el position:
+	// sticky de los pines (anclan al scroll container MÁS CERCANO, que tiene que ser el
+	// <main class="sitio-scroller">). "clip" recorta el eje X sin establecer scroll container.
+	overflow-x: clip;
+	overflow-y: visible;
+	box-sizing: border-box;
+
+	*,
+	*::before,
+	*::after {
+		box-sizing: inherit;
+	}
+
+	// Bootstrap pone `font-family` en body; los <button>/<a> del recorrido heredan la de acá.
+	button,
+	a {
+		font-family: inherit;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// TEMA OSCURO del recorrido (el que usa la página de experiencia por defecto). Se
+// conserva entero para que `tema="oscuro"` siga funcionando; la web pública arranca en
+// claro porque el video del hero es claro.
+// ---------------------------------------------------------------------------
+.demo-scroll-dolor {
+	--demo-color-fondo: #04060b;
+	--demo-color-texto: #f4f7fd;
+	// Contraste medido (WCAG): texto 18,89:1; suave 8,01:1 contra el fondo.
+	--demo-color-texto-suave: #99a3ba;
+	--demo-color-superficie: linear-gradient(160deg, #1c2b4b 0%, #0c1424 100%);
+	--demo-color-borde-superficie: rgba(126, 172, 255, 0.2);
+	--demo-color-avance-fondo: rgba(244, 247, 253, 0.14);
+	--demo-color-avance-borde: rgba(153, 163, 186, 0.28);
+	--demo-color-avance-borde-hover: rgba(153, 163, 186, 0.5);
+
+	background: var(--demo-color-fondo);
+	color: var(--demo-color-texto);
+}
+
+// TEMA CLARO. Segunda definición completa y no un :not() que anule la de arriba, porque
+// `--demo-color-superficie` y `--demo-color-avance-*` no existen en la raíz: sin estos
+// valores las tarjetas quedarían con `background: initial` (transparente).
+.demo-scroll-dolor--claro {
+	--demo-color-fondo: #f8f9fc;
+	--demo-color-texto: #1c2333;
+	--demo-color-texto-suave: #566078;
+	--demo-color-superficie: #ffffff;
+	--demo-color-borde-superficie: rgba(28, 35, 51, 0.08);
+	--demo-color-avance-fondo: rgba(255, 255, 255, 0.42);
+	--demo-color-avance-borde: rgba(86, 96, 120, 0.28);
+	--demo-color-avance-borde-hover: rgba(86, 96, 120, 0.55);
+
+	background: var(--demo-color-fondo);
+	color: var(--demo-color-texto);
+}
+
+// ---------------------------------------------------------------------------
+// Animaciones compartidas. Viven acá y no en un <style scoped> porque Vue no acota el
+// nombre de un @keyframes al componente: dos copias en dos archivos scoped se pisan
+// según qué bundle cargue último.
+// ---------------------------------------------------------------------------
+
+// Fade + zoom + blur: corre UNA sola vez al montarse, no atada al scroll.
+@keyframes demo-apertura-entrada {
+	from {
+		opacity: 0;
+		transform: scale(0.94);
+		filter: blur(6px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+		filter: blur(0);
+	}
+}
+
+// Entrada del TITULAR de la apertura: zoom limpio desde 0.86, sin blur.
+@keyframes demo-apertura-zoom {
+	from {
+		opacity: 0;
+		transform: scale(0.86);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+// Entrada del SUBTÍTULO de la apertura: sube, se pasa 3px y vuelve. El sobrepaso es
+// chico a propósito: por encima de ~12 % se lee como un globo de notificación.
+@keyframes demo-apertura-bounce {
+	0% {
+		opacity: 0;
+		transform: translateY(28px);
+	}
+	55% {
+		opacity: 1;
+		transform: translateY(-3px);
+	}
+	78% {
+		transform: translateY(1px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+// Latido del botón de avance de sección: 2 s, 4 px de recorrido, opacidad entre 0,55 y
+// 0,9. Tiene que leerse como una invitación, no como algo que parpadea.
+@keyframes demo-latido-avance {
+	0% {
+		opacity: 0.55;
+		transform: translate(-50%, 0);
+	}
+	50% {
+		opacity: 0.9;
+		transform: translate(-50%, 4px);
+	}
+	100% {
+		opacity: 0.55;
+		transform: translate(-50%, 0);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Fondos generados por sección: dos radial-gradient sobre la paleta de marca. Sin
+// backdrop-filter: es un fondo propio, no un vidrio sobre contenido.
+// ---------------------------------------------------------------------------
+
+.demo-fondo-seccion__fondo {
+	background-color: var(--demo-color-fondo);
+
+	// Grano muy sutil: sin esto el degradé se lee "de PowerPoint".
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		opacity: 0.035;
+		mix-blend-mode: overlay;
+		background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+		pointer-events: none;
+	}
+}
+
+// Apertura: la más intensa, es el primer momento después del video.
+.demo-fondo-seccion--apertura .demo-fondo-seccion__fondo {
+	background-image:
+		radial-gradient(120% 90% at 20% 15%, rgba(11, 132, 248, 0.35), transparent 60%),
+		radial-gradient(100% 80% at 85% 90%, rgba(58, 49, 252, 0.3), transparent 55%);
+}
+
+// El cierre (CTA): manchas arriba y abajo, centro limpio porque el texto va centrado.
+.demo-fondo-seccion--puente .demo-fondo-seccion__fondo {
+	background-image:
+		radial-gradient(85% 65% at 30% 8%, rgba(11, 132, 248, 0.15), transparent 55%),
+		radial-gradient(85% 65% at 70% 92%, rgba(58, 49, 252, 0.13), transparent 55%);
+}
+
+// ---------------------------------------------------------------------------
+// Secciones EN FLUJO (sin pin): ocupan como mínimo una pantalla y centran su contenido.
+// Son destino del avance guiado (avance-guiado.js las busca por `.demo-seccion-flujo`) y
+// reciben su punto de snap centrado más abajo. Una que mida más que la pantalla se
+// recorre con el scroll nativo: el controlador la deja pasar mientras quede contenido.
+// ---------------------------------------------------------------------------
+.demo-seccion-flujo {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	min-height: 100vh;
+	min-height: 100svh;
+	padding: clamp(64px, 11vh, 130px) clamp(16px, 4vw, 48px);
+	padding-top: clamp(64px, 11dvh, 130px);
+	padding-bottom: clamp(64px, 11dvh, 130px);
+}
+
+// Entrada por progreso de los renglones de una sección en flujo (mixin
+// entrada-por-scroll.js): el avance de cada renglón sale del progreso del grupo (--p) menos
+// su propia demora (--d). La cuenta la hace el motor de CSS; Vue no toca estos nodos.
+.demo-paso {
+	--d: 0;
+	--avance: clamp(0, calc((var(--p, 1) - var(--d, 0)) / 0.45), 1);
+	opacity: var(--avance);
+	transform: translateY(calc((1 - var(--avance)) * 18px));
+}
+
+// Rótulo chico en mayúsculas que abre varias secciones.
+.demo-rotulo {
+	margin: 0 0 clamp(14px, 2vw, 22px);
+	font-size: clamp(0.8rem, 1.2vw, 0.9rem);
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--demo-color-texto-suave);
+}
+
+// Titular de sección: mismo escalón que el de la apertura, un poco más chico.
+.demo-titulo-seccion {
+	margin: 0;
+	font-size: clamp(1.9rem, 5vw, 3rem);
+	font-weight: 700;
+	line-height: 1.1;
+	letter-spacing: -0.025em;
+	color: var(--demo-color-texto);
+	text-wrap: balance;
+}
+
+.demo-bajada-seccion {
+	margin: clamp(14px, 2vw, 20px) 0 0;
+	font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+	line-height: 1.6;
+	color: var(--demo-color-texto-suave);
+	text-wrap: pretty;
+}
+
+// El botón de marca (degradé azul -> violeta), el mismo de "Entrar a mi demo" en la página
+// de experiencia. Es un <a>: inline-flex para centrar ícono y texto. 52 px de alto: arriba
+// de los 44 que pide el dedo.
+.demo-boton-marca {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	min-height: 52px;
+	min-width: 220px;
+	padding: 14px 30px;
+	border: 0;
+	border-radius: 14px;
+	background: var(--demo-gradient-marca);
+	color: #fff;
+	font-family: inherit;
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1.2;
+	text-decoration: none;
+	box-shadow: 0 10px 28px rgba(11, 132, 248, 0.22);
+	transition: transform 160ms ease, box-shadow 160ms ease;
+	cursor: pointer;
+
+	&:hover {
+		color: #fff;
+		text-decoration: none;
+		transform: translateY(-1px);
+		box-shadow: 0 14px 32px rgba(11, 132, 248, 0.3);
+	}
+
+	&:active {
+		transform: translateY(0);
+	}
+
+	&:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--demo-color-azul);
+	}
+
+	.bi {
+		font-size: 1.25em;
+		line-height: 1;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Scroll guiado sección por sección. Se hace con CSS Scroll Snap sobre el scroller
+// (<main class="sitio-scroller demo-scroll-guiado">) más el controlador de
+// avance-guiado.js, que limita cada gesto a UNA sección (el snap encuadra pero no limita
+// la distancia de un swipe o un trackpad).
+// ---------------------------------------------------------------------------
+
+.demo-scroll-guiado {
+	// mandatory y no proximity: con proximity un gesto corto se queda a mitad de camino.
+	scroll-snap-type: y mandatory;
+	scroll-behavior: smooth;
+}
+
+// Una sección que pide scroll libre mientras ocupa la pantalla suspende el snap entero
+// (lo prende y apaga FondoSeccionSticky). Hoy ninguna lo pide; queda por contrato.
+.demo-scroll-guiado--libre {
+	scroll-snap-type: none;
+}
+
+// Las secciones en flujo alinean centradas: su contenido suele ocupar menos que una
+// pantalla. Si miden más, el controlador recorta el destino a su borde superior.
+.demo-scroll-guiado .demo-seccion-flujo {
+	scroll-snap-align: center;
+}
+
+// La sección de clientes, con pin propio y varias pantallas de alto, lleva `start` para
+// poder RECORRERSE, no para engancharse: el punto donde el gesto deposita al lead es el
+// `.demo-fondo-seccion__snap` que lleva adentro.
+.demo-scroll-guiado .demo-clientes {
+	scroll-snap-align: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.demo-scroll-guiado {
+		scroll-snap-type: none;
+		scroll-behavior: auto;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Accesibilidad.
+// ---------------------------------------------------------------------------
+
+@media (prefers-reduced-motion: reduce) {
+	// Despinear el único elemento pinneado de cada sección. El !important no es
+	// prolijidad: el position:sticky vive en el <style scoped> de FondoSeccionSticky.vue,
+	// más específico que esta regla global.
+	.demo-fondo-seccion__pin {
+		position: static !important;
+	}
+
+	.demo-scroll-dolor__apertura-titulo,
+	.demo-scroll-dolor__apertura-subtitulo,
+	.demo-paso {
+		animation: none !important;
+		opacity: 1 !important;
+		transform: none !important;
+		will-change: auto !important;
+	}
+}
+
+@media (prefers-contrast: more) {
+	.demo-fondo-seccion__fondo {
+		background: var(--demo-color-fondo) !important;
+
+		&::after {
+			display: none;
+		}
+	}
+}

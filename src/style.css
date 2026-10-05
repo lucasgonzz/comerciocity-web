@@ -1,11 +1,11 @@
 :root {
-  --cc-primary: #2563eb;
-  --cc-primary-dark: #1d4ed8;
+  --cc-primary: #0b84f8;
+  --cc-primary-dark: #3a31fc;
   --cc-primary-light: #dbeafe;
-  --cc-primary-rgb: 37, 99, 235;
+  --cc-primary-rgb: 11, 132, 248;
 
   /* Override Bootstrap primary to use brand color */
-  --bs-primary-rgb: 37, 99, 235;
+  --bs-primary-rgb: 11, 132, 248;
 }
 
 *,
@@ -14,20 +14,62 @@
   box-sizing: border-box;
 }
 
-body {
+/* El scroll vive en <main class="sitio-scroller">, no en el documento (ver Home.vue).
+   Comportamiento tipo app: el documento no scrollea ni rebota. */
+html,
+body,
+#app {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #f8f9fc;
+}
+
+.sitio-scroller {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
   overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none;
 }
 
-/* Utility: section vertical padding extra en pantallas grandes */
-.py-lg-6 {
-  padding-top: 5rem !important;
-  padding-bottom: 5rem !important;
+/* Reset mínimo (antes lo hacía el reboot de Bootstrap, que ya no se carga: la página no usa
+   su grilla ni sus componentes y eran 230 KB de CSS). */
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
 }
 
-@media (min-width: 992px) {
-  .py-lg-6 {
-    padding-top: 6rem !important;
-    padding-bottom: 6rem !important;
-  }
+ul,
+ol {
+  padding: 0;
+}
+
+img,
+video {
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--cc-primary);
 }
