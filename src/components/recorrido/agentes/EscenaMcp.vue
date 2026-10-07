@@ -1,89 +1,107 @@
 <template>
   <div ref="marco" class="cc-mcp" aria-hidden="true">
-    <!-- La tercera diapositiva de la sección de agentes: una computadora con Windows y Claude
-         Code abierto. El dueño le pide por voz un análisis; Claude lee el negocio por el MCP de
-         ComercioCity, investiga en internet, propone un plan, el dueño lo ajusta y le dice que
-         lo publique. Cuando Claude termina de aplicarlo, la computadora GIRA y del otro lado
+    <!-- La tercera diapositiva de la sección de agentes: una computadora con Windows y la app
+         de escritorio de ChatGPT abierta, con ComercioCity conectado como app por el MCP. El
+         dueño le pide por voz un análisis; ChatGPT lee el negocio, investiga en internet,
+         propone un plan, el dueño lo ajusta y le dice que lo publique, confirma los cambios en
+         la tarjeta y, cuando ChatGPT termina de aplicarlos, la computadora GIRA y del otro lado
          está el sistema con los cambios entrando.
 
-         Las dos caras son dos monitores completos en una tarjeta 3D: la de adelante con la
-         terminal y la de atrás con el sistema, girada 180° de entrada. Girar la tarjeta es lo
-         único que hace falta para "dar vuelta" la computadora.
+         Interfaz gráfica y no consola a pedido de Lucas (7/10/2026): que se vea lo más fácil y
+         familiar posible. La ventana imita la disposición de ChatGPT (barra lateral, columna
+         de conversación, cuadro de texto redondeado con dictado) sin copiar su logo.
 
-         Decorativa para un lector de pantalla, como el teléfono: la sección describe la escena
-         en texto al lado. -->
+         Las dos caras son dos monitores completos en una tarjeta 3D: la de adelante con
+         ChatGPT y la de atrás con el sistema, girada 180° de entrada.
+
+         Decorativa para un lector de pantalla: la sección describe la escena en texto al lado. -->
     <!-- (Este comentario va ADENTRO de la raíz a propósito: un comentario antes de la raíz
          vuelve al componente un fragmento, y la <transition mode="out-in"> de la sección
          se queda trabada en la salida sin montar la escena siguiente.) -->
     <div class="cc-mcp__maqueta" :class="{ 'cc-mcp__maqueta--angosta': angosta }" :style="estilo_maqueta">
       <div class="cc-mcp__tarjeta" :class="{ 'cc-mcp__tarjeta--girada': girada, 'cc-mcp__tarjeta--quieta': reducido }">
-        <!-- ===================== Frente: Windows + Claude Code ===================== -->
+        <!-- ===================== Frente: Windows + ChatGPT ===================== -->
         <div class="cc-mcp__cara cc-mcp__cara--frente">
           <div class="cc-monitor">
             <div class="cc-monitor__pantalla cc-windows">
-              <div class="cc-terminal">
-                <div class="cc-terminal__pestanas">
-                  <span class="cc-terminal__pestana">
-                    <span class="cc-terminal__icono">✻</span>
-                    Claude Code
-                    <i class="bi bi-x"></i>
-                  </span>
-                  <i class="bi bi-plus cc-terminal__mas"></i>
-                  <span class="cc-terminal__ventana">
+              <div class="cc-gpt">
+                <div class="cc-gpt__ventana">
+                  <span class="cc-gpt__icono-app"><i class="bi bi-stars"></i></span>
+                  <span>{{ chat.app }}</span>
+                  <span class="cc-gpt__controles">
                     <i class="bi bi-dash-lg"></i>
                     <i class="bi bi-square"></i>
                     <i class="bi bi-x-lg"></i>
                   </span>
                 </div>
 
-                <div class="cc-terminal__cuerpo">
-                  <div class="cc-terminal__historia">
-                    <div class="cc-terminal__bienvenida">
-                      <div><span class="cc-naranja">✻</span> <strong>Claude Code</strong></div>
-                      <div class="cc-tenue">cwd: {{ terminal.directorio }}</div>
-                      <div class="cc-tenue">
-                        MCP: <span class="cc-azul">comerciocity</span>
-                        <span class="cc-verde">● conectado</span>
-                      </div>
+                <div class="cc-gpt__cuerpo">
+                  <aside class="cc-gpt__lateral">
+                    <span class="cc-gpt__lat-item"><i class="bi bi-pencil-square"></i> Nuevo chat</span>
+                    <span class="cc-gpt__lat-item"><i class="bi bi-search"></i> Buscar chats</span>
+                    <span class="cc-gpt__lat-rotulo">Apps conectadas</span>
+                    <span class="cc-gpt__lat-item cc-gpt__lat-item--app">
+                      <img :src="isotipo" alt="" /> ComercioCity <i class="cc-gpt__conectado"></i>
+                    </span>
+                    <span class="cc-gpt__lat-rotulo">Chats</span>
+                    <span class="cc-gpt__lat-item cc-gpt__lat-item--activo">{{ chat.conversacion }}</span>
+                    <span class="cc-gpt__lat-item">Ideas para Instagram</span>
+                    <span class="cc-gpt__lat-item">Mail a un proveedor</span>
+                  </aside>
+
+                  <div class="cc-gpt__principal">
+                    <div class="cc-gpt__barra">
+                      <span class="cc-gpt__modelo">{{ chat.app }} <i class="bi bi-chevron-down"></i></span>
+                      <span class="cc-gpt__compartir"><i class="bi bi-box-arrow-up"></i> Compartir</span>
                     </div>
 
-                    <div
-                      v-for="linea in lineas"
-                      :key="linea.id"
-                      class="cc-linea"
-                      :class="'cc-linea--' + linea.tipo"
-                    >
-                      <template v-if="linea.tipo === 'prompt'">
-                        <span class="cc-tenue">&gt;</span> {{ linea.texto }}
-                      </template>
+                    <!-- Lo nuevo entra abajo y lo viejo se recorta arriba, como un chat que
+                         scrollea solo (mismo recurso que el teléfono). -->
+                    <div class="cc-gpt__conversacion">
+                      <div
+                        v-for="linea in lineas"
+                        :key="linea.id"
+                        class="cc-gpt__linea"
+                        :class="'cc-gpt__linea--' + linea.tipo"
+                      >
+                        <div v-if="linea.tipo === 'prompt'" class="cc-gpt__usuario">{{ linea.texto }}</div>
 
-                      <template v-else-if="linea.tipo === 'pensando'">
-                        <span class="cc-naranja cc-girando">✻</span>
-                        <span class="cc-naranja">{{ linea.texto }}</span>
-                        <span class="cc-tenue">(esc para interrumpir)</span>
-                      </template>
-
-                      <template v-else-if="linea.tipo === 'herramienta'">
-                        <div>
-                          <span
-                            class="cc-punto"
-                            :class="linea.listo ? (linea.ok ? 'cc-verde' : 'cc-verde') : 'cc-punto--latiendo'"
-                            >⏺</span
-                          >
-                          <strong :class="{ 'cc-azul': linea.mcp }">{{ linea.nombre }}</strong>
-                          <span v-if="linea.mcp" class="cc-mcp-pill">MCP</span>
-                          <span v-if="linea.args" class="cc-tenue">({{ linea.args }})</span>
+                        <div v-else-if="linea.tipo === 'pensando'" class="cc-gpt__pensando cc-brillo">
+                          {{ linea.texto }}…
                         </div>
-                        <div class="cc-resultado">
-                          <span class="cc-tenue">⎿</span>
-                          <span v-if="!linea.listo" class="cc-tenue">Ejecutando…</span>
-                          <span v-else :class="{ 'cc-verde': linea.ok }">{{ linea.ok ? '✔ ' : '' }}{{ linea.resultado }}</span>
-                        </div>
-                      </template>
 
-                      <template v-else-if="linea.tipo === 'respuesta'">
-                        <span class="cc-punto cc-blanco">⏺</span>
-                        <div class="cc-respuesta">
+                        <div v-else-if="linea.tipo === 'herramienta'" class="cc-gpt__herramienta">
+                          <span class="cc-gpt__herramienta-icono" :class="'cc-gpt__herramienta-icono--' + linea.fuente">
+                            <img v-if="linea.fuente === 'comerciocity'" :src="isotipo" alt="" />
+                            <i v-else class="bi bi-globe2"></i>
+                          </span>
+                          <span class="cc-gpt__herramienta-texto">
+                            <span :class="{ 'cc-brillo': !linea.listo }">{{ linea.accion }}</span>
+                            <i v-if="linea.listo" class="bi bi-check2 cc-gpt__tilde"></i>
+                            <span v-if="linea.listo && linea.resultado" class="cc-gpt__herramienta-resultado">
+                              {{ linea.resultado }}
+                            </span>
+                          </span>
+                        </div>
+
+                        <div v-else-if="linea.tipo === 'confirmar'" class="cc-gpt__confirmar">
+                          <div class="cc-gpt__confirmar-titulo">
+                            <img :src="isotipo" alt="" />
+                            <strong>{{ linea.titulo }}</strong>
+                          </div>
+                          <ul>
+                            <li v-for="accion in linea.acciones" :key="accion">{{ accion }}</li>
+                          </ul>
+                          <div class="cc-gpt__confirmar-botones">
+                            <span class="cc-gpt__boton cc-gpt__boton--secundario">Cancelar</span>
+                            <span class="cc-gpt__boton" :class="{ 'cc-gpt__boton--presionado': linea.confirmado }">
+                              <template v-if="linea.confirmado"><i class="bi bi-check2"></i> Confirmado</template>
+                              <template v-else>Confirmar</template>
+                            </span>
+                          </div>
+                        </div>
+
+                        <div v-else-if="linea.tipo === 'respuesta'" class="cc-gpt__respuesta">
                           <div
                             v-for="(bloque, i) in linea.bloques"
                             :key="i"
@@ -102,31 +120,36 @@
                             <span v-else v-html="formatear(bloque.texto)"></span>
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    <div class="cc-gpt__composer" :class="'cc-gpt__composer--' + entrada">
+                      <i class="bi bi-plus-lg cc-gpt__mas"></i>
+                      <template v-if="entrada === 'escuchando'">
+                        <span class="cc-gpt__onda">
+                          <i v-for="n in 44" :key="n" :style="{ animationDelay: (n % 9) * 85 + 'ms' }"></i>
+                        </span>
+                        <span class="cc-gpt__redondo cc-gpt__redondo--claro"><i class="bi bi-x-lg"></i></span>
+                        <span class="cc-gpt__redondo"><i class="bi bi-check-lg"></i></span>
+                      </template>
+                      <template v-else-if="entrada === 'tipeando'">
+                        <span class="cc-gpt__tipeo">
+                          <span
+                            v-for="(palabra, i) in palabras(texto_entrada)"
+                            :key="texto_entrada + i"
+                            class="cc-palabra"
+                            :style="{ animationDelay: i * ms_por_palabra + 'ms' }"
+                            >{{ palabra + ' ' }}</span
+                          >
+                        </span>
+                        <span class="cc-gpt__redondo"><i class="bi bi-arrow-up"></i></span>
+                      </template>
+                      <template v-else>
+                        <span class="cc-gpt__placeholder">Preguntá lo que quieras</span>
+                        <i class="bi bi-mic cc-gpt__mic"></i>
+                        <span class="cc-gpt__redondo"><i class="bi bi-soundwave"></i></span>
                       </template>
                     </div>
-                  </div>
-
-                  <div class="cc-terminal__entrada" :class="'cc-terminal__entrada--' + entrada">
-                    <span class="cc-tenue">&gt;</span>
-                    <template v-if="entrada === 'escuchando'">
-                      <i class="bi bi-mic-fill cc-mic"></i>
-                      <span class="cc-onda"><i v-for="n in 14" :key="n" :style="{ animationDelay: n * 60 + 'ms' }"></i></span>
-                      <span class="cc-tenue">Escuchando…</span>
-                    </template>
-                    <span v-else-if="entrada === 'tipeando'" class="cc-terminal__tipeo">
-                      <span
-                        v-for="(palabra, i) in palabras(texto_entrada)"
-                        :key="texto_entrada + i"
-                        class="cc-palabra"
-                        :style="{ animationDelay: i * ms_por_palabra + 'ms' }"
-                        >{{ palabra + ' ' }}</span
-                      >
-                    </span>
-                    <span v-else class="cc-cursor"></span>
-                  </div>
-                  <div class="cc-terminal__pie">
-                    <span><i class="bi bi-mic"></i> dictado por voz</span>
-                    <span><span class="cc-verde">●</span> comerciocity MCP</span>
                   </div>
                 </div>
               </div>
@@ -135,13 +158,11 @@
                 <span class="cc-barra-tareas__centro">
                   <span class="cc-ico cc-ico--inicio"><i></i><i></i><i></i><i></i></span>
                   <span class="cc-ico"><i class="bi bi-search"></i></span>
-                  <span class="cc-ico cc-ico--activo"><i class="bi bi-terminal-fill"></i></span>
+                  <span class="cc-ico cc-ico--activo"><span class="cc-ico__app"><i class="bi bi-stars"></i></span></span>
                   <span class="cc-ico"><i class="bi bi-folder-fill cc-carpeta"></i></span>
                   <span class="cc-ico"><i class="bi bi-globe2 cc-globo"></i></span>
                 </span>
-                <span class="cc-barra-tareas__hora">
-                  <span>18:42</span>
-                </span>
+                <span class="cc-barra-tareas__hora">18:42</span>
               </div>
             </div>
           </div>
@@ -180,8 +201,8 @@
 
                   <transition name="cc-aviso">
                     <div v-if="cambios.aviso" class="cc-aviso">
-                      <span class="cc-naranja">✻</span>
-                      <span><strong>Claude · vía MCP</strong><br />3 cambios aplicados</span>
+                      <span class="cc-aviso__icono"><i class="bi bi-stars"></i></span>
+                      <span><strong>{{ chat.app }} · vía MCP</strong><br />3 cambios aplicados</span>
                     </div>
                   </transition>
 
@@ -256,15 +277,17 @@ import crear_motor from './motor-guion'
 import { formatear } from './guiones'
 import ISOTIPO from '../../../assets/marca/isotipo-comerciocity.svg'
 
-/** Escalonado de los renglones de una respuesta de Claude. */
+/** Escalonado de los renglones de una respuesta. */
 const MS_POR_BLOQUE = 140
 /** Ritmo del dictado (rápido: es la voz transcripta) y del tipeo (más lento: son dedos). */
 const MS_POR_PALABRA_DICTADO = 55
 const MS_POR_PALABRA_TECLADO = 95
-/** Debajo de este ancho disponible la terminal se dibuja angosta, para que la letra no quede minúscula. */
+/** Debajo de este ancho disponible la ventana se dibuja angosta, sin barra lateral. */
 const ANCHO_ANGOSTO = 520
 
 /**
+ * Pasa el guion de alto nivel a los pasos chicos que ve el que mira.
+ *
  * @param {Array} pasos
  * @returns {Array}
  */
@@ -285,6 +308,10 @@ function expandir(pasos) {
         micro.push({ op: 'herramienta', linea: p })
         micro.push({ op: 'resultado' })
         break
+      case 'confirmar':
+        micro.push({ op: 'confirmar', linea: p })
+        micro.push({ op: 'confirmado' })
+        break
       default:
         micro.push(Object.assign({ op: p.tipo }, p))
     }
@@ -300,8 +327,8 @@ export default {
   mixins: [ajuste_a_medida],
 
   props: {
-    /** El guion de la terminal (guiones.js). */
-    terminal: {
+    /** El guion del chat con la IA (guiones.js). */
+    chat: {
       type: Object,
       required: true,
     },
@@ -336,7 +363,7 @@ export default {
 
   mounted() {
     const self = this
-    this.motor = crear_motor(expandir(this.terminal.pasos), {
+    this.motor = crear_motor(expandir(this.chat.pasos), {
       aplicar: this.aplicar,
       al_progresar(fraccion) {
         self.$emit('progreso', fraccion)
@@ -377,8 +404,8 @@ export default {
     formatear,
 
     /**
-     * Medida de la maqueta (contrato de ajuste-a-medida.js): angosta en un teléfono, para
-     * que la terminal no quede con letra de 6 px.
+     * Medida de la maqueta (contrato de ajuste-a-medida.js): angosta y más alta en un
+     * teléfono, sin barra lateral, para que la letra no quede minúscula.
      *
      * @param {number} ancho_disponible
      * @returns {{ ancho: number, alto: number }}
@@ -402,7 +429,7 @@ export default {
      * @returns {number}
      */
     aplicar(paso, instantaneo) {
-      /* La ruedita de "pensando" es transitoria, como en Claude Code: se va con lo siguiente. */
+      /* El "Pensando…" es transitorio, como en ChatGPT: se va con lo siguiente. */
       if (paso.op !== 'pensando') {
         this.lineas = this.lineas.filter(function (l) {
           return l.tipo !== 'pensando'
@@ -415,7 +442,7 @@ export default {
             return 0
           }
           this.entrada = 'escuchando'
-          return 1700
+          return 1800
 
         case 'tipear':
           if (instantaneo) {
@@ -424,13 +451,13 @@ export default {
           this.entrada = 'tipeando'
           this.texto_entrada = paso.texto
           this.ms_por_palabra = paso.ms_por_palabra
-          return this.palabras(paso.texto).length * paso.ms_por_palabra + 450
+          return this.palabras(paso.texto).length * paso.ms_por_palabra + 500
 
         case 'enviar':
           this.entrada = 'reposo'
           this.texto_entrada = ''
           this.agregar({ tipo: 'prompt', texto: paso.texto })
-          return 450
+          return 500
 
         case 'pensando':
           if (instantaneo) {
@@ -441,11 +468,19 @@ export default {
 
         case 'herramienta':
           this.agregar(Object.assign({ listo: false }, paso.linea, { tipo: 'herramienta' }))
-          return 650
+          return 850
 
         case 'resultado':
           this.ultima('herramienta').listo = true
-          return 520
+          return 550
+
+        case 'confirmar':
+          this.agregar(Object.assign({ confirmado: false }, paso.linea, { tipo: 'confirmar' }))
+          return 2900
+
+        case 'confirmado':
+          this.ultima('confirmar').confirmado = true
+          return 900
 
         case 'respuesta': {
           this.agregar({ tipo: 'respuesta', bloques: paso.bloques })
@@ -607,147 +642,264 @@ export default {
     linear-gradient(160deg, #0b1a3a, #123a7a 55%, #0a1430);
 }
 
-.cc-terminal {
+/* --- La ventana de ChatGPT ------------------------------------------------------------- */
+
+.cc-gpt {
   position: absolute;
-  top: 12px;
-  left: 16px;
-  right: 16px;
-  bottom: 42px;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  bottom: 40px;
   display: flex;
   flex-direction: column;
-  border-radius: 8px;
+  border-radius: 9px;
   overflow: clip;
-  background: #141414;
+  background: #fff;
   box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 18px 40px -12px rgba(0, 0, 0, 0.7);
-  font-family: 'Cascadia Mono', 'Cascadia Code', Consolas, 'SFMono-Regular', Menlo, monospace;
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 18px 40px -12px rgba(0, 0, 0, 0.55);
+  font-family: 'Segoe UI', -apple-system, 'Helvetica Neue', Roboto, sans-serif;
   font-size: 11px;
   line-height: 1.45;
-  color: #e4e4e4;
+  color: #0d0d0d;
+  -webkit-font-smoothing: antialiased;
 }
 
-.cc-terminal__pestanas {
+.cc-gpt__ventana {
   flex: none;
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 30px;
-  padding: 0 0 0 8px;
-  background: #202020;
-  font-family: 'Segoe UI', -apple-system, sans-serif;
-  font-size: 11px;
-  color: #d8d8d8;
+  gap: 7px;
+  height: 26px;
+  padding: 0 0 0 10px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ececec;
+  font-size: 10.5px;
+  color: #3d3d3d;
 }
 
-.cc-terminal__pestana {
+.cc-gpt__icono-app,
+.cc-ico__app {
+  width: 15px;
+  height: 15px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 24px;
-  margin-top: 6px;
-  padding: 0 8px 0 10px;
-  border-radius: 6px 6px 0 0;
-  background: #141414;
+  justify-content: center;
+  border-radius: 4px;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 9px;
 }
 
-.cc-terminal__icono {
-  color: #d97757;
-  font-size: 12px;
-}
-
-.cc-terminal__mas {
-  font-size: 14px;
-  opacity: 0.7;
-}
-
-.cc-terminal__ventana {
+.cc-gpt__controles {
   display: inline-flex;
   gap: 16px;
   margin-left: auto;
   padding: 0 12px;
-  font-size: 10px;
-  opacity: 0.75;
+  font-size: 9.5px;
+  color: #555;
 }
 
-.cc-terminal__cuerpo {
+.cc-gpt__cuerpo {
   flex: 1;
   min-height: 0;
   display: flex;
-  flex-direction: column;
-  padding: 8px 12px 6px;
 }
 
-/* Igual que el chat del teléfono: lo nuevo entra abajo y lo viejo se recorta arriba. */
-.cc-terminal__historia {
+.cc-gpt__lateral {
+  flex: none;
+  width: 132px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 6px;
+  background: #f9f9f9;
+  border-right: 1px solid #ececec;
+  font-size: 10.5px;
+}
+
+.cc-gpt__lat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  color: #2b2b2b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-gpt__lat-item .bi {
+  font-size: 11px;
+}
+
+.cc-gpt__lat-item--app img {
+  width: 13px;
+  height: 13px;
+}
+
+.cc-gpt__lat-item--app {
+  font-weight: 600;
+}
+
+.cc-gpt__conectado {
+  width: 6px;
+  height: 6px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: #10a37f;
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.18);
+}
+
+.cc-gpt__lat-item--activo {
+  background: #ececec;
+}
+
+.cc-gpt__lat-rotulo {
+  margin: 8px 6px 2px;
+  font-size: 9.5px;
+  color: #8f8f8f;
+}
+
+.cc-gpt__principal {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cc-gpt__barra {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+  padding: 0 12px;
+}
+
+.cc-gpt__modelo {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.cc-gpt__modelo .bi {
+  font-size: 9px;
+  color: #8f8f8f;
+}
+
+.cc-gpt__compartir {
+  font-size: 10px;
+  color: #3d3d3d;
+}
+
+/* La columna de la conversación: centrada y angosta, como en ChatGPT. */
+.cc-gpt__conversacion {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 7px;
+  gap: 8px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  padding: 0 12px;
   overflow: clip;
 }
 
-.cc-terminal__bienvenida {
+.cc-gpt__linea {
   flex: none;
-  padding: 6px 10px;
-  border: 1px solid #d97757;
-  border-radius: 6px;
+  display: flex;
+  animation: cc-aparecer 0.28s ease-out both;
 }
 
-.cc-linea {
+.cc-gpt__linea--prompt {
+  justify-content: flex-end;
+}
+
+.cc-gpt__usuario {
+  max-width: 82%;
+  padding: 7px 11px;
+  border-radius: 16px;
+  background: #f1f1f1;
+  color: #0d0d0d;
+}
+
+.cc-gpt__pensando {
+  font-size: 11px;
+}
+
+/* El brillo que barre un texto gris: lo que en ChatGPT dice "está trabajando". */
+.cc-brillo {
+  background: linear-gradient(90deg, #8f8f8f 0%, #8f8f8f 40%, #e2e2e2 50%, #8f8f8f 60%, #8f8f8f 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: cc-brillo 1.4s linear infinite;
+}
+
+@keyframes cc-brillo {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.cc-gpt__herramienta {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 10.5px;
+  color: #5d5d5d;
+}
+
+.cc-gpt__herramienta-icono {
   flex: none;
-  animation: cc-aparecer 0.25s ease-out both;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #e5e5e5;
+  background: #fff;
 }
 
-.cc-linea--prompt {
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: #262626;
-  color: #cfcfcf;
+.cc-gpt__herramienta-icono img {
+  width: 11px;
+  height: 11px;
 }
 
-.cc-linea--respuesta {
-  display: flex;
-  gap: 6px;
+.cc-gpt__herramienta-icono--web {
+  color: #5d5d5d;
+  font-size: 10px;
 }
 
-.cc-punto {
-  display: inline-block;
-  width: 12px;
-}
-
-.cc-punto--latiendo {
-  color: #8a8a8a;
-  animation: cc-latido 0.7s ease-in-out infinite;
-}
-
-.cc-resultado {
-  display: flex;
-  gap: 6px;
-  padding-left: 10px;
-}
-
-.cc-mcp-pill {
-  display: inline-block;
-  margin-left: 4px;
-  padding: 0 4px;
-  border-radius: 3px;
-  background: rgba(74, 168, 255, 0.18);
-  color: #7cc0ff;
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 14px;
-  vertical-align: 1px;
-}
-
-.cc-respuesta {
-  flex: 1;
+.cc-gpt__herramienta-texto {
   min-width: 0;
+  padding-top: 1px;
+}
+
+.cc-gpt__tilde {
+  margin-left: 3px;
+  color: #10a37f;
+}
+
+.cc-gpt__herramienta-resultado {
+  display: block;
+  color: #0d0d0d;
+  font-weight: 600;
+}
+
+.cc-gpt__respuesta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  width: 100%;
 }
 
 .cc-bloque {
@@ -755,9 +907,9 @@ export default {
 }
 
 .cc-bloque--titulo {
-  margin-top: 3px;
+  margin-top: 4px;
+  font-size: 11.5px;
   font-weight: 700;
-  color: #fff;
 }
 
 .cc-bloque--titulo:first-child {
@@ -771,116 +923,186 @@ export default {
 
 .cc-vineta {
   flex: none;
-  color: #d97757;
+  min-width: 9px;
+  color: #5d5d5d;
 }
 
 .cc-bloque :deep(strong) {
-  color: #fff;
   font-weight: 700;
 }
 
-.cc-terminal__entrada {
-  flex: none;
+/* La tarjeta en la que el dueño confirma lo que la IA va a cambiar en su sistema. */
+.cc-gpt__confirmar {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid #e3e3e3;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.25);
+}
+
+.cc-gpt__confirmar-titulo {
   display: flex;
   align-items: center;
   gap: 7px;
-  min-height: 30px;
-  margin-top: 8px;
-  padding: 5px 9px;
-  border: 1px solid #555;
-  border-radius: 6px;
-  color: #f2f2f2;
+  font-size: 11px;
 }
 
-.cc-terminal__entrada--escuchando {
-  border-color: #d97757;
-}
-
-.cc-terminal__tipeo {
-  flex: 1;
-  min-width: 0;
-}
-
-.cc-mic {
-  color: #ff5f57;
-  animation: cc-latido 0.9s ease-in-out infinite;
-}
-
-.cc-onda {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
+.cc-gpt__confirmar-titulo img {
+  width: 14px;
   height: 14px;
 }
 
-.cc-onda i {
+.cc-gpt__confirmar ul {
+  margin: 6px 0 8px;
+  padding-left: 16px;
+  color: #3d3d3d;
+  font-size: 10.5px;
+}
+
+.cc-gpt__confirmar-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.cc-gpt__boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 600;
+  transition:
+    background-color 0.25s ease,
+    transform 0.2s ease;
+}
+
+.cc-gpt__boton--secundario {
+  background: #fff;
+  color: #0d0d0d;
+  border: 1px solid #d9d9d9;
+}
+
+/* El clic: el botón se hunde y queda verde. */
+.cc-gpt__boton--presionado {
+  background: #10a37f;
+  animation: cc-clic 0.35s ease-out;
+}
+
+@keyframes cc-clic {
+  40% {
+    transform: scale(0.9);
+  }
+}
+
+/* --- El cuadro de texto ---------------------------------------------------------------- */
+
+.cc-gpt__composer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: calc(100% - 24px);
+  max-width: 400px;
+  min-height: 38px;
+  margin: 8px auto 10px;
+  padding: 5px 6px 5px 11px;
+  border: 1px solid #e3e3e3;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.15);
+}
+
+.cc-gpt__mas {
+  font-size: 13px;
+  color: #3d3d3d;
+}
+
+.cc-gpt__placeholder {
+  flex: 1;
+  color: #8f8f8f;
+}
+
+.cc-gpt__mic {
+  font-size: 13px;
+  color: #3d3d3d;
+}
+
+.cc-gpt__redondo {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #0d0d0d;
+  color: #fff;
+  font-size: 12px;
+}
+
+.cc-gpt__redondo--claro {
+  background: #f1f1f1;
+  color: #3d3d3d;
+  font-size: 10px;
+}
+
+.cc-gpt__tipeo {
+  flex: 1;
+  min-width: 0;
+  max-height: 46px;
+  overflow: clip;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-end;
+  color: #0d0d0d;
+}
+
+.cc-gpt__tipeo .cc-palabra {
+  white-space: pre;
+}
+
+/* El dictado: la onda de la voz ocupa el cuadro, como en ChatGPT. */
+.cc-gpt__onda {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 16px;
+  overflow: clip;
+}
+
+.cc-gpt__onda i {
+  flex: none;
   width: 2px;
   height: 100%;
   border-radius: 1px;
-  background: #d97757;
-  animation: cc-onda 0.8s ease-in-out infinite;
+  background: #3d3d3d;
+  animation: cc-onda 0.75s ease-in-out infinite;
 }
 
 @keyframes cc-onda {
   0%,
   100% {
-    transform: scaleY(0.25);
+    transform: scaleY(0.2);
   }
   50% {
     transform: scaleY(1);
   }
 }
 
-.cc-cursor {
-  width: 7px;
-  height: 13px;
-  background: #e4e4e4;
-  animation: cc-latido 1s steps(1) infinite;
-}
-
-.cc-terminal__pie {
-  flex: none;
-  display: flex;
-  justify-content: space-between;
-  padding: 3px 2px 0;
-  font-size: 9.5px;
-  color: #7d7d7d;
+.cc-gpt__composer--escuchando {
+  border-color: #c9c9c9;
 }
 
 .cc-palabra {
   opacity: 0;
   animation: cc-aparecer 0.14s ease-out forwards;
-}
-
-.cc-tenue {
-  color: #8a8a8a;
-}
-
-.cc-naranja {
-  color: #d97757;
-}
-
-.cc-azul {
-  color: #6cb6ff;
-}
-
-.cc-verde {
-  color: #4ec98a;
-}
-
-.cc-blanco {
-  color: #f2f2f2;
-}
-
-.cc-girando {
-  display: inline-block;
-  animation: cc-girar-estrella 1.2s linear infinite;
-}
-
-@keyframes cc-girar-estrella {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 @keyframes cc-aparecer {
@@ -891,12 +1113,6 @@ export default {
   to {
     opacity: 1;
     transform: none;
-  }
-}
-
-@keyframes cc-latido {
-  50% {
-    opacity: 0.3;
   }
 }
 
@@ -945,6 +1161,13 @@ export default {
   height: 2px;
   border-radius: 2px;
   background: #6cb6ff;
+}
+
+.cc-ico .cc-ico__app {
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  color: #0d0d0d;
 }
 
 .cc-ico--inicio {
@@ -1152,7 +1375,7 @@ export default {
   font-variant-numeric: tabular-nums;
 }
 
-/* Lo que acaba de crear Claude: entra con un destello azul que se asienta en un tinte. */
+/* Lo que acaba de crear la IA: entra con un destello azul que se asienta en un tinte. */
 .cc-fila--nueva {
   background: rgba(11, 132, 248, 0.08);
   box-shadow: inset 3px 0 0 #0b84f8;
@@ -1202,8 +1425,16 @@ export default {
   box-shadow: 0 10px 24px -8px rgba(28, 35, 51, 0.45);
 }
 
-.cc-aviso .cc-naranja {
-  font-size: 16px;
+.cc-aviso__icono {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #fff;
+  color: #0d0d0d;
+  font-size: 11px;
 }
 
 .cc-aviso-enter-active {
@@ -1217,7 +1448,21 @@ export default {
   transform: translateY(-10px) scale(0.95);
 }
 
-/* Angosta (teléfono): el menú se queda en íconos y los paneles van uno abajo del otro. */
+/* Angosta (teléfono): ChatGPT sin barra lateral; en el sistema el menú se queda en íconos y
+   los paneles van uno abajo del otro. */
+.cc-mcp__maqueta--angosta .cc-gpt__lateral {
+  display: none;
+}
+
+.cc-mcp__maqueta--angosta .cc-gpt {
+  left: 10px;
+  right: 10px;
+}
+
+.cc-mcp__maqueta--angosta .cc-gpt__conversacion {
+  max-width: none;
+}
+
 .cc-mcp__maqueta--angosta .cc-app__menu {
   width: 40px;
   align-items: center;
@@ -1234,22 +1479,18 @@ export default {
   gap: 7px;
 }
 
-.cc-mcp__maqueta--angosta .cc-terminal {
-  left: 10px;
-  right: 10px;
-}
-
-.cc-mcp__maqueta--angosta .cc-terminal__ventana {
-  gap: 10px;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .cc-linea,
+  .cc-gpt__linea,
   .cc-bloque,
   .cc-palabra,
-  .cc-fila--nueva {
+  .cc-fila--nueva,
+  .cc-brillo {
     animation: none;
     opacity: 1;
+  }
+
+  .cc-brillo {
+    -webkit-text-fill-color: #8f8f8f;
   }
 }
 </style>

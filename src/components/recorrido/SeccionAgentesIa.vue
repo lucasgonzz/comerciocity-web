@@ -8,7 +8,7 @@
 
          1. Tu asistente: el dueño le pide una tarea por audio y le avisa por audio que la pagó.
          2. Agente de ventas: un cliente consulta y el agente lo asesora hasta la tienda.
-         3. MCP: Claude Code analiza el negocio y aplica el plan en el sistema.
+         3. MCP: ChatGPT analiza el negocio y aplica el plan en el sistema.
 
        Cada escena avisa cuando terminó su guion y el carrusel pasa a la siguiente; las
        pestañas muestran cuánto le falta a la actual. Todo se pausa mientras la escena no se
@@ -32,7 +32,7 @@
           <escena-mcp
             v-else
             :key="actual.clave + '-' + vuelta"
-            :terminal="actual.terminal"
+            :chat="actual.chat"
             :reproduciendo="reproduciendo"
             :reducido="movimiento_reducido"
             @progreso="on_progreso"
