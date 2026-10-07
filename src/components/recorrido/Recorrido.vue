@@ -6,7 +6,9 @@
          2. "Tu negocio funciona porque vos te acordás. / Y eso tiene un límite."
          3. Los clientes: el número, la pared de logos y las tiendas.
          4. "Bienvenido a la nueva era" con las cuatro tarjetas de la implementación.
-         5. El hero partido de la web vieja ("Profesionalizá tu negocio. Sin vueltas.").
+         5. Los agentes de IA: carrusel de tres escenas animadas (asistente, agente de ventas,
+            MCP). Reemplazó el 7/10/2026 al hero partido de la web vieja ("Profesionalizá tu
+            negocio"), con su misma forma de pantalla partida.
          6. "No es un sistema de facturación. Es otra cosa."
          7. "No te dejamos solo."
          8. Las reseñas de Google.
@@ -54,7 +56,7 @@
 
     <seccion-nueva-era />
 
-    <seccion-hero-split :cta_url="cta_url" :emitir_evento="emitir_evento" />
+    <seccion-agentes-ia :cta_url="cta_url" :emitir_evento="emitir_evento" />
 
     <seccion-posicionamiento />
 
@@ -77,7 +79,7 @@ import FondoSeccionSticky from './FondoSeccionSticky.vue'
 import HeroVideo from './HeroVideo.vue'
 import SeccionClientes from './SeccionClientes.vue'
 import SeccionNuevaEra from './SeccionNuevaEra.vue'
-import SeccionHeroSplit from './SeccionHeroSplit.vue'
+import SeccionAgentesIa from './SeccionAgentesIa.vue'
 import SeccionPosicionamiento from './SeccionPosicionamiento.vue'
 import SeccionImplementacion from './SeccionImplementacion.vue'
 import SeccionResenas from './SeccionResenas.vue'
@@ -122,7 +124,7 @@ export default {
     HeroVideo,
     SeccionClientes,
     SeccionNuevaEra,
-    SeccionHeroSplit,
+    SeccionAgentesIa,
     SeccionPosicionamiento,
     SeccionImplementacion,
     SeccionResenas,
@@ -212,7 +214,7 @@ export default {
         ['.demo-hero-video', 'hero.video'],
         ['.demo-clientes', 'clientes'],
         ['.demo-nueva-era', 'nueva_era'],
-        ['.demo-hero-split', 'hero_split'],
+        ['.demo-agentes', 'agentes_ia'],
         ['.demo-posicionamiento', 'posicionamiento'],
         ['.demo-implementacion', 'implementacion'],
         ['.demo-resenas', 'resenas'],
