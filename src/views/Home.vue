@@ -25,7 +25,8 @@ import '@/assets/scss/experiencia.scss'
 
 /**
  * El CTA de toda la página: agendar la demo, por WhatsApp, al número del canal de leads
- * (+54 3444 544199, el mismo que usaba esta web).
+ * (+54 3444 544199, el mismo que usaba esta web). El texto no saluda a nadie por su nombre
+ * (pedido de Lucas, 13/10/2026): «Hola, quiero hacer la demo de ComercioCity».
  *
  * 🔴 La frase es PROPIA DE LA LANDING y distinta de la de la página de experiencia del admin
  * y de la de los anuncios, a propósito (plan del 13/10/2026, decisión 2.1): el primer mensaje
@@ -36,7 +37,7 @@ import '@/assets/scss/experiencia.scss'
  */
 const CTA_URL =
   'https://wa.me/543444544199?text=' +
-  encodeURIComponent('Hola Martín, vi la web de ComercioCity y quiero hacer la demo')
+  encodeURIComponent('Hola, quiero hacer la demo de ComercioCity')
 
 export default {
   name: 'Home',
