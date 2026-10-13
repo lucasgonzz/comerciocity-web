@@ -141,12 +141,17 @@ const ETIQUETAS_PLATAFORMA = {
  * pero nunca instalado) quedan **44 negocios reales en el admin**, más los cuatro que
  * operan por fuera (Sr. Imperio, Desire, Feitoamao, Rosmar): **48 o 49 en total**.
  *
- * Lucas creía que eran 50 y pidió expresamente que se chequeara. "Casi 50" es lo más
- * fuerte que se puede afirmar sin mentir. Si alguien lo va a subir a 50, que primero
- * vuelva a contar la tabla -- este comentario existe para que ese chequeo sea de un
+ * Lucas creía que eran 50 y pidió expresamente que se chequeara. "Casi 50" era lo más
+ * fuerte que se podía afirmar sin mentir.
+ *
+ * Recontado el 13/10/2026: `clients` tiene 52 filas activas. Sacando `DEMO`, el registro
+ * de Lucas y `mayorista-de-pesca` quedan 49 en el admin, y siguen operando fuera de él
+ * Candyguay, Punto Diet y Electro Lacarra (y pets, transporte y cooperativa sin
+ * `client_api`): **más de 50**. Lucas pidió el cambio ese día. Si alguien lo sube otra
+ * vez, que vuelva a contar -- este comentario existe para que ese chequeo sea de un
  * minuto y no de una tarde.
  */
-const CANTIDAD = 'Casi 50'
+const CANTIDAD = 'Más de 50'
 
 /**
  * Ventanas de cada momento sobre el progreso [0,1] de la sección.
@@ -206,7 +211,7 @@ function suavizar(t) {
 }
 
 /**
- * La sección de clientes de la página de experiencia: casi 50 negocios reales, sus logos
+ * La sección de clientes de la página de experiencia: más de 50 negocios reales, sus logos
  * y las tiendas online que ya están abiertas.
  *
  * Referencia visual que dio Lucas (10/9/2026): apple.com/la/mac-mini -- movida por el
