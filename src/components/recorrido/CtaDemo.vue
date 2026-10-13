@@ -5,9 +5,14 @@
     <h2 class="demo-cta__titulo" :style="estilo_entrada(0)">
       ¿Querés verlo funcionando con tu negocio?
     </h2>
+    <!-- Cómo es la demo, en los mismos términos que la ofrece el agente de WhatsApp. Hasta el
+         13/10/2026 acá decía "la recorrés con uno de nosotros", y el agente la ofrecía como
+         una demo que se recorre solo: esa expectativa cruzada es la que más leads perdió
+         (informe del 5/10, §9). "dos horas" con letras: el detector de horas del agente
+         retiene el mensaje si ve "2 hs". -->
     <p class="demo-cta__bajada" :style="estilo_entrada(1)">
-      Agendá tu demo. Te la preparamos con la configuración de tu negocio y la recorrés con
-      uno de nosotros, sin usuario ni contraseña.
+      Agendá tu demo. Te la preparamos con la configuración de tu negocio y la recorrés vos, a
+      tu ritmo, en menos de una hora. La tenés reservada dos horas, sin usuario ni contraseña.
     </p>
 
     <div class="demo-cta__accion" :style="estilo_entrada(2)">
@@ -36,7 +41,15 @@
       >
         <i class="bi bi-instagram" aria-hidden="true"></i> comerciocity_com
       </a>
-      <a class="demo-cta__pie-enlace" :href="cta_url" target="_blank" rel="noopener noreferrer">
+      <!-- El del pie también mide: es el mismo `cta_url` y hasta el 13/10/2026 era el único
+           de los cinco que no emitía nada (se contaba como visita sin CTA). -->
+      <a
+        class="demo-cta__pie-enlace"
+        :href="cta_url"
+        target="_blank"
+        rel="noopener noreferrer"
+        @click="emitir_evento('cta_demo_tocado', { desde: 'pie' })"
+      >
         <i class="bi bi-whatsapp" aria-hidden="true"></i> +54 3444 544199
       </a>
     </footer>

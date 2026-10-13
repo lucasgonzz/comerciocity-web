@@ -1,11 +1,16 @@
 <template>
-  <!-- "No te dejamos solo." -- los cuatro pasos de la implementación, de la web anterior
-       (ImplementationSection.vue), en el lenguaje visual de esta página. -->
+  <!-- "No te dejamos solo." -- la implementación, etapa por etapa.
+       Hasta el 13/10/2026 eran cuatro pasos inventados para la web (Demo, Migración,
+       Configuración, Operación). Ahora son LAS OCHO ETAPAS REALES, las mismas que el admin
+       registra y las mismas con las que se le habla al cliente mientras se implementa
+       (`prompts_agentes/implementacion_protocolo.md` y la skill `implementar-cliente` del
+       repo de conocimiento): lo que promete la web es exactamente lo que después pasa. -->
   <section ref="seccion" class="demo-implementacion demo-seccion-flujo">
     <div ref="grupo" class="demo-implementacion__grupo" :style="estilo_grupo('grupo')">
       <h2 class="demo-titulo-seccion demo-paso">No te dejamos solo.</h2>
       <p class="demo-bajada-seccion demo-implementacion__bajada demo-paso">
-        Nosotros hacemos toda la implementación. Vos empezás a operar desde el día uno.
+        Nosotros hacemos toda la implementación, de punta a punta. Son ocho etapas y las ves
+        avanzar una por una.
       </p>
 
       <ol class="demo-implementacion__pasos">
@@ -21,6 +26,13 @@
           </span>
         </li>
       </ol>
+
+      <!-- El argumento que no se estaba usando (informe del 5/10/2026, §9): los sistemas
+           contables suben de plan por cantidad de comprobantes, y una ferretería con 200
+           clientes por día termina en el plan más caro. Acá no. -->
+      <p class="demo-implementacion__destacado demo-paso">
+        Y no cobramos más por vender más: vendé todo lo que quieras, la mensualidad no cambia.
+      </p>
 
       <p class="demo-implementacion__lema demo-paso">
         No instalamos software. Profesionalizamos negocios.
@@ -43,12 +55,58 @@
 <script>
 import entrada_por_scroll from './entrada-por-scroll'
 
-/** Los cuatro pasos, copy de la web anterior. */
+/**
+ * Las ocho etapas de la implementación, con los nombres que ve el cliente. Son las mismas
+ * que el admin usa como etapas de la implementación y las mismas que nombra el agente de
+ * WhatsApp: si acá cambia una, cambia allá (repo de conocimiento,
+ * `prompts_agentes/implementacion_protocolo.md` y `SK/implementar-cliente/SKILL.md`).
+ *
+ * 🔴 Sin plazos. El posicionamiento no promete una cantidad de días y la web tampoco: el
+ * plazo lo dice el closer en la llamada, según el negocio.
+ */
 const PASOS = [
-  { numero: '1', nombre: 'Demo', texto: 'Ves la plataforma funcionando con datos reales. Sin compromisos.' },
-  { numero: '2', nombre: 'Migración', texto: 'Pasamos toda tu información al sistema desde Excel u otro sistema.' },
-  { numero: '3', nombre: 'Configuración', texto: 'Dejamos todo listo para tu negocio: artículos, precios, depósitos, ARCA.' },
-  { numero: '4', nombre: 'Operación', texto: 'Empezás a trabajar. Soporte real de lunes a sábado si lo necesitás.' },
+  {
+    numero: '1',
+    nombre: 'Tu negocio, en un formulario',
+    texto: 'Cinco minutos desde el celular: cómo vendés, qué facturás, cómo manejás el stock.',
+  },
+  {
+    numero: '2',
+    nombre: 'Instalación',
+    texto: 'Te instalamos el sistema ya configurado con esas respuestas.',
+  },
+  {
+    numero: '3',
+    nombre: 'Tus archivos',
+    texto: 'Nos pasás tus Excel de artículos, clientes y proveedores, como los tengas.',
+  },
+  {
+    numero: '4',
+    nombre: 'Migración',
+    texto:
+      'Cargamos todo: productos, clientes y proveedores con sus saldos, las fotos de los ' +
+      'catálogos y las categorías. Entrás apenas está la primera tanda.',
+  },
+  {
+    numero: '5',
+    nombre: 'Entrega',
+    texto: 'Tus accesos, y dos cosas que elegís vos: las fotos dudosas y el árbol de categorías.',
+  },
+  {
+    numero: '6',
+    nombre: 'Capacitación',
+    texto: 'Centro de recursos con videos cortos, módulo por módulo, para vos y tus empleados.',
+  },
+  {
+    numero: '7',
+    nombre: 'ARCA',
+    texto: 'Vos das el permiso desde tu cuenta; nosotros dejamos la facturación instalada y probada.',
+  },
+  {
+    numero: '8',
+    nombre: 'Videollamada de cierre',
+    texto: 'Repasamos todo con vos y quedás en soporte, de lunes a sábado.',
+  },
 ]
 
 export default {
@@ -168,53 +226,48 @@ export default {
   color: var(--demo-color-texto-suave);
 }
 
+.demo-implementacion__destacado {
+  margin: clamp(26px, 3.6vw, 40px) 0 0;
+  max-width: 620px;
+  font-size: clamp(1rem, 1.5vw, 1.12rem);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--demo-color-texto);
+  text-wrap: balance;
+}
+
 .demo-implementacion__lema {
-  margin: clamp(28px, 4vw, 44px) 0 clamp(18px, 2.4vw, 26px);
+  margin: clamp(14px, 2vw, 20px) 0 clamp(18px, 2.4vw, 26px);
   font-size: clamp(1.1rem, 1.7vw, 1.3rem);
   font-weight: 600;
   font-style: italic;
   color: var(--demo-color-azul);
 }
 
-/* Tablet y escritorio: los cuatro en fila, unidos por una línea horizontal detrás de los
-   números. */
+/* Tablet y escritorio: dos columnas de cuatro. Ocho en una fila no entran -- cada etapa
+   tiene nombre y explicación, y a 1366 px una columna de 1/8 deja el texto en ocho
+   renglones. Con dos columnas se abandona la línea que unía los números: en una grilla de
+   dos columnas y cuatro filas no significa nada. La guía vertical de la izquierda (la de
+   teléfono) se conserva y es lo que lee como "una etapa atrás de la otra". */
 @media (min-width: 768px) {
   .demo-implementacion__pasos {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: clamp(12px, 2vw, 24px);
-    position: relative;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    /* Columna por columna (1-4 a la izquierda, 5-8 a la derecha) y no renglón por renglón:
+       así cada columna es una tira continua y la guía vertical que las une significa algo. */
+    grid-template-rows: repeat(4, auto);
+    grid-auto-flow: column;
+    column-gap: clamp(24px, 4vw, 48px);
   }
 
-  .demo-implementacion__pasos::before {
-    content: '';
-    position: absolute;
-    top: 24px;
-    left: 12.5%;
-    right: 12.5%;
-    height: 2px;
-    background: rgba(11, 132, 248, 0.22);
-  }
-
-  .demo-implementacion__paso {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-bottom: 0;
-    gap: 14px;
-  }
-
-  .demo-implementacion__paso:not(:last-child)::after {
+  /* La guía vertical no cruza de columna: se corta en el último de cada una (4 y 8). */
+  .demo-implementacion__paso:nth-child(4)::after,
+  .demo-implementacion__paso:nth-child(8)::after {
     display: none;
   }
 
-  .demo-implementacion__numero {
-    position: relative;
-    z-index: 1;
-  }
-
-  .demo-implementacion__cuerpo {
-    padding-top: 0;
-    align-items: center;
+  .demo-implementacion__paso:nth-child(4),
+  .demo-implementacion__paso:nth-child(8) {
+    padding-bottom: 0;
   }
 }
 

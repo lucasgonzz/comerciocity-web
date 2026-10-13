@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# El .env de la web (píxel de Meta, interruptor de precio). El molde es .env.example.
+.env
+.env.local
+.env.*.local

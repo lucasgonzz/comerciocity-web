@@ -2,10 +2,16 @@
   <section ref="seccion" class="demo-nueva-era demo-seccion-flujo">
     <div ref="grupo_era" class="demo-nueva-era__grupo" :style="estilo_grupo('era')">
       <h2 class="demo-titulo-seccion demo-paso">Bienvenido a la nueva era.</h2>
+      <!-- Hasta el 13/10/2026 acá decía "Esto no es un sistema de gestión, es LA MEJOR
+           PLATAFORMA DE ARGENTINA para automatizar tus operaciones diarias". Las dos mitades
+           estaban mal (informe del 5/10/2026, §9): el ferretero está buscando justamente un
+           sistema de gestión y negárselo le suma confusión -- la diferencia no es que no
+           seamos un sistema, es la frase siguiente --, y "la mejor plataforma de Argentina"
+           no se puede sostener y suena a lo que el lead desconfiado espera oír. -->
       <p class="demo-nueva-era__parrafo demo-paso">
-        Esto no es un sistema de gestión, es
-        <strong class="demo-nueva-era__remate-inline">la mejor plataforma de Argentina</strong>
-        para automatizar tus operaciones diarias.
+        Migramos tus productos, tus clientes con sus saldos, las imágenes de tu catálogo y
+        ARCA.
+        <strong class="demo-nueva-era__remate-inline">El día uno ya estás vendiendo.</strong>
       </p>
     </div>
 
@@ -14,10 +20,14 @@
       class="demo-nueva-era__grupo demo-nueva-era__grupo--ancho"
       :style="estilo_grupo('implementacion')"
     >
+      <!-- La coma vive DENTRO del texto que se tipea, y no suelta antes del <em>. Con la coma
+           afuera, la frase se leía "no es fácil, : todos nuestros clientes" durante los cuatro
+           segundos de espera y para cualquiera que no llegara a ver el tipeo (la errata que
+           denuncia el informe del 5/10/2026, §9.5). Así los dos estados estables se leen
+           bien: "no es fácil: todos..." antes, "no es fácil, y lo sabemos: todos..." después. -->
       <p class="demo-nueva-era__parrafo demo-paso">
         Pasar de un sistema a otro
-        <strong class="demo-nueva-era__enfasis">no es fácil</strong>,
-        <em
+        <strong class="demo-nueva-era__enfasis">no es fácil</strong><em
           class="demo-nueva-era__tipeo"
           :class="{ 'demo-nueva-era__tipeo--cursor': tipeo_cursor_visible }"
         >{{ tipeo_texto }}</em>:
@@ -88,8 +98,11 @@ const PILARES = [
   },
 ]
 
-/** Texto que se revela con efecto de máquina de escribir dentro del segundo párrafo. */
-const TEXTO_TIPEADO = 'y lo sabemos'
+/**
+ * Texto que se revela con efecto de máquina de escribir dentro del segundo párrafo. La coma
+ * de adelante es parte del texto tipeado a propósito: ver el comentario del template.
+ */
+const TEXTO_TIPEADO = ', y lo sabemos'
 /** Espera desde que la sección entra en el viewport hasta que arranca el tipeo, en ms. */
 const TIPEO_ESPERA_MS = 4000
 /** Cuánto tarda en aparecer cada letra, en ms. */

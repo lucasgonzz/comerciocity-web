@@ -20,18 +20,23 @@
 <script>
 import Recorrido from '@/components/recorrido/Recorrido.vue'
 import crear_avance_guiado from '@/components/recorrido/avance-guiado'
+import { registrar_evento } from '@/analitica/meta-pixel'
 import '@/assets/scss/experiencia.scss'
 
 /**
  * El CTA de toda la página: agendar la demo, por WhatsApp, al número del canal de leads
- * (+54 3444 544199, el mismo que usaba esta web). El texto prearmado es el que el agente de
- * leads reconoce como un "sí" a la demo (misma frase que el CTA de la página de experiencia
- * del admin: `demo_cta_whatsapp_texto`). Si se cambia acá, cambiarlo también allá, o el
- * agente deja de reconocerlo.
+ * (+54 3444 544199, el mismo que usaba esta web).
+ *
+ * 🔴 La frase es PROPIA DE LA LANDING y distinta de la de la página de experiencia del admin
+ * y de la de los anuncios, a propósito (plan del 13/10/2026, decisión 2.1): el primer mensaje
+ * del lead dice de dónde vino, y de eso sale `leads.origen` en el admin (M6c). El agente de
+ * leads la tiene que reconocer como un "sí" a la demo: cuando se cambie acá, el setting del
+ * admin pasa a ser una LISTA (`demo_cta_whatsapp_textos`) que incluye esta frase y la vieja.
+ * Si se toca este texto sin tocar aquello, el agente deja de entender el primer mensaje.
  */
 const CTA_URL =
   'https://wa.me/543444544199?text=' +
-  encodeURIComponent('Hola Martín, quiero hacer la demo de ComercioCity')
+  encodeURIComponent('Hola Martín, vi la web de ComercioCity y quiero hacer la demo')
 
 export default {
   name: 'Home',
@@ -89,9 +94,12 @@ export default {
 
   methods: {
     /**
-     * Tracking centralizado de la página. Hoy queda en consola (no hay backend detrás de la
-     * web pública); si algún día se conecta una analítica, se conecta acá y en ningún otro
-     * lado.
+     * Tracking centralizado de la página: UN solo punto para toda la web, y es acá.
+     *
+     * Las secciones no saben que existe Meta -- emiten su evento con su nombre propio
+     * (`scroll_bloque_visible`, `cta_demo_tocado`, ...) y de la traducción se encarga
+     * `analitica/meta-pixel.js`. La consola sigue recibiendo todo, que es lo que permite
+     * verificar la página sin píxel configurado.
      *
      * @param {string} nombre
      * @param {object} payload
@@ -101,6 +109,7 @@ export default {
       if (typeof console !== 'undefined' && console.debug) {
         console.debug('[comerciocity] ' + nombre, payload || {})
       }
+      registrar_evento(nombre, payload)
     },
   },
 }

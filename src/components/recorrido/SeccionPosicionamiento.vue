@@ -25,8 +25,12 @@
         </li>
       </ul>
 
+      <!-- Sin nombres propios. Hasta el 13/10/2026 acá decía "Colppy, Xubio y Contabilium
+           facturan": el posicionamiento dice que en material público NO se nombran
+           competidores, y la web lo rompía (informe del 5/10/2026, §9.2 de la lista de
+           correcciones). El argumento es el mismo y pega igual sin darles pantalla. -->
       <p class="demo-posicionamiento__pie demo-paso">
-        Colppy, Xubio y Contabilium facturan. ComercioCity opera. La diferencia la notás el
+        Un sistema contable factura. ComercioCity opera tu negocio. La diferencia la notás el
         primer día.
       </p>
     </div>

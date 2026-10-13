@@ -36,16 +36,26 @@
           'demo-scroll-dolor__apertura--carga': apertura_vista && !apertura_entrada_terminada,
         }"
       >
-        <h1 class="demo-scroll-dolor__apertura-titulo" :style="estilo_apertura(progreso)">
+        <h1 class="demo-scroll-dolor__apertura-titulo" :style="estilo_apertura(progreso, 0)">
           {{ contenido.apertura.titulo }}
         </h1>
+        <p class="demo-scroll-dolor__apertura-subtitulo" :style="estilo_apertura(progreso, 1)">
+          {{ contenido.apertura.subtitulo }}
+        </p>
+        <!-- "Qué es", con la palabra que el ferretero busca, y la diferencia en una línea
+             (informe del 5/10/2026, §9.2 y §9.3). Es el primer texto de la página que contesta
+             "¿qué me están vendiendo?", y es la bandera que ningún competidor de alta
+             inmediata puede decir. El `animationend` cuelga de ACÁ y no del subtítulo: es el
+             último renglón en entrar, y la clase --carga tiene que irse recién cuando terminó
+             todo (si se va antes, el que todavía está animando pega un salto). -->
         <p
-          ref="apertura_subtitulo"
-          class="demo-scroll-dolor__apertura-subtitulo"
-          :style="estilo_apertura(progreso, true)"
+          ref="apertura_cierre"
+          class="demo-scroll-dolor__apertura-cierre"
+          :style="estilo_apertura(progreso, 2)"
           @animationend="on_entrada_apertura_terminada"
         >
-          {{ contenido.apertura.subtitulo }}
+          Sistema de gestión, tienda online y asistente por WhatsApp.
+          <strong>Te lo entregamos andando.</strong>
         </p>
       </header>
     </fondo-seccion-sticky>
@@ -61,6 +71,16 @@
     <seccion-posicionamiento />
 
     <seccion-implementacion :cta_url="cta_url" :emitir_evento="emitir_evento" />
+
+    <!-- El precio, detrás del interruptor `VITE_MOSTRAR_PRECIO` (decisión D2 del plan del
+         13/10/2026, que toma Lucas). Apagado por defecto: el bloque existe, está verificado y
+         no se renderiza. Va acá, después de la implementación y antes de las reseñas: el
+         precio se lee distinto cuando ya se sabe qué incluye y antes de la prueba social. -->
+    <seccion-precio
+      v-if="mostrar_precio"
+      :cta_url="cta_url"
+      :emitir_evento="emitir_evento"
+    />
 
     <seccion-resenas />
 
@@ -82,9 +102,11 @@ import SeccionNuevaEra from './SeccionNuevaEra.vue'
 import SeccionAgentesIa from './SeccionAgentesIa.vue'
 import SeccionPosicionamiento from './SeccionPosicionamiento.vue'
 import SeccionImplementacion from './SeccionImplementacion.vue'
+import SeccionPrecio from './SeccionPrecio.vue'
 import SeccionResenas from './SeccionResenas.vue'
 import SeccionTestimonios from './SeccionTestimonios.vue'
 import CtaDemo from './CtaDemo.vue'
+import { MOSTRAR_PRECIO } from '@/config'
 
 /**
  * Copy de la apertura, transcripto de contexto/demo_pagina.md §1 (versión dueño) del repo
@@ -127,6 +149,7 @@ export default {
     SeccionAgentesIa,
     SeccionPosicionamiento,
     SeccionImplementacion,
+    SeccionPrecio,
     SeccionResenas,
     SeccionTestimonios,
     CtaDemo,
@@ -179,6 +202,17 @@ export default {
     contenido() {
       return CONTENIDO
     },
+
+    /**
+     * Interruptor del bloque de precio. Se resuelve en tiempo de build (Vite reemplaza la
+     * variable por su valor), así que no cambia en vivo: para prenderlo hay que buildear de
+     * nuevo con `VITE_MOSTRAR_PRECIO=1`.
+     *
+     * @returns {boolean}
+     */
+    mostrar_precio() {
+      return MOSTRAR_PRECIO
+    },
   },
 
   mounted() {
@@ -217,6 +251,9 @@ export default {
         ['.demo-agentes', 'agentes_ia'],
         ['.demo-posicionamiento', 'posicionamiento'],
         ['.demo-implementacion', 'implementacion'],
+        /* Solo existe si el bloque de precio está prendido; `querySelector` devuelve null y
+           el forEach de abajo lo saltea. */
+        ['.demo-precio', 'precio'],
         ['.demo-resenas', 'resenas'],
         ['.demo-testimonios', 'testimonios'],
         ['.demo-cta', 'cta'],
@@ -225,7 +262,7 @@ export default {
       self.observador_secciones = new IntersectionObserver(
         function (entradas) {
           entradas.forEach(function (entrada) {
-            if (!entrada.isIntersecting) {
+            if (!entrada.isIntersecting || !self.seccion_vista(entrada)) {
               return
             }
             const id = entrada.target.getAttribute('data-seccion-id')
@@ -233,8 +270,11 @@ export default {
             self.emitir_evento('scroll_bloque_visible', { bloque_id: id })
           })
         },
-        /* 0.5 y no 0: que el borde asome no es haberla visto. */
-        { threshold: 0.5 },
+        /* Muchos escalones y no uno solo: el criterio real lo decide `seccion_vista()` con
+           la geometría de cada entrada, y estos umbrales son nada más los momentos en que el
+           navegador se digna a avisar. Hace falta que haya alguno por debajo de 0,5 o las
+           secciones altas no despiertan nunca al observador. */
+        { threshold: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 1] },
       )
 
       const raiz = self.$refs.raiz
@@ -266,6 +306,28 @@ export default {
     },
 
     /**
+     * ¿El visitante VIO esta sección? La mitad de la sección, o la mitad de la pantalla
+     * tapada por ella: lo que ocurra con la más chica de las dos.
+     *
+     * 🔴 El `threshold: 0.5` a secas, que es lo que había hasta el 13/10/2026, miente en las
+     * secciones altas. `.demo-clientes` mide 380vh (la pared de logos con su pin): su razón
+     * de intersección no puede pasar de 0,26 por más que ocupe la pantalla entera, así que
+     * nunca llegaba al umbral y NUNCA emitió su evento -- medido en 1366x768. Con el píxel
+     * conectado eso sería un `ViewContent` menos, en silencio y para siempre.
+     *
+     * @param {IntersectionObserverEntry} entrada
+     * @returns {boolean}
+     */
+    seccion_vista(entrada) {
+      const alto_seccion = entrada.boundingClientRect.height
+      if (!alto_seccion) {
+        return false
+      }
+      const referencia = Math.min(window.innerHeight || alto_seccion, alto_seccion)
+      return entrada.intersectionRect.height / referencia >= 0.5
+    },
+
+    /**
      * Si la entrada de la apertura no llegó a existir como animación (reduced-motion), la da
      * por terminada a mano; si no, la apertura quedaría clavada en su estado de carga.
      *
@@ -274,8 +336,8 @@ export default {
     red_de_seguridad_apertura() {
       const self = this
       this.$nextTick(function () {
-        const subtitulo = self.$refs.apertura_subtitulo
-        if (!subtitulo || !subtitulo.getAnimations || subtitulo.getAnimations().length === 0) {
+        const cierre = self.$refs.apertura_cierre
+        if (!cierre || !cierre.getAnimations || cierre.getAnimations().length === 0) {
           self.apertura_entrada_terminada = true
         }
       })
@@ -302,15 +364,15 @@ export default {
      * salida que al subir se recorre al revés y hace que el titular "vuelva a entrar".
      *
      * @param {number} p
-     * @param {boolean} secundario true para el subtítulo.
+     * @param {number} orden 0 titular, 1 subtítulo, 2 la línea de "qué es".
      * @returns {object}
      */
-    estilo_apertura(p, secundario) {
+    estilo_apertura(p, orden) {
       if (this.reduced_motion) {
         return {}
       }
 
-      const desfase = secundario ? DESFASE_PIEZA : 0
+      const desfase = (orden || 0) * DESFASE_PIEZA
       const salida = ease_out(this.normalizar(p, SALIDA_INICIO + desfase, 1))
 
       return {
@@ -368,6 +430,25 @@ export default {
   will-change: opacity, transform;
 }
 
+/* "Sistema de gestión, tienda online y asistente por WhatsApp. Te lo entregamos andando."
+   Un escalón por debajo del subtítulo en tamaño: el titular sigue mandando, esta línea
+   informa. El <strong> es la bandera del posicionamiento y va con el azul de marca. */
+.demo-scroll-dolor__apertura-cierre {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--demo-color-texto-suave);
+  margin: 0;
+  max-width: 660px;
+  padding: 0 20px;
+  line-height: 1.45;
+  text-wrap: balance;
+  will-change: opacity, transform;
+}
+
+.demo-scroll-dolor__apertura-cierre strong {
+  color: var(--demo-color-texto);
+  font-weight: 700;
+}
+
 /* La animación de carga de la apertura: zoom del titular (2 s) y rebote del subtítulo
    (0,9 s, a 1,5 s del arranque). El subtítulo es el último en terminar, y de su
    animationend cuelga el retiro de la clase --carga. */
@@ -379,10 +460,17 @@ export default {
   animation: demo-apertura-bounce 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
 }
 
-/* Retenida hasta que se ve. El !important no es prolijidad: los dos elementos llevan un
+/* Medio segundo después del subtítulo, y es la última: de su animationend cuelga el retiro
+   de la clase --carga. */
+.demo-scroll-dolor__apertura--carga .demo-scroll-dolor__apertura-cierre {
+  animation: demo-apertura-bounce 0.9s cubic-bezier(0.16, 1, 0.3, 1) 2s both;
+}
+
+/* Retenida hasta que se ve. El !important no es prolijidad: los tres elementos llevan un
    estilo inline por progreso, y un inline le gana a cualquier selector. */
 .demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-titulo,
-.demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-subtitulo {
+.demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-subtitulo,
+.demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-cierre {
   opacity: 0 !important;
 }
 
@@ -398,11 +486,16 @@ export default {
   .demo-scroll-dolor__apertura-subtitulo {
     font-size: clamp(1.2rem, 5vw, 1.4rem);
   }
+
+  .demo-scroll-dolor__apertura-cierre {
+    font-size: clamp(1rem, 4.2vw, 1.15rem);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .demo-scroll-dolor__apertura-titulo,
-  .demo-scroll-dolor__apertura-subtitulo {
+  .demo-scroll-dolor__apertura-subtitulo,
+  .demo-scroll-dolor__apertura-cierre {
     animation: none;
     opacity: 1;
     transform: none;

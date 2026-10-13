@@ -50,9 +50,22 @@
 
     <!-- Barra superior: la marca y el único CTA de la página, que es agendar la demo. -->
     <header class="demo-hero-video__barra">
-      <a href="/" class="demo-hero-video__marca" aria-label="ComercioCity, inicio">
-        <img :src="logotipo" alt="ComercioCity" class="demo-hero-video__logotipo" />
-      </a>
+      <!-- "Para quién es", en la primera línea de la página (informe del 5/10/2026, §9.1):
+           lo primero que hay que resolverle al que entra es si esto es para su rubro, y es lo
+           que mata el "pensé que eran un mayorista".
+
+           Va PEGADA AL LOGO y alineada a la izquierda, no centrada sobre el video: el cuadro
+           final del render 16:9 arranca su lista a 12,5 % de alto (y 1366x768 no recorta
+           nada, porque la relación es la misma), así que cualquier texto centrado debajo de
+           la barra le cae encima. La columna izquierda está vacía en los dos renders. -->
+      <div class="demo-hero-video__marca-bloque">
+        <a href="/" class="demo-hero-video__marca" aria-label="ComercioCity, inicio">
+          <img :src="logotipo" alt="ComercioCity" class="demo-hero-video__logotipo" />
+        </a>
+        <p class="demo-hero-video__para-quien">
+          Para ferreterías, distribuidoras, corralones y comercios con mostrador.
+        </p>
+      </div>
       <a
         class="demo-hero-video__cta"
         :href="cta_url"
@@ -427,16 +440,40 @@ export default {
   right: 0;
   z-index: 2;
   display: flex;
-  align-items: center;
+  /* `flex-start` y no `center`: la columna de la izquierda tiene dos renglones (marca y
+     "para quién es") y el CTA tiene que quedar a la altura del logo, no del medio. */
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   padding: clamp(14px, 2.2vh, 24px) clamp(16px, 3vw, 36px);
+}
+
+.demo-hero-video__marca-bloque {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
 }
 
 .demo-hero-video__marca {
   display: inline-flex;
   align-items: center;
   line-height: 0;
+}
+
+/* La línea de "para quién es". Sin fondo ni píldora: el video es claro y el texto es oscuro,
+   igual que el wordmark que tiene arriba. El `max-width` la deja en dos renglones como mucho
+   y la mantiene dentro de la mitad izquierda, lejos de la lista del cuadro final. */
+.demo-hero-video__para-quien {
+  margin: 0;
+  max-width: 30ch;
+  font-size: clamp(0.78rem, 1.5vw, 0.95rem);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--demo-color-texto-suave, #5a6273);
+  text-wrap: balance;
 }
 
 .demo-hero-video__logotipo {
