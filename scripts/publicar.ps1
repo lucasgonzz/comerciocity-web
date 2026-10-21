@@ -5,7 +5,7 @@
 #  a la raíz de comerciocity.com (domains/comerciocity.com/public_html/).
 #
 #  QUÉ SUBE: index.html, assets/ (JS, CSS, imágenes con hash), og-comerciocity.jpg,
-#  favicon.svg, icons.svg y .htaccess. Los assets viejos quedan en el servidor (no
+#  favicon.svg, icons.svg, .htaccess y el retiro service-worker.js. Los assets viejos quedan en el servidor (no
 #  rompen nada: nadie los referencia) y antes de pisar index.html se guarda una copia
 #  index-anterior-<fecha>.html al lado, para volver atrás en un comando.
 #
@@ -58,10 +58,16 @@ if (-not $SinBuild) {
 if (-not (Test-Path (Join-Path $dist 'index.html'))) {
     throw "No existe $dist\index.html. Corré sin -SinBuild."
 }
+foreach ($necesario in @('service-worker.js', '.htaccess')) {
+    if (-not (Test-Path (Join-Path $dist $necesario))) {
+        throw "Falta $necesario en dist. No se publica sin el retiro del worker y sus cabeceras."
+    }
+}
 
-Write-Host "== Respaldo del index.html actual en el servidor" -ForegroundColor Cyan
-& plink -ssh -batch -P $puerto -l $usuario -pw $clave $sshHost "cd $destino && cp -p index.html index-anterior-$fecha.html && ls -la index.html index-anterior-$fecha.html"
-if ($LASTEXITCODE -ne 0) { throw "No se pudo respaldar el index.html (exit $LASTEXITCODE)." }
+Write-Host "== Respaldo verificado del index, worker anterior y .htaccess en el servidor" -ForegroundColor Cyan
+$respaldo = "cd $destino && cp -p index.html index-anterior-$fecha.html && cmp -s index.html index-anterior-$fecha.html && for archivo in service-worker.js .htaccess; do if [ -f `"`$archivo`" ]; then cp -p `"`$archivo`" `"`$archivo-anterior-$fecha`" && cmp -s `"`$archivo`" `"`$archivo-anterior-$fecha`" || exit 1; else printf '%s\n' `"ausente: `$archivo`" > `"`$archivo-ausente-$fecha`" || exit 1; fi; done"
+& plink -ssh -batch -P $puerto -l $usuario -pw $clave $sshHost $respaldo
+if ($LASTEXITCODE -ne 0) { throw "No se pudieron verificar los respaldos previos (exit $LASTEXITCODE). No se subió ningún archivo." }
 
 Write-Host "== Subiendo assets/" -ForegroundColor Cyan
 & pscp -batch -P $puerto -pw $clave -r (Join-Path $dist 'assets') "$usuario@${sshHost}:$destino/"
@@ -84,7 +90,17 @@ Write-Host "== Subiendo index.html" -ForegroundColor Cyan
 & pscp -batch -P $puerto -pw $clave (Join-Path $dist 'index.html') "$usuario@${sshHost}:$destino/index.html"
 if ($LASTEXITCODE -ne 0) { throw "La subida de index.html falló (exit $LASTEXITCODE)." }
 
+# El retiro se publica después del index: al activarse refresca las ventanas de la web anterior.
+Write-Host "== Publicando el retiro del service worker anterior" -ForegroundColor Cyan
+& pscp -batch -P $puerto -pw $clave (Join-Path $dist 'service-worker.js') "$usuario@${sshHost}:$destino/service-worker.js"
+if ($LASTEXITCODE -ne 0) { throw "La subida de service-worker.js falló (exit $LASTEXITCODE)." }
+
 Write-Host "== Verificando" -ForegroundColor Cyan
+[Net.ServicePointManager]::SecurityProtocol = 'Tls12'
+$worker = Invoke-WebRequest -Uri "https://comerciocity.com/service-worker.js?nocache=$fecha" -UseBasicParsing
+if ($worker.Headers['Content-Type'] -notmatch '(application|text)/javascript' -or $worker.Headers['Cache-Control'] -notmatch 'no-cache' -or $worker.Content -notmatch 'self.registration.unregister') {
+    throw 'El retiro del service worker no se sirve como JavaScript sin caché. Revisá las cabeceras antes de dar por publicada la web.'
+}
 $html = (Invoke-WebRequest -Uri "https://comerciocity.com/?nocache=$fecha" -UseBasicParsing).Content
 $esperado = Select-String -Path (Join-Path $dist 'index.html') -Pattern 'assets/index-[A-Za-z0-9_-]+\.js' | ForEach-Object { $_.Matches[0].Value } | Select-Object -First 1
 if ($html -match [regex]::Escape($esperado)) {

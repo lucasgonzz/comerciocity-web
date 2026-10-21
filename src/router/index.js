@@ -3,6 +3,10 @@ import Home from '../views/Home.vue'
 
 const routes = [
   {
+    path: '/inicio',
+    redirect: (to) => ({ path: '/', query: to.query, hash: to.hash }),
+  },
+  {
     path: '/',
     name: 'Home',
     component: Home,
