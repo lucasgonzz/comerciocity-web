@@ -27,6 +27,10 @@ function bandera(valor) {
  */
 export const META_PIXEL_ID = String(import.meta.env.VITE_META_PIXEL_ID || '').trim()
 
+/** Endpoint público: no lleva credenciales. Si falla, el enlace normal sigue disponible. */
+export const WHATSAPP_REFERENCIAS_URL = String(import.meta.env.VITE_WHATSAPP_REFERENCIAS_URL ||
+  'https://api-admin.comerciocity.com/api/landing/whatsapp-referencias').trim()
+
 /**
  * Interruptor del bloque de precio (decisión D2 del plan del 13/10/2026: el informe del 5/10
  * recomienda publicarlo, pero lo decide Lucas). APAGADO por defecto: el bloque está

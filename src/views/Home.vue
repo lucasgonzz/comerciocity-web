@@ -21,6 +21,8 @@
 import Recorrido from '@/components/recorrido/Recorrido.vue'
 import crear_avance_guiado from '@/components/recorrido/avance-guiado'
 import { registrar_evento } from '@/analitica/meta-pixel'
+import { armar_url_whatsapp, obtener_atribucion, solicitar_referencia } from '@/analitica/atribucion-whatsapp'
+import { WHATSAPP_REFERENCIAS_URL } from '@/config'
 import '@/assets/scss/experiencia.scss'
 
 /**
@@ -35,9 +37,7 @@ import '@/assets/scss/experiencia.scss'
  * admin pasa a ser una LISTA (`demo_cta_whatsapp_textos`) que incluye esta frase y la vieja.
  * Si se toca este texto sin tocar aquello, el agente deja de entender el primer mensaje.
  */
-const CTA_URL =
-  'https://wa.me/543444544199?text=' +
-  encodeURIComponent('Hola, quiero hacer la demo de ComercioCity')
+const CTA_URL = armar_url_whatsapp()
 
 export default {
   name: 'Home',
@@ -75,10 +75,16 @@ export default {
       CTA_URL,
       listo: false,
       avance: null,
+      cta_montado: false,
     }
   },
 
   mounted() {
+    this.cta_montado = true
+    solicitar_referencia({ endpoint: WHATSAPP_REFERENCIAS_URL, datos: obtener_atribucion() })
+      .then((reference) => {
+        if (reference && this.cta_montado) this.CTA_URL = armar_url_whatsapp(reference)
+      })
     const scroller = this.$refs.scroller
     if (scroller) {
       this.avance = crear_avance_guiado(scroller)
@@ -87,6 +93,7 @@ export default {
   },
 
   beforeUnmount() {
+    this.cta_montado = false
     if (this.avance) {
       this.avance.destruir()
       this.avance = null

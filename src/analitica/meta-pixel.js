@@ -20,8 +20,8 @@
  *
  * 🔴 SIN DATOS PERSONALES. Acá no entra teléfono, mail, nombre ni nada que identifique a una
  * persona: la landing es anónima y no hay formulario. Lo único que viaja además del nombre de
- * la sección son los parámetros de campaña que trajo la URL (`fbclid` y los `utm_*`), que son
- * de la campaña y no del visitante. El matching avanzado (`fbq('init', id, {em, ph})`) queda
+ * la sección son los parámetros de campaña declarados en la URL de llegada (IDs/nombres,
+ * `fbclid` y los `utm_*`). El matching avanzado (`fbq('init', id, {em, ph})`) queda
  * deliberadamente sin usar.
  *
  * Apagado por defecto: sin `VITE_META_PIXEL_ID` no se inyecta el script, no se define `fbq`,
@@ -29,101 +29,11 @@
  */
 
 import { META_PIXEL_ID } from '../config'
+import { obtener_atribucion } from './atribucion-whatsapp'
 
-/** Clave del sessionStorage donde sobreviven los parámetros de campaña de la primera vista. */
-const CLAVE_ATRIBUCION = 'cc_atribucion'
-
-/**
- * Lo que se conserva de la query string. `fbclid` lo pone Meta al salir del anuncio; los
- * `utm_*` los pone el anuncio (M6b los arma con `utm_source=meta&utm_campaign=...`). Nada de
- * esto identifica a nadie.
- */
-const PARAMETROS = ['fbclid', 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
-
-/** Los parámetros de campaña de esta visita, resueltos una sola vez. */
+/** Snapshot único de esta visita, compartido con la referencia del WhatsApp. */
 let atribucion = {}
-
-/** true cuando el píxel está cargado y aceptando eventos. */
 let activo = false
-
-/**
- * sessionStorage puede tirar excepción (ventana privada, datos del sitio bloqueados) o
- * devolver basura. Nunca puede romper la página: estas dos funciones se tragan todo.
- *
- * @param {string} clave
- * @returns {object}
- */
-function leer_guardado(clave) {
-  try {
-    const crudo = window.sessionStorage.getItem(clave)
-    if (!crudo) {
-      return {}
-    }
-    const valor = JSON.parse(crudo)
-    return valor && typeof valor === 'object' ? valor : {}
-  } catch (e) {
-    return {}
-  }
-}
-
-/**
- * @param {string} clave
- * @param {object} valor
- * @returns {void}
- */
-function guardar(clave, valor) {
-  try {
-    window.sessionStorage.setItem(clave, JSON.stringify(valor))
-  } catch (e) {
-    /* Sin almacenamiento la atribución vive solo en memoria, que para una visita alcanza. */
-  }
-}
-
-/**
- * Resuelve los parámetros de campaña de la visita.
- *
- * El visitante llega con `?fbclid=...&utm_campaign=...`, navega, y en el camino la query
- * string se pierde (o la saca una vuelta por el historial). Por eso se guardan en
- * sessionStorage la PRIMERA vez y después se leen de ahí: la pestaña entera queda atribuida
- * al anuncio que la abrió. Session y no local a propósito -- una visita de la semana que
- * viene es una visita nueva, no la misma campaña.
- *
- * Lo que trae la URL pisa a lo guardado: si el visitante vuelve a entrar por otro anuncio en
- * la misma pestaña, vale el último.
- *
- * @returns {object}
- */
-function resolver_atribucion() {
-  const guardado = leer_guardado(CLAVE_ATRIBUCION)
-  const resultado = {}
-  let hay_nuevos = false
-
-  let busqueda = null
-  try {
-    busqueda = new URLSearchParams(window.location.search)
-  } catch (e) {
-    busqueda = null
-  }
-
-  PARAMETROS.forEach(function (nombre) {
-    const de_la_url = busqueda ? busqueda.get(nombre) : null
-    if (de_la_url) {
-      /* Tope de largo: un parámetro de 4 KB es un intento de inyección, no una campaña. */
-      resultado[nombre] = String(de_la_url).slice(0, 255)
-      hay_nuevos = true
-      return
-    }
-    if (guardado[nombre]) {
-      resultado[nombre] = String(guardado[nombre]).slice(0, 255)
-    }
-  })
-
-  if (hay_nuevos) {
-    guardar(CLAVE_ATRIBUCION, resultado)
-  }
-
-  return resultado
-}
 
 /**
  * El snippet oficial de Meta, con el `<script>` inyectado desde acá en vez de escrito en el
@@ -175,7 +85,7 @@ export function iniciar_pixel() {
   /* La atribución se resuelve SIEMPRE, haya píxel o no: así los parámetros de la campaña ya
      están guardados si Lucas prende el píxel en otra pestaña, y el `console.debug` de
      desarrollo los muestra igual. */
-  atribucion = resolver_atribucion()
+  atribucion = obtener_atribucion()
 
   if (!META_PIXEL_ID) {
     return false
