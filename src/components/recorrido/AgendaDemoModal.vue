@@ -598,8 +598,15 @@ export default {
       if (pedido !== this.pedido_turnos || !this.abierto) {
         return
       }
-      this.hoy = fecha_en_zona(Date.now())
-      const turnos = interpretar_turnos(respuesta.status, respuesta.cuerpo, this.hoy)
+      let turnos
+      try {
+        this.hoy = fecha_en_zona(Date.now())
+        turnos = interpretar_turnos(respuesta.status, respuesta.cuerpo, this.hoy)
+      } catch (_) {
+        /* Nada de lo de acá debería tirar; si tira, error con salida a WhatsApp y no un
+           «Buscando turnos…» eterno. */
+        turnos = { tipo: 'error' }
+      }
       if (turnos.tipo !== 'turnos') {
         this.fase_turnos = 'error'
         this.enfocar_estado()

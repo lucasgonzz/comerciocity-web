@@ -84,22 +84,34 @@ export function unir_url(base, ruta) {
  * La fecha calendario (`YYYY-MM-DD`) de un instante en una zona horaria. Es lo que decide
  * si un día es «Hoy»: a las 23:30 de Argentina, en UTC ya es mañana.
  *
+ * Nunca tira: un navegador cuyo `Intl` no conoce la zona (`RangeError`) cae a la fecha del
+ * reloj local. Sin esto el modal se quedaba en «Buscando turnos libres…» para siempre; con
+ * la caída, en el peor caso «Hoy»/«Mañana» se rotulan con la fecha del dispositivo (la
+ * fecha que viaja al admin es siempre la del chip, que es la correcta).
+ *
  * @param {number|Date} ahora
  * @param {string} [zona]
  * @returns {string}
  */
 export function fecha_en_zona(ahora, zona) {
-  const formato = new Intl.DateTimeFormat('en-CA', {
-    timeZone: zona || ZONA_AGENDA,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-  const partes = {}
-  formato.formatToParts(new Date(ahora)).forEach(function (parte) {
-    partes[parte.type] = parte.value
-  })
-  return partes.year + '-' + partes.month + '-' + partes.day
+  const instante = new Date(ahora)
+  try {
+    const formato = new Intl.DateTimeFormat('en-CA', {
+      timeZone: zona || ZONA_AGENDA,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+    const partes = {}
+    formato.formatToParts(instante).forEach(function (parte) {
+      partes[parte.type] = parte.value
+    })
+    if (/^\d{4}$/.test(partes.year) && /^\d{2}$/.test(partes.month) && /^\d{2}$/.test(partes.day)) {
+      return partes.year + '-' + partes.month + '-' + partes.day
+    }
+  } catch (_) { /* Zona desconocida para este Intl: cae a la hora local. */ }
+  return instante.getFullYear() + '-' + String(instante.getMonth() + 1).padStart(2, '0') + '-' +
+    String(instante.getDate()).padStart(2, '0')
 }
 
 /**

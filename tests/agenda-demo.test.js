@@ -18,6 +18,11 @@ test('«hoy» se cuenta en la hora de Argentina, no en UTC', () => {
   /* 23:30 del 22/10 en Buenos Aires = 02:30 del 23/10 en UTC. */
   assert.equal(fecha_en_zona(Date.parse('2026-10-23T02:30:00Z')), '2026-10-22')
   assert.equal(fecha_en_zona(Date.parse('2026-10-23T03:30:00Z')), '2026-10-23')
+  /* Zona que el Intl no conoce: no tira, cae a la fecha local. */
+  const local = new Date(Date.parse('2026-10-22T15:00:00Z'))
+  const esperado = local.getFullYear() + '-' + String(local.getMonth() + 1).padStart(2, '0') + '-' +
+    String(local.getDate()).padStart(2, '0')
+  assert.equal(fecha_en_zona(local.getTime(), 'Zona/Inexistente'), esperado)
   assert.equal(sumar_dias('2026-10-31', 1), '2026-11-01')
   assert.equal(sumar_dias('2026-12-31', 1), '2027-01-01')
 })
