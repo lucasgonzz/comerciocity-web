@@ -67,27 +67,26 @@
           Para ferreterías, distribuidoras, corralones y comercios con mostrador.
         </p>
       </div>
-      <!-- En el teléfono los dos textos se acortan («Elegí día y hora», «¿Dudas? WhatsApp»)
-           para que entren al lado del logo sin taparle la lista al cuadro final; el
-           aria-label conserva el texto completo para el lector de pantalla. -->
+      <!-- El principal dice siempre el texto literal del pedido; en el teléfono baja a dos
+           renglones para entrar al lado del logo. El WhatsApp se acorta a «¿Dudas? WhatsApp»
+           en el teléfono. Sin aria-label en ninguno de los dos: el nombre accesible es el
+           texto visible (WCAG 2.5.3, quien maneja por voz dice lo que ve; el span oculto con
+           display:none no cuenta). -->
       <div class="demo-hero-video__acciones">
         <button
           type="button"
           class="demo-hero-video__cta"
           aria-haspopup="dialog"
-          aria-label="Elegí día y hora de tu demo"
           @click="abrir_agenda('hero', $event)"
         >
           <i class="bi bi-calendar-check" aria-hidden="true"></i>
-          <span class="demo-hero-video__texto-largo">Elegí día y hora de tu demo</span>
-          <span class="demo-hero-video__texto-corto">Elegí día y hora</span>
+          <span>Elegí día y hora de tu demo</span>
         </button>
         <a
           class="demo-hero-video__whatsapp"
           :href="cta_url"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="¿Tenés dudas? Escribinos por WhatsApp"
           @click="emitir_evento('cta_demo_tocado', { desde: 'hero' })"
         >
           <i class="bi bi-whatsapp" aria-hidden="true"></i>
@@ -691,10 +690,26 @@ export default {
     display: inline;
   }
 
+  /* Dos renglones como mucho, alineado a la izquierda: «Elegí día y hora / de tu demo». */
+  .demo-hero-video__cta {
+    max-width: 176px;
+    min-height: 44px;
+    padding: 8px 16px 8px 14px;
+    border-radius: 18px;
+    white-space: normal;
+    text-align: left;
+    line-height: 1.15;
+  }
+
+  .demo-hero-video__cta .bi {
+    flex: none;
+  }
+
+  /* 44 px de alto: lo pide el dedo. */
   .demo-hero-video__whatsapp {
-    min-height: 34px;
-    padding: 6px 12px;
-    font-size: 0.82rem;
+    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
   }
 }
 
