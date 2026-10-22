@@ -12,13 +12,29 @@
            secciones preguntan "¿queda alguna más abajo?" al montarse y una respuesta dada sin
            controlador quedaría cacheada en false -- el chevron no aparecería en la primera
            sección hasta que el visitante se fuera y volviera. -->
-      <recorrido v-if="listo" :cta_url="CTA_URL" :emitir_evento="emitir_evento" />
+      <recorrido
+        v-if="listo"
+        :cta_url="CTA_URL"
+        :emitir_evento="emitir_evento"
+        :abrir_agenda="abrir_agenda"
+      />
     </div>
   </main>
+
+  <!-- La agenda de la demo: el botón principal de cada CTA la abre. Vive afuera del
+       scroller (se teletransporta al <body>) para que sus gestos no muevan la página. -->
+  <agenda-demo-modal
+    :abierto="agenda_abierta"
+    :seccion="agenda_seccion"
+    :cta_url="CTA_URL"
+    :emitir_evento="emitir_evento"
+    @cerrar="cerrar_agenda"
+  />
 </template>
 
 <script>
 import Recorrido from '@/components/recorrido/Recorrido.vue'
+import AgendaDemoModal from '@/components/recorrido/AgendaDemoModal.vue'
 import crear_avance_guiado from '@/components/recorrido/avance-guiado'
 import { registrar_evento } from '@/analitica/meta-pixel'
 import { armar_url_whatsapp, obtener_atribucion, solicitar_referencia } from '@/analitica/atribucion-whatsapp'
@@ -26,7 +42,12 @@ import { WHATSAPP_REFERENCIAS_URL } from '@/config'
 import '@/assets/scss/experiencia.scss'
 
 /**
- * El CTA de toda la página: agendar la demo, por WhatsApp, al número del canal de leads
+ * La SEGUNDA opción de cada CTA desde el 22/10/2026 (misión `demo-autogestionada-landing`):
+ * la principal es «Elegí día y hora de tu demo», que abre la agenda (AgendaDemoModal.vue) y
+ * reserva sin pasar por WhatsApp. Este enlace queda como «¿Tenés dudas? Escribinos por
+ * WhatsApp», con el mismo número, la misma frase y la misma referencia [CC:…].
+ *
+ * El CTA de WhatsApp: agendar la demo, por WhatsApp, al número del canal de leads
  * (+54 3444 544199, el mismo que usaba esta web). El texto no saluda a nadie por su nombre
  * (pedido de Lucas, 13/10/2026): «Hola, quiero hacer la demo de ComercioCity».
  *
@@ -44,6 +65,7 @@ export default {
 
   components: {
     Recorrido,
+    AgendaDemoModal,
   },
 
   /**
@@ -76,6 +98,11 @@ export default {
       listo: false,
       avance: null,
       cta_montado: false,
+      agenda_abierta: false,
+      /** Sección desde la que se abrió la agenda (viaja en los eventos). */
+      agenda_seccion: '',
+      /** El botón que la abrió: el foco vuelve ahí al cerrar. */
+      agenda_origen: null,
     }
   },
 
@@ -93,6 +120,7 @@ export default {
   },
 
   beforeUnmount() {
+    this.liberar_fondo()
     this.cta_montado = false
     if (this.avance) {
       this.avance.destruir()
@@ -118,6 +146,64 @@ export default {
         console.debug('[comerciocity] ' + nombre, payload || {})
       }
       registrar_evento(nombre, payload)
+    },
+
+    /**
+     * Abre la agenda. La llaman los botones «Elegí día y hora de tu demo» de cada sección.
+     *
+     * El botón se toma del evento y no de `document.activeElement`: Safari no enfoca un
+     * <button> al hacerle clic, y el foco tiene que volver a él al cerrar.
+     *
+     * @param {string} seccion hero, agentes_ia, implementacion, precio, cierre.
+     * @param {Event} [evento] El clic.
+     * @returns {void}
+     */
+    abrir_agenda(seccion, evento) {
+      if (this.agenda_abierta) {
+        return
+      }
+      this.agenda_origen = (evento && evento.currentTarget) || document.activeElement || null
+      this.agenda_seccion = seccion || 'desconocido'
+      this.agenda_abierta = true
+      this.bloquear_fondo()
+      this.emitir_evento('agenda_abierta', { seccion: this.agenda_seccion })
+    },
+
+    /** @returns {void} */
+    cerrar_agenda() {
+      this.agenda_abierta = false
+      this.liberar_fondo()
+      const origen = this.agenda_origen
+      this.agenda_origen = null
+      this.$nextTick(function () {
+        if (origen && typeof origen.focus === 'function' && document.contains(origen)) {
+          origen.focus({ preventScroll: true })
+        }
+      })
+    },
+
+    /**
+     * Con la agenda abierta, la página de atrás no scrollea ni recibe foco ni clics: el
+     * scroller queda `inert` (lo que además lo saca del árbol de accesibilidad, como pide un
+     * diálogo modal) y sin overflow. No se toca html/body: ya están en overflow hidden.
+     *
+     * @returns {void}
+     */
+    bloquear_fondo() {
+      const scroller = this.$refs.scroller
+      if (scroller) {
+        scroller.setAttribute('inert', '')
+        scroller.style.overflowY = 'hidden'
+      }
+    },
+
+    /** @returns {void} */
+    liberar_fondo() {
+      const scroller = this.$refs.scroller
+      if (scroller) {
+        scroller.removeAttribute('inert')
+        scroller.style.overflowY = ''
+      }
     },
   },
 }
