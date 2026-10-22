@@ -38,7 +38,7 @@
               type="button"
               class="agenda-demo__cerrar"
               aria-label="Cerrar"
-              :disabled="enviando"
+              :disabled="enviando || redirigiendo"
               @click="cerrar"
             >
               <i class="bi bi-x-lg" aria-hidden="true"></i>
@@ -498,6 +498,18 @@ export default {
       return texto.charAt(0).toUpperCase() + texto.slice(1)
     },
 
+    /**
+     * true durante el «¡Listo!» que termina en la página de experiencia. En ese tramo el
+     * modal no se cierra (ni con Esc, ni con el velo, ni con la cruz): cerrarlo cancelaba la
+     * redirección y el lead se quedaba sin su página (si reabría y confirmaba de nuevo, 409
+     * `ya_tiene_demo`).
+     *
+     * @returns {boolean}
+     */
+    redirigiendo() {
+      return !!(this.resultado && this.resultado.tipo === 'reservada' && this.resultado.experiencia_url)
+    },
+
     /** @returns {boolean} */
     mostrar_formulario() {
       return !this.resultado && this.fase_turnos === 'listo' && this.dias.length > 0
@@ -555,7 +567,7 @@ export default {
 
     /** @returns {void} */
     cerrar() {
-      if (this.enviando) {
+      if (this.enviando || this.redirigiendo) {
         return
       }
       this.$emit('cerrar')
