@@ -592,7 +592,8 @@ export function interpretar_reserva(status, cuerpo, contexto) {
   }
 
   if (status === 429) {
-    return { tipo: 'limite' }
+    // El throttle por IP de Laravel no trae `mensaje`; el tope global de reservas sí (y se muestra tal cual).
+    return mensaje ? { tipo: 'limite', mensaje: mensaje } : { tipo: 'limite' }
   }
   if (status === 503) {
     return { tipo: 'reintentar', mensaje: mensaje }

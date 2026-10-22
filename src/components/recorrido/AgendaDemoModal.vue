@@ -944,8 +944,9 @@ export default {
         return
       }
 
-      if (r.tipo === 'reintentar') {
-        this.aviso = r.mensaje || AVISOS.reintentar
+      // El 429 del tope global de reservas trae su propio `mensaje`; el del throttle por IP, no.
+      if (r.tipo === 'reintentar' || r.tipo === 'limite') {
+        this.aviso = r.mensaje || AVISOS[r.tipo]
         return
       }
 

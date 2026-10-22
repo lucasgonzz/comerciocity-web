@@ -210,6 +210,7 @@ test('reserva 409: turno tomado trae días frescos; los demás códigos, su mens
 
 test('reserva 429, 503 y cualquier otra cosa', () => {
   assert.deepEqual(interpretar_reserva(429, null, {}), { tipo: 'limite' })
+  assert.deepEqual(interpretar_reserva(429, { mensaje: 'Escribinos por WhatsApp.' }, {}), { tipo: 'limite', mensaje: 'Escribinos por WhatsApp.' })
   assert.deepEqual(interpretar_reserva(503, { codigo: 'reintentar' }, {}), { tipo: 'reintentar', mensaje: '' })
   assert.deepEqual(interpretar_reserva(500, { mensaje: 'Server Error' }, {}), { tipo: 'error', mensaje: '' })
   assert.deepEqual(interpretar_reserva(0, null, {}), { tipo: 'error', mensaje: '' })
