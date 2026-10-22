@@ -14,6 +14,7 @@
         v-if="abierto"
         class="agenda-demo"
         :class="'agenda-demo--' + tema"
+        :style="estilo_teclado"
         @keydown="on_keydown"
       >
         <div class="agenda-demo__fondo" aria-hidden="true" @click="cerrar"></div>
@@ -480,6 +481,8 @@ export default {
       /** Para descartar una respuesta de turnos vieja si se pidieron otros. */
       pedido_turnos: 0,
       temporizador_redireccion: null,
+      /** {top, height} del viewport visual mientras el teclado del teléfono está abierto. */
+      viewport_teclado: null,
     }
   },
 
@@ -496,6 +499,25 @@ export default {
       return this.dia_elegido
         ? this.dia_elegido.horarios.find(function (h) { return h.hora === hora }) || null
         : null
+    },
+
+    /**
+     * Con el teclado del teléfono abierto, la hoja se ajusta al viewport VISUAL (lo que queda
+     * arriba del teclado) para que el pie con «Confirmar mi demo» siga a la vista. En iOS
+     * Safari y Chrome Android el teclado achica solo ese viewport; una hoja `fixed; inset: 0`
+     * deja el pie debajo del teclado.
+     *
+     * @returns {object|null}
+     */
+    estilo_teclado() {
+      if (!this.viewport_teclado) {
+        return null
+      }
+      return {
+        top: this.viewport_teclado.top + 'px',
+        bottom: 'auto',
+        height: this.viewport_teclado.height + 'px',
+      }
     },
 
     /** Los horarios del día elegido, por franja. */
@@ -538,12 +560,14 @@ export default {
           this.al_abrir()
           if (typeof window !== 'undefined') {
             window.addEventListener('keydown', this.on_keydown_afuera, true)
+            this.escuchar_teclado(true)
           }
         } else {
           this.cancelar_redireccion()
           if (typeof window !== 'undefined') {
             window.removeEventListener('keydown', this.on_keydown_afuera, true)
           }
+          this.escuchar_teclado(false)
         }
       },
     },
@@ -559,6 +583,7 @@ export default {
   beforeUnmount() {
     this.cancelar_redireccion()
     window.removeEventListener('keydown', this.on_keydown_afuera, true)
+    this.escuchar_teclado(false)
   },
 
   methods: {
@@ -577,6 +602,42 @@ export default {
       if (this.$refs.panel) {
         this.$refs.panel.focus({ preventScroll: true })
       }
+    },
+
+    /**
+     * @param {boolean} prender
+     * @returns {void}
+     */
+    escuchar_teclado(prender) {
+      const vv = typeof window !== 'undefined' ? window.visualViewport : null
+      if (!vv) {
+        return
+      }
+      if (prender) {
+        vv.addEventListener('resize', this.on_viewport)
+        vv.addEventListener('scroll', this.on_viewport)
+        this.on_viewport()
+      } else {
+        vv.removeEventListener('resize', this.on_viewport)
+        vv.removeEventListener('scroll', this.on_viewport)
+        this.viewport_teclado = null
+      }
+    },
+
+    /**
+     * Decide si hay teclado: solo en la hoja de teléfono (< 768 px), sin zoom de pellizco
+     * (con zoom el viewport visual también se achica y no hay que perseguirlo), y con el
+     * viewport visual al menos 120 px más bajo que la ventana.
+     *
+     * @returns {void}
+     */
+    on_viewport() {
+      const vv = window.visualViewport
+      const hay_teclado = !!vv && window.innerWidth < 768 && Math.abs(vv.scale - 1) < 0.01 &&
+        window.innerHeight - vv.height > 120
+      this.viewport_teclado = hay_teclado
+        ? { top: Math.round(vv.offsetTop), height: Math.round(vv.height) }
+        : null
     },
 
     /** @returns {void} */
