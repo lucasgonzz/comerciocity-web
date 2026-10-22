@@ -30,9 +30,14 @@
  * 🔴 SIN DATOS PERSONALES. Acá no entra teléfono, mail, nombre ni nada que identifique a una
  * persona. El formulario de la agenda pide nombre, WhatsApp y correo, pero esos datos van
  * SOLO al admin (que los manda a Meta por su lado, hasheados, por la API de Conversiones):
- * acá nunca pasan. Lo único que viaja además del nombre de la sección y los `event_id` son los parámetros de campaña declarados en la URL de llegada (IDs/nombres,
- * `fbclid` y los `utm_*`). El matching avanzado (`fbq('init', id, {em, ph})`) queda
- * deliberadamente sin usar.
+ * acá nunca pasan. Lo único que viaja además del nombre de la sección y los `event_id` son
+ * los parámetros de campaña declarados en la URL de llegada (IDs/nombres, `fbclid` y los
+ * `utm_*`). El matching avanzado (`fbq('init', id, {em, ph})`) queda deliberadamente sin
+ * usar, y el AUTOMÁTICO también: `autoConfig` va apagado antes del `init`. Con él prendido
+ * (Events Manager lo trae prendido en muchos conjuntos de datos), `fbevents.js` lee los
+ * campos de correo, teléfono y nombre de la página y los adjunta hasheados a los eventos
+ * que siguen -- justo `Lead` y `Schedule`, que salen con el formulario todavía en el DOM.
+ * Apagarlo también apaga los eventos automáticos de clic, que esta web no usa.
  *
  * Apagado por defecto: sin `VITE_META_PIXEL_ID` no se inyecta el script, no se define `fbq`,
  * no se piden cookies y `registrar_evento` no hace nada.
@@ -102,6 +107,9 @@ export function iniciar_pixel() {
   }
 
   cargar_fbevents()
+  /* ANTES del init: sin esto el píxel puede levantar nombre, teléfono y correo del
+     formulario de la agenda (ver el encabezado). */
+  window.fbq('set', 'autoConfig', false, META_PIXEL_ID)
   window.fbq('init', META_PIXEL_ID)
   activo = true
   window.fbq('track', 'PageView', Object.assign({}, atribucion))
