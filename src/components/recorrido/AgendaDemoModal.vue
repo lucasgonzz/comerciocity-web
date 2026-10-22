@@ -4,7 +4,7 @@
        Se teletransporta al <body>: la página scrollea dentro de <main class="sitio-scroller">
        con el avance guiado escuchando la rueda y el dedo ahí adentro, y un diálogo metido en
        ese árbol le pasaría sus gestos al recorrido de atrás. Afuera no los ve nadie. Home.vue
-       además deja el scroller `inert` y sin scroll mientras está abierto.
+       además deja el scroller `inert` mientras está abierto (sin tocarle el overflow).
 
        Pensado primero para el teléfono: debajo de 768 px es una hoja de pantalla completa con
        el botón de confirmar pegado abajo; en escritorio, un diálogo centrado. -->

@@ -183,9 +183,14 @@ export default {
     },
 
     /**
-     * Con la agenda abierta, la página de atrás no scrollea ni recibe foco ni clics: el
-     * scroller queda `inert` (lo que además lo saca del árbol de accesibilidad, como pide un
-     * diálogo modal) y sin overflow. No se toca html/body: ya están en overflow hidden.
+     * Con la agenda abierta, la página de atrás no recibe foco, clics ni teclado: el scroller
+     * queda `inert` (lo que además lo saca del árbol de accesibilidad, como pide un diálogo
+     * modal). El scroll no hace falta bloquearlo: el velo del modal cubre la pantalla y está
+     * afuera del scroller, así que ni la rueda ni el dedo le llegan.
+     *
+     * 🔴 No tocar el `overflow` del scroller: las secciones encuentran su contenedor con
+     * `encontrar_ancestro_scroll()`, que solo acepta `auto|scroll`, y una que se montara con
+     * el overflow en `hidden` se ataría a `window`. Además es un scroll-snap obligatorio.
      *
      * @returns {void}
      */
@@ -193,7 +198,6 @@ export default {
       const scroller = this.$refs.scroller
       if (scroller) {
         scroller.setAttribute('inert', '')
-        scroller.style.overflowY = 'hidden'
       }
     },
 
@@ -202,7 +206,6 @@ export default {
       const scroller = this.$refs.scroller
       if (scroller) {
         scroller.removeAttribute('inert')
-        scroller.style.overflowY = ''
       }
     },
   },
