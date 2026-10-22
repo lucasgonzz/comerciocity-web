@@ -231,9 +231,9 @@ export function normalizar_dias(dias, hoy) {
  */
 export function agrupar_horarios(horarios) {
   const franjas = [
-    { clave: 'manana', titulo: 'Mañana', horarios: [] },
-    { clave: 'tarde', titulo: 'Tarde', horarios: [] },
-    { clave: 'noche', titulo: 'Noche', horarios: [] },
+    { clave: 'manana', titulo: 'Por la mañana', horarios: [] },
+    { clave: 'tarde', titulo: 'Por la tarde', horarios: [] },
+    { clave: 'noche', titulo: 'Por la noche', horarios: [] },
   ]
   ;(Array.isArray(horarios) ? horarios : []).forEach(function (horario) {
     const hora = parseInt(String(horario && horario.hora).slice(0, 2), 10)

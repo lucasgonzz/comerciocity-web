@@ -56,7 +56,7 @@ test('los horarios se agrupan en Mañana, Tarde y Noche, sin franjas vacías', (
   const h = (hora) => ({ hora, hasta: '', texto: hora })
   const grupos = agrupar_horarios([h('09:00'), h('11:59'), h('12:00'), h('18:00'), h('19:00'), h('21:00')])
   assert.deepEqual(grupos.map((g) => [g.titulo, g.horarios.map((x) => x.hora)]), [
-    ['Mañana', ['09:00', '11:59']], ['Tarde', ['12:00', '18:00']], ['Noche', ['19:00', '21:00']],
+    ['Por la mañana', ['09:00', '11:59']], ['Por la tarde', ['12:00', '18:00']], ['Por la noche', ['19:00', '21:00']],
   ])
   assert.deepEqual(agrupar_horarios([h('15:00')]).map((g) => g.clave), ['tarde'])
   assert.deepEqual(agrupar_horarios(null), [])
