@@ -308,16 +308,25 @@
                 </div>
 
                 <!-- Honeypot: un humano no lo ve ni lo oye, y el tab no pasa por acá. Si viene
-                     con algo, el admin responde 422 (contrato §3, D13). -->
+                     con algo, el admin responde 422 (contrato §3, D13).
+                     🔴 Sin nada que un autocompletado o un gestor de contraseñas reconozca: ni
+                     «sitio», «web», «url», «nombre», «correo» ni parecidos en el name, el id o el
+                     rótulo. Si uno lo llenara, la reserva de una persona real caería en un 422
+                     genérico sin nada que corregir. En el body viaja como `sitio_web` (lo arma
+                     `armar_body` desde `this.sitio_web`), no por el name de este input. -->
                 <div class="agenda-demo__trampa" aria-hidden="true">
-                  <label for="agenda-demo-sitio-web">Sitio web</label>
+                  <label for="agenda-demo-c7">No completar</label>
                   <input
-                    id="agenda-demo-sitio-web"
+                    id="agenda-demo-c7"
                     v-model="sitio_web"
                     type="text"
-                    name="sitio_web"
+                    name="cc_c7"
                     tabindex="-1"
                     autocomplete="off"
+                    data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
+                    data-form-type="other"
                   />
                 </div>
               </fieldset>
