@@ -13,7 +13,7 @@
          7. "No te dejamos solo."
          8. Las reseñas de Google.
          9. Los testimonios en video, por negocio.
-        10. El CTA: agendar la demo.
+        10. El CTA: elegir día y hora de la demo (WhatsApp como segunda opción).
 
        Salieron, por pedido explícito: la portada "Nada de esto es sobre el sistema", el cubo
        y la tarjeta de los hitos ("De operar tu negocio a dirigirlo").
@@ -22,7 +22,7 @@
        `demo-scroll-dolor` se conserva porque es el scope de las variables de color del tema
        en experiencia.scss y de los selectores de los componentes portados. -->
   <section ref="raiz" class="demo-scroll-dolor" :class="{ 'demo-scroll-dolor--claro': tema === 'claro' }">
-    <hero-video :cta_url="cta_url" :emitir_evento="emitir_evento" />
+    <hero-video :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
 
     <fondo-seccion-sticky variante="apertura" :contenido_full_bleed="true" v-slot="{ progreso }">
       <!-- `--espera` retiene la entrada hasta que la apertura SE VE: sin eso los ~2,4 s de
@@ -66,11 +66,11 @@
 
     <seccion-nueva-era />
 
-    <seccion-agentes-ia :cta_url="cta_url" :emitir_evento="emitir_evento" />
+    <seccion-agentes-ia :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
 
     <seccion-posicionamiento />
 
-    <seccion-implementacion :cta_url="cta_url" :emitir_evento="emitir_evento" />
+    <seccion-implementacion :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
 
     <!-- El precio, detrás del interruptor `VITE_MOSTRAR_PRECIO` (decisión D2 del plan del
          13/10/2026, que toma Lucas). Apagado por defecto: el bloque existe, está verificado y
@@ -80,6 +80,7 @@
       v-if="mostrar_precio"
       :cta_url="cta_url"
       :emitir_evento="emitir_evento"
+      :abrir_agenda="abrir_agenda"
     />
 
     <seccion-resenas />
@@ -89,7 +90,12 @@
     <!-- El cierre: el CTA, dentro del mismo fondo sticky que usaba el puente al formulario.
          `boton_avance` apagado: es la última sección y el chevron no tendría a dónde ir. -->
     <fondo-seccion-sticky variante="puente" :boton_avance="false" v-slot="{ progreso }">
-      <cta-demo :cta_url="cta_url" :progreso="progreso" :emitir_evento="emitir_evento" />
+      <cta-demo
+        :cta_url="cta_url"
+        :progreso="progreso"
+        :emitir_evento="emitir_evento"
+        :abrir_agenda="abrir_agenda"
+      />
     </fondo-seccion-sticky>
   </section>
 </template>
@@ -171,6 +177,14 @@ export default {
      * Firma: emitir_evento(nombre: string, payload: object) -> void.
      */
     emitir_evento: {
+      type: Function,
+      default: function () {},
+    },
+    /**
+     * Abre la agenda de la demo (el botón principal de cada CTA). Inyectado por Home.vue.
+     * Firma: abrir_agenda(seccion: string, evento?: Event) -> void.
+     */
+    abrir_agenda: {
       type: Function,
       default: function () {},
     },

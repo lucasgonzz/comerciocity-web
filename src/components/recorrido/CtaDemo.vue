@@ -1,5 +1,5 @@
 <template>
-  <!-- El cierre de la página: agendar la demo. `data-bloque-id="cta"` es lo que Recorrido
+  <!-- El cierre de la página: elegir día y hora de la demo (o escribir por WhatsApp). `data-bloque-id="cta"` es lo que Recorrido
        observa para reportar que el visitante llegó al final. -->
   <section class="demo-cta" data-bloque-id="cta">
     <h2 class="demo-cta__titulo" :style="estilo_entrada(0)">
@@ -16,19 +16,18 @@
     </p>
 
     <div class="demo-cta__accion" :style="estilo_entrada(2)">
-      <!-- Es un <a> de verdad y no un <button> con window.open: se abre con el teclado, con
-           "abrir en pestaña nueva" y con el gesto largo del teléfono. -->
-      <a
-        class="demo-boton-marca demo-cta__boton"
-        :href="cta_url"
-        target="_blank"
-        rel="noopener noreferrer"
-        @click="on_click"
-      >
-        <i class="bi bi-whatsapp" aria-hidden="true"></i>
-        <span>Agendá tu demo</span>
-      </a>
-      <p class="demo-cta__nota">Se abre WhatsApp, nos escribís y la dejamos lista.</p>
+      <!-- Desde el 22/10/2026 el principal reserva el turno acá mismo (la agenda) y WhatsApp
+           queda como botón secundario, con el mismo enlace y el mismo evento de siempre. -->
+      <botones-demo
+        variante="cierre"
+        desde="cierre"
+        :cta_url="cta_url"
+        :emitir_evento="emitir_evento"
+        :abrir_agenda="abrir_agenda"
+      />
+      <p class="demo-cta__nota">
+        Elegís el turno, te llega el acceso por correo y por WhatsApp, y entrás a tu página.
+      </p>
     </div>
 
     <footer class="demo-cta__pie" :style="estilo_entrada(3)">
@@ -57,6 +56,8 @@
 </template>
 
 <script>
+import BotonesDemo from './BotonesDemo.vue'
+
 /* Tramo de entrada, en unidades de progreso [0,1] de la sección: el 0.42 es el `snap_progreso`
    en que el avance guiado deposita al visitante, así que todo tiene que haber terminado de
    entrar ahí. Cuatro escalones (título, bajada, botón, pie) con desfase corto. */
@@ -77,6 +78,10 @@ function ease_out(t) {
 export default {
   name: 'CtaDemo',
 
+  components: {
+    BotonesDemo,
+  },
+
   props: {
     /** URL del CTA (WhatsApp con el texto prearmado). */
     cta_url: {
@@ -89,6 +94,11 @@ export default {
       default: 0,
     },
     emitir_evento: {
+      type: Function,
+      default: function () {},
+    },
+    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
+    abrir_agenda: {
       type: Function,
       default: function () {},
     },
@@ -140,11 +150,6 @@ export default {
         opacity: String(entrada),
         transform: 'translateY(' + (1 - entrada) * ENTRADA_Y + 'px)',
       }
-    },
-
-    /** @returns {void} */
-    on_click() {
-      this.emitir_evento('cta_demo_tocado', { desde: 'cierre' })
     },
   },
 }
@@ -229,9 +234,8 @@ export default {
     font-size: clamp(1.7rem, 7.6vw, 2.1rem);
   }
 
-  .demo-cta__boton {
+  .demo-cta__accion {
     width: 100%;
-    max-width: 360px;
   }
 }
 </style>

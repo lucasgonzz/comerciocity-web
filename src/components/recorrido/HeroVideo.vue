@@ -48,7 +48,8 @@
       decoding="async"
     />
 
-    <!-- Barra superior: la marca y el único CTA de la página, que es agendar la demo. -->
+    <!-- Barra superior: la marca y el CTA de la página. Desde el 22/10/2026 son dos: elegir
+         día y hora de la demo (abre la agenda) y, debajo, WhatsApp para el que tiene dudas. -->
     <header class="demo-hero-video__barra">
       <!-- "Para quién es", en la primera línea de la página (informe del 5/10/2026, §9.1):
            lo primero que hay que resolverle al que entra es si esto es para su rubro, y es lo
@@ -66,16 +67,34 @@
           Para ferreterías, distribuidoras, corralones y comercios con mostrador.
         </p>
       </div>
-      <a
-        class="demo-hero-video__cta"
-        :href="cta_url"
-        target="_blank"
-        rel="noopener noreferrer"
-        @click="emitir_evento('cta_demo_tocado', { desde: 'hero' })"
-      >
-        <i class="bi bi-whatsapp" aria-hidden="true"></i>
-        <span>Agendá tu demo</span>
-      </a>
+      <!-- En el teléfono los dos textos se acortan («Elegí día y hora», «¿Dudas? WhatsApp»)
+           para que entren al lado del logo sin taparle la lista al cuadro final; el
+           aria-label conserva el texto completo para el lector de pantalla. -->
+      <div class="demo-hero-video__acciones">
+        <button
+          type="button"
+          class="demo-hero-video__cta"
+          aria-haspopup="dialog"
+          aria-label="Elegí día y hora de tu demo"
+          @click="abrir_agenda('hero', $event)"
+        >
+          <i class="bi bi-calendar-check" aria-hidden="true"></i>
+          <span class="demo-hero-video__texto-largo">Elegí día y hora de tu demo</span>
+          <span class="demo-hero-video__texto-corto">Elegí día y hora</span>
+        </button>
+        <a
+          class="demo-hero-video__whatsapp"
+          :href="cta_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="¿Tenés dudas? Escribinos por WhatsApp"
+          @click="emitir_evento('cta_demo_tocado', { desde: 'hero' })"
+        >
+          <i class="bi bi-whatsapp" aria-hidden="true"></i>
+          <span class="demo-hero-video__texto-largo">¿Tenés dudas? Escribinos por WhatsApp</span>
+          <span class="demo-hero-video__texto-corto">¿Dudas? WhatsApp</span>
+        </a>
+      </div>
     </header>
 
     <!-- Autoplay bloqueado (ahorro de batería, datos reducidos): un play grande sobre el
@@ -172,13 +191,18 @@ export default {
   name: 'HeroVideo',
 
   props: {
-    /** URL del CTA (WhatsApp con el texto prearmado). La arma Recorrido.vue. */
+    /** URL del WhatsApp (texto prearmado y referencia). La arma Home.vue. */
     cta_url: {
       type: String,
       required: true,
     },
     /** Tracking centralizado: emitir_evento(nombre, payload). */
     emitir_evento: {
+      type: Function,
+      default: function () {},
+    },
+    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
+    abrir_agenda: {
       type: Function,
       default: function () {},
     },
@@ -481,6 +505,15 @@ export default {
   width: auto;
 }
 
+/* Los dos CTA de la barra, apilados a la derecha. */
+.demo-hero-video__acciones {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 /* El CTA chico de la barra: píldora con el degradé de marca. */
 .demo-hero-video__cta {
   display: inline-flex;
@@ -496,6 +529,9 @@ export default {
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
   box-shadow: 0 8px 22px rgba(11, 132, 248, 0.22);
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
@@ -513,6 +549,48 @@ export default {
 
 .demo-hero-video__cta .bi {
   font-size: 1.15em;
+}
+
+/* WhatsApp, la segunda opción: píldora clara con contorno, un escalón más chica. Fondo
+   translúcido para que se lea sobre cualquier cuadro del video. */
+.demo-hero-video__whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 7px 14px;
+  border: 1px solid rgba(86, 96, 120, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #1c2333;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.demo-hero-video__whatsapp .bi {
+  color: #1faa59;
+  font-size: 1.1em;
+}
+
+.demo-hero-video__whatsapp:hover {
+  color: #1c2333;
+  border-color: rgba(86, 96, 120, 0.55);
+  background: #fff;
+}
+
+.demo-hero-video__whatsapp:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--demo-color-azul);
+}
+
+.demo-hero-video__texto-corto {
+  display: none;
 }
 
 /* Play grande cuando el autoplay fue rechazado. */
@@ -603,6 +681,27 @@ export default {
 @media (max-width: 767.98px) {
   .demo-hero-video__cta span {
     font-size: 0.9rem;
+  }
+
+  .demo-hero-video__texto-largo {
+    display: none;
+  }
+
+  .demo-hero-video__texto-corto {
+    display: inline;
+  }
+
+  .demo-hero-video__whatsapp {
+    min-height: 34px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-hero-video__cta,
+  .demo-hero-video__whatsapp {
+    transition: none;
   }
 }
 

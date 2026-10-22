@@ -50,25 +50,27 @@
         Cada usuario adicional se cobra aparte. Te lo decimos antes, no después.
       </p>
 
-      <a
-        class="demo-boton-marca demo-paso"
-        :href="cta_url"
-        target="_blank"
-        rel="noopener noreferrer"
-        @click="emitir_evento('cta_demo_tocado', { desde: 'precio' })"
-      >
-        <i class="bi bi-whatsapp" aria-hidden="true"></i>
-        <span>Agendá tu demo</span>
-      </a>
+      <botones-demo
+        class="demo-paso"
+        desde="precio"
+        :cta_url="cta_url"
+        :emitir_evento="emitir_evento"
+        :abrir_agenda="abrir_agenda"
+      />
     </div>
   </section>
 </template>
 
 <script>
+import BotonesDemo from './BotonesDemo.vue'
 import entrada_por_scroll from './entrada-por-scroll'
 
 export default {
   name: 'SeccionPrecio',
+
+  components: {
+    BotonesDemo,
+  },
 
   mixins: [entrada_por_scroll],
 
@@ -78,6 +80,11 @@ export default {
       required: true,
     },
     emitir_evento: {
+      type: Function,
+      default: function () {},
+    },
+    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
+    abrir_agenda: {
       type: Function,
       default: function () {},
     },
@@ -212,11 +219,6 @@ export default {
 
   .demo-precio__nota {
     margin: 14px 0 12px;
-  }
-
-  .demo-boton-marca {
-    width: 100%;
-    max-width: 360px;
   }
 }
 </style>

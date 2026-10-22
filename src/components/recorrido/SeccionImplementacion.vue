@@ -38,21 +38,19 @@
         No instalamos software. Profesionalizamos negocios.
       </p>
 
-      <a
-        class="demo-boton-marca demo-paso"
-        :href="cta_url"
-        target="_blank"
-        rel="noopener noreferrer"
-        @click="emitir_evento('cta_demo_tocado', { desde: 'implementacion' })"
-      >
-        <i class="bi bi-whatsapp" aria-hidden="true"></i>
-        <span>Agendá tu demo</span>
-      </a>
+      <botones-demo
+        class="demo-paso"
+        desde="implementacion"
+        :cta_url="cta_url"
+        :emitir_evento="emitir_evento"
+        :abrir_agenda="abrir_agenda"
+      />
     </div>
   </section>
 </template>
 
 <script>
+import BotonesDemo from './BotonesDemo.vue'
 import entrada_por_scroll from './entrada-por-scroll'
 
 /**
@@ -112,6 +110,10 @@ const PASOS = [
 export default {
   name: 'SeccionImplementacion',
 
+  components: {
+    BotonesDemo,
+  },
+
   mixins: [entrada_por_scroll],
 
   props: {
@@ -120,6 +122,11 @@ export default {
       required: true,
     },
     emitir_evento: {
+      type: Function,
+      default: function () {},
+    },
+    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
+    abrir_agenda: {
       type: Function,
       default: function () {},
     },
@@ -271,10 +278,4 @@ export default {
   }
 }
 
-@media (max-width: 767.98px) {
-  .demo-boton-marca {
-    width: 100%;
-    max-width: 360px;
-  }
-}
 </style>

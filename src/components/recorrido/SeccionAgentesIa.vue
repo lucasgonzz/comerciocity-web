@@ -101,22 +101,23 @@
           </transition>
         </div>
 
-        <a
-          class="demo-boton-marca demo-paso"
-          :href="cta_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          @click="emitir_evento('cta_demo_tocado', { desde: 'agentes_ia', diapositiva: actual.clave })"
-        >
-          <i class="bi bi-whatsapp" aria-hidden="true"></i>
-          <span>Agendá tu demo</span>
-        </a>
+        <botones-demo
+          class="demo-paso demo-agentes__botones"
+          desde="agentes_ia"
+          tono="oscuro"
+          alineacion="inicio"
+          :datos_evento="{ diapositiva: actual.clave }"
+          :cta_url="cta_url"
+          :emitir_evento="emitir_evento"
+          :abrir_agenda="abrir_agenda"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script>
+import BotonesDemo from './BotonesDemo.vue'
 import entrada_por_scroll from './entrada-por-scroll'
 import TelefonoChat from './agentes/TelefonoChat.vue'
 import EscenaMcp from './agentes/EscenaMcp.vue'
@@ -129,6 +130,7 @@ export default {
   name: 'SeccionAgentesIa',
 
   components: {
+    BotonesDemo,
     TelefonoChat,
     EscenaMcp,
   },
@@ -141,6 +143,11 @@ export default {
       required: true,
     },
     emitir_evento: {
+      type: Function,
+      default: function () {},
+    },
+    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
+    abrir_agenda: {
       type: Function,
       default: function () {},
     },
@@ -603,7 +610,7 @@ export default {
   line-height: 1.4;
 }
 
-.demo-agentes .demo-boton-marca {
+.demo-agentes__botones {
   margin-top: clamp(24px, 4vh, 36px);
 }
 
@@ -636,11 +643,6 @@ export default {
   .demo-agentes__texto {
     max-width: 640px;
     margin: 0 auto;
-  }
-
-  .demo-boton-marca {
-    width: 100%;
-    max-width: 360px;
   }
 }
 
