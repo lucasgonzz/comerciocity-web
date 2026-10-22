@@ -13,14 +13,24 @@
  *   | (carga de la página)                 | `PageView`                                  |
  *   | `scroll_bloque_visible` (50 % visto)  | `ViewContent` con `content_name` = sección  |
  *   | `cta_demo_tocado` (cualquier CTA)     | `Contact` + `CtaWhatsApp` (propio), con la sección |
+ *   | `agenda_abierta` (abre el selector)   | `CtaAgenda` (propio), con la sección        |
+ *   | `demo_reservada` (201 de la reserva)  | `Lead` / `Schedule` con el `eventID` del admin |
  *
  * `Contact` es el evento de conversión por el que optimiza la campaña (M6b del plan del
  * 13/10/2026); `CtaWhatsApp` es un evento propio que agrega la sección desde la que se tocó,
  * para poder comparar qué parte de la página convierte sin ensuciar el estándar.
  *
+ * `CtaAgenda` es el gemelo de `CtaWhatsApp` para el botón principal «Elegí día y hora de tu
+ * demo» (abre el modal de la agenda). `Lead`/`Schedule` salen SOLO con los `event_id` que
+ * devuelve el admin al reservar: el admin manda los mismos eventos por la API de
+ * Conversiones con ese mismo id, y Meta los deduplica (decisiones D8/D12 de la misión
+ * `demo-autogestionada-landing`). Sin `event_id` no se manda nada: un `Lead` sin id contaría
+ * doble.
+ *
  * 🔴 SIN DATOS PERSONALES. Acá no entra teléfono, mail, nombre ni nada que identifique a una
- * persona: la landing es anónima y no hay formulario. Lo único que viaja además del nombre de
- * la sección son los parámetros de campaña declarados en la URL de llegada (IDs/nombres,
+ * persona. El formulario de la agenda pide nombre, WhatsApp y correo, pero esos datos van
+ * SOLO al admin (que los manda a Meta por su lado, hasheados, por la API de Conversiones):
+ * acá nunca pasan. Lo único que viaja además del nombre de la sección y los `event_id` son los parámetros de campaña declarados en la URL de llegada (IDs/nombres,
  * `fbclid` y los `utm_*`). El matching avanzado (`fbq('init', id, {em, ph})`) queda
  * deliberadamente sin usar.
  *
@@ -135,6 +145,24 @@ export function registrar_evento(nombre, payload) {
        `CtaWhatsApp` el propio que guarda DESDE DÓNDE se tocó. */
     window.fbq('track', 'Contact', Object.assign({ content_name: seccion }, atribucion))
     window.fbq('trackCustom', 'CtaWhatsApp', Object.assign({ seccion: seccion }, atribucion))
+    return
+  }
+
+  if (nombre === 'agenda_abierta') {
+    window.fbq('trackCustom', 'CtaAgenda', Object.assign({ seccion: datos.seccion || 'desconocido' }, atribucion))
+    return
+  }
+
+  if (nombre === 'demo_reservada') {
+    /* La lista ya viene filtrada por agenda-demo.js (solo Lead/Schedule con id válido). */
+    ;(Array.isArray(datos.meta_eventos) ? datos.meta_eventos : []).forEach(function (evento) {
+      if (!evento || !evento.nombre || !evento.event_id) {
+        return
+      }
+      window.fbq('track', evento.nombre, Object.assign({ content_name: 'demo' }, atribucion), {
+        eventID: evento.event_id,
+      })
+    })
   }
 }
 
