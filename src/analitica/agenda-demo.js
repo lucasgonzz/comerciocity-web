@@ -480,7 +480,7 @@ export function interpretar_turnos(status, cuerpo, hoy) {
  *
  * | status | tipo                                                   |
  * |--------|--------------------------------------------------------|
- * | 201    | `reservada` (con o sin `experiencia_url`)               |
+ * | 201    | `reservada` (con o sin `experiencia_url`; `whatsapp_confirmacion` solo si es true) |
  * | 422    | `campos` (errores por campo) o `invalida` (genérico)    |
  * | 409    | `turno_tomado` (+ días frescos) / `ya_tiene_demo` / `ya_es_cliente` / `ya_hizo_la_demo` |
  * | 429    | `limite`                                               |
@@ -516,6 +516,9 @@ export function interpretar_reserva(status, cuerpo, contexto) {
       experiencia_url: url,
       texto_turno: texto,
       correo: typeof c.correo === 'string' ? c.correo : '',
+      /* Solo un `true` explícito: ausente o cualquier otra cosa = no se promete el WhatsApp
+         (sale únicamente con la plantilla aprobada en Meta, D10). */
+      whatsapp_confirmacion: c.whatsapp_confirmacion === true,
       meta_eventos: meta_eventos,
     }
   }

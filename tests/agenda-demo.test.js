@@ -143,6 +143,7 @@ test('reserva 201: URL, texto del turno y solo los eventos Lead/Schedule con su 
     experiencia_url: 'https://admin.comerciocity.com/experiencia/5493444622139',
     turno: { fecha: '2026-10-23', desde: '15:00', hasta: '17:00', texto: 'jueves 23/10 de 15:00 a 17:00' },
     correo: 'lu***@gmail.com',
+    whatsapp_confirmacion: true,
     meta_eventos: [{ nombre: 'Lead', event_id: 'cc-lead-123-web-lead' }, { nombre: 'Schedule', event_id: 'cc-lead-123-web-schedule' },
       { nombre: 'Purchase', event_id: 'x' }, { nombre: 'Lead', event_id: 'con espacios' }, null],
   }, { hoy: HOY })
@@ -151,6 +152,7 @@ test('reserva 201: URL, texto del turno y solo los eventos Lead/Schedule con su 
     experiencia_url: 'https://admin.comerciocity.com/experiencia/5493444622139',
     texto_turno: 'jueves 23/10 de 15:00 a 17:00',
     correo: 'lu***@gmail.com',
+    whatsapp_confirmacion: true,
     meta_eventos: [{ nombre: 'Lead', event_id: 'cc-lead-123-web-lead' }, { nombre: 'Schedule', event_id: 'cc-lead-123-web-schedule' }],
   })
   /* Sin texto ni URL utilizable: se arma el texto con lo elegido y no se redirige. */
@@ -159,6 +161,10 @@ test('reserva 201: URL, texto del turno y solo los eventos Lead/Schedule con su 
   assert.equal(pobre.experiencia_url, null)
   assert.equal(pobre.texto_turno, 'sábado 24/10 de 18:00 a 20:00')
   assert.deepEqual(pobre.meta_eventos, [])
+  /* El WhatsApp de confirmación se promete solo con un true explícito. */
+  assert.equal(pobre.whatsapp_confirmacion, false)
+  assert.equal(interpretar_reserva(201, { whatsapp_confirmacion: 'true' }, { hoy: HOY }).whatsapp_confirmacion, false)
+  assert.equal(interpretar_reserva(201, { whatsapp_confirmacion: 1 }, { hoy: HOY }).whatsapp_confirmacion, false)
 })
 
 test('reserva 422: errores por campo (fecha/hora van al turno) o genérico', () => {

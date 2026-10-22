@@ -55,8 +55,11 @@
                 ¡Listo! Tu demo quedó reservada para el {{ resultado.texto_turno }}.
               </p>
               <p class="agenda-demo__estado-texto">
-                Te mandamos el acceso<template v-if="resultado.correo"> a {{ resultado.correo }}</template>
-                y por WhatsApp.
+                <!-- WhatsApp solo si el admin dice que la confirmación sale (`whatsapp_confirmacion`):
+                     depende de que Meta tenga aprobada la plantilla, y prometerlo sin eso deja al
+                     lead esperando un mensaje que no llega. -->
+                Te mandamos el acceso<template v-if="resultado.correo"> a {{ resultado.correo }}</template><template
+                  v-if="resultado.whatsapp_confirmacion"> y por WhatsApp</template>.
                 <template v-if="resultado.experiencia_url">Ahora te llevamos a tu página para prepararla.</template>
               </p>
               <a
@@ -305,8 +308,8 @@
               <p class="agenda-demo__que-pasa">
                 <i class="bi bi-envelope-check" aria-hidden="true"></i>
                 <span>
-                  Al confirmar te llega el acceso por correo y por WhatsApp, y te llevamos a tu página
-                  para que la prepares.
+                  Al confirmar te llega el acceso por correo y te llevamos a tu página para que la
+                  prepares.
                 </span>
               </p>
             </form>
@@ -388,7 +391,7 @@ const ENFOCABLES = [
 const AVISOS = {
   red: 'No pudimos conectarnos. Revisá tu conexión y probá de nuevo, o escribinos por WhatsApp.',
   tiempo: 'La confirmación está tardando más de lo normal. Puede que se haya reservado igual: ' +
-    'fijate en tu correo y tu WhatsApp en unos minutos, o escribinos.',
+    'fijate en tu correo en unos minutos, o escribinos por WhatsApp.',
   invalida: 'No pudimos confirmar la reserva. Revisá los datos y probá de nuevo, o escribinos por WhatsApp.',
   limite: 'Hiciste varios intentos seguidos. Esperá unos minutos y probá de nuevo, o escribinos por WhatsApp.',
   reintentar: 'Ahora mismo tenemos mucho movimiento. Probá de nuevo en unos segundos.',

@@ -26,7 +26,7 @@
         :abrir_agenda="abrir_agenda"
       />
       <p class="demo-cta__nota">
-        Elegís el turno, te llega el acceso por correo y por WhatsApp, y entrás a tu página.
+        Elegís el turno, te llega el acceso por correo y entrás a tu página.
       </p>
     </div>
 
