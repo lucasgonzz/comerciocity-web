@@ -78,6 +78,11 @@
                 <i class="bi bi-info-lg"></i>
               </span>
               <p ref="foco_estado" class="agenda-demo__estado-titulo" tabindex="-1">{{ resultado.mensaje }}</p>
+              <!-- Ya reservó: el acceso a su página le llegó por correo cuando reservó. No se dice
+                   a qué casilla ni para cuándo (el formulario no autentica a nadie, D5). -->
+              <p v-if="resultado.codigo === 'ya_tiene_demo'" class="agenda-demo__estado-texto">
+                Revisá tu correo: ahí está el acceso a tu página.
+              </p>
               <a
                 class="demo-boton-marca agenda-demo__estado-boton"
                 :href="cta_url"
