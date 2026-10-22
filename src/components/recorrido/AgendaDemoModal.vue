@@ -188,20 +188,32 @@
                 >
                   {{ errores.turno }}
                 </p>
-                <div v-if="dia_elegido" class="agenda-demo__chips agenda-demo__chips--horas">
-                  <label v-for="horario in dia_elegido.horarios" :key="horario.hora" class="agenda-demo__chip">
-                    <input
-                      v-model="hora"
-                      class="agenda-demo__radio"
-                      type="radio"
-                      name="agenda-demo-hora"
-                      :value="horario.hora"
-                      @change="limpiar_error('turno')"
-                    />
-                    <span class="agenda-demo__chip-cara">
-                      <span class="agenda-demo__chip-titulo">{{ horario.texto }}</span>
-                    </span>
-                  </label>
+                <!-- Por franja (Mañana / Tarde / Noche) con un subtítulo chico: con una docena de
+                     horarios por día, una lista corrida no se lee en el teléfono. Todos los radios
+                     comparten `name`: las flechas recorren el día entero. -->
+                <div
+                  v-for="franja in franjas_del_dia"
+                  :key="franja.clave"
+                  class="agenda-demo__franja"
+                  role="group"
+                  :aria-labelledby="'agenda-demo-franja-' + franja.clave"
+                >
+                  <p :id="'agenda-demo-franja-' + franja.clave" class="agenda-demo__franja-titulo">{{ franja.titulo }}</p>
+                  <div class="agenda-demo__chips agenda-demo__chips--horas">
+                    <label v-for="horario in franja.horarios" :key="horario.hora" class="agenda-demo__chip">
+                      <input
+                        v-model="hora"
+                        class="agenda-demo__radio"
+                        type="radio"
+                        name="agenda-demo-hora"
+                        :value="horario.hora"
+                        @change="limpiar_error('turno')"
+                      />
+                      <span class="agenda-demo__chip-cara">
+                        <span class="agenda-demo__chip-titulo">{{ horario.texto }}</span>
+                      </span>
+                    </label>
+                  </div>
                 </div>
               </fieldset>
 
@@ -356,6 +368,7 @@
 import {
   RUBROS,
   PISO_ABIERTO_MS,
+  agrupar_horarios,
   TIEMPO_RESERVA_MS,
   TIEMPO_TURNOS_MS,
   armar_body,
@@ -469,6 +482,11 @@ export default {
       return this.dia_elegido
         ? this.dia_elegido.horarios.find(function (h) { return h.hora === hora }) || null
         : null
+    },
+
+    /** Los horarios del día elegido, por franja. */
+    franjas_del_dia() {
+      return this.dia_elegido ? agrupar_horarios(this.dia_elegido.horarios) : []
     },
 
     /** «Viernes 23/10 de 15:00 a 17:00», al pie, para no perder de vista lo elegido. */
@@ -1208,8 +1226,19 @@ export default {
   color: var(--agenda-error);
 }
 
-.agenda-demo__grupo .agenda-demo__error + .agenda-demo__chips {
+.agenda-demo__grupo .agenda-demo__error + .agenda-demo__franja {
   margin-top: 8px;
+}
+
+.agenda-demo__franja + .agenda-demo__franja {
+  margin-top: 14px;
+}
+
+.agenda-demo__franja-titulo {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--demo-color-texto-suave);
 }
 
 /* El honeypot: afuera de la pantalla (no `display: none`, que algunos robots saltean). */

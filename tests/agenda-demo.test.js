@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   RUBROS, PISO_ABIERTO_MS, unir_url, fecha_en_zona, sumar_dias, etiqueta_dia, texto_turno,
-  normalizar_dias, normalizar_whatsapp, correo_valido, validar_datos, leer_cookie_meta,
+  normalizar_dias, agrupar_horarios, normalizar_whatsapp, correo_valido, validar_datos, leer_cookie_meta,
   url_de_origen, armar_body, interpretar_turnos, interpretar_reserva, pedir_json,
 } from '../src/analitica/agenda-demo.js'
 
@@ -45,6 +45,17 @@ test('los días del admin se ordenan, se depuran y los vacíos no se muestran', 
   assert.deepEqual(dias[1].horarios.map((h) => h.texto), ['09:30 a 11:30', '18:00 a 20:00'])
   assert.equal(dias[0].titulo, 'Hoy')
   assert.deepEqual(normalizar_dias(null, HOY), [])
+})
+
+test('los horarios se agrupan en Mañana, Tarde y Noche, sin franjas vacías', () => {
+  const h = (hora) => ({ hora, hasta: '', texto: hora })
+  const grupos = agrupar_horarios([h('09:00'), h('11:59'), h('12:00'), h('18:00'), h('19:00'), h('21:00')])
+  assert.deepEqual(grupos.map((g) => [g.titulo, g.horarios.map((x) => x.hora)]), [
+    ['Mañana', ['09:00', '11:59']], ['Tarde', ['12:00', '18:00']], ['Noche', ['19:00', '21:00']],
+  ])
+  assert.deepEqual(agrupar_horarios([h('15:00')]).map((g) => g.clave), ['tarde'])
+  assert.deepEqual(agrupar_horarios(null), [])
+  assert.deepEqual(agrupar_horarios([{ hora: 'xx' }, null]), [])
 })
 
 test('el WhatsApp argentino se lleva a sus 10 dígitos en todas las formas de escribirlo', () => {

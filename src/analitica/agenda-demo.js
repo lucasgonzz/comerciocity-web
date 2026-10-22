@@ -209,6 +209,30 @@ export function normalizar_dias(dias, hoy) {
   return resultado.sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1 })
 }
 
+/**
+ * Los horarios de un día partidos en franjas, para que en el teléfono la lista se lea
+ * (con paso de 60 min son unos 12 chips por día). Mañana: antes de las 12; Tarde: de 12
+ * a antes de las 19; Noche: desde las 19. Solo viajan las franjas con horarios, en orden.
+ *
+ * @param {Array<{hora: string}>} horarios Ya normalizados (ver `normalizar_dias`).
+ * @returns {Array<{clave: string, titulo: string, horarios: Array}>}
+ */
+export function agrupar_horarios(horarios) {
+  const franjas = [
+    { clave: 'manana', titulo: 'Mañana', horarios: [] },
+    { clave: 'tarde', titulo: 'Tarde', horarios: [] },
+    { clave: 'noche', titulo: 'Noche', horarios: [] },
+  ]
+  ;(Array.isArray(horarios) ? horarios : []).forEach(function (horario) {
+    const hora = parseInt(String(horario && horario.hora).slice(0, 2), 10)
+    if (!Number.isFinite(hora)) {
+      return
+    }
+    franjas[hora < 12 ? 0 : hora < 19 ? 1 : 2].horarios.push(horario)
+  })
+  return franjas.filter(function (franja) { return franja.horarios.length > 0 })
+}
+
 // ---------------------------------------------------------------------------------------
 // Validación de los datos
 // ---------------------------------------------------------------------------------------
