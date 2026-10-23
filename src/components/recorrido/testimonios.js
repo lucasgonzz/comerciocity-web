@@ -10,7 +10,9 @@
  *     video (un cuadro a 1,5 s para los de Mariel; la placa de apertura para los de Pablo).
  *   · Los cortes de Mariel (Innovate Materiales) se armaron en agosto de 2026; los de Pablo
  *     (Ferretotal) el 2 y 3/10/2026 desde la llamada de Tomás grabada con Fathom; los de Fernando
- *     (Truvari Bebidas) el 23/10/2026 desde sus dos llamadas, con su permiso. La tabla
+ *     (Truvari Bebidas) el 23/10/2026 desde sus dos llamadas, con su permiso; los de Ernesto y
+ *     Alejandra (San Cayetano) y Federico (Fenix) se armaron el 13/10/2026 de las llamadas del
+ *     28/9 y se publicaron el 23/10/2026, con el permiso de ambos. La tabla
  *     de origen está en `comercial/contenido_para_nutrir.md` y en
  *     `_video/testimonios/ferretotal/ESTADO.md` del repo de conocimiento.
  *   · Las entrevistas completas de Innovate y Pack Descartables (16:9, 8 y 10 minutos) son
@@ -102,6 +104,37 @@ export const testimonios = [
       ['02-google-se-amigo-con-la-pagina', 'Google se amigó con la página', 39],
       ['03-me-ayuda-a-vender-me-encanta', 'Me ayuda a vender, me encanta', 33],
       ['04-es-directamente-proporcional', 'Es directamente proporcional', 29],
+    ]),
+    entrevista: null,
+  },
+  {
+    id: 'san-cayetano',
+    negocio: 'Ferretería San Cayetano',
+    persona: 'Ernesto y Alejandra',
+    rubro: 'Corralón y ferretería con dos sucursales',
+    cita: 'Siempre hubo solución, siempre.',
+    logo: 'ernesto',
+    clips: clips('test-san-cayetano', [
+      ['01-puse-el-sistema-para-abrir-otra-sucursal', 'Puse el sistema para abrir otra sucursal', 39],
+      ['02-un-excel-de-cada-proveedor', 'Un Excel de cada proveedor', 32],
+      ['03-buscas-en-cualquier-orden-y-lo-encuentra', 'Buscás en cualquier orden y lo encuentra', 40],
+      ['04-es-facil-los-chicos-lo-entienden', 'Es fácil, los chicos lo entienden', 18],
+      ['05-la-primera-vez-que-trabajo-con-un-sistema', 'La primera vez que trabajo con un sistema', 25],
+      ['06-antes-dividia-los-precios-uno-por-uno', 'Antes dividía los precios uno por uno', 41],
+    ]),
+    entrevista: null,
+  },
+  {
+    id: 'fenix',
+    negocio: 'Fenix Mayorista',
+    persona: 'Federico',
+    rubro: 'Mayorista de juguetería y bazar en Rosario',
+    cita: 'El 70 % de las ventas hoy son por ahí.',
+    logo: 'fenix',
+    clips: clips('test-fenix', [
+      ['01-el-70-por-ciento-de-las-ventas-por-la-tienda', 'El 70 % de las ventas, por la tienda', 31],
+      ['02-fuimos-el-primer-cliente', 'Fuimos el primer cliente', 13],
+      ['03-el-buscador-te-filtra-tres-cosas', 'El buscador te filtra tres cosas', 17],
     ]),
     entrevista: null,
   },
