@@ -9,7 +9,8 @@
  *   · Las miniaturas (`src/assets/testimonios/*.webp`, 540 px de ancho) salen del propio
  *     video (un cuadro a 1,5 s para los de Mariel; la placa de apertura para los de Pablo).
  *   · Los cortes de Mariel (Innovate Materiales) se armaron en agosto de 2026; los de Pablo
- *     (Ferretotal) el 2 y 3/10/2026 desde la llamada de Tomás grabada con Fathom. La tabla
+ *     (Ferretotal) el 2 y 3/10/2026 desde la llamada de Tomás grabada con Fathom; los de Fernando
+ *     (Truvari Bebidas) el 23/10/2026 desde sus dos llamadas, con su permiso. La tabla
  *     de origen está en `comercial/contenido_para_nutrir.md` y en
  *     `_video/testimonios/ferretotal/ESTADO.md` del repo de conocimiento.
  *   · Las entrevistas completas de Innovate y Pack Descartables (16:9, 8 y 10 minutos) son
@@ -86,6 +87,21 @@ export const testimonios = [
       ['05-me-lo-recomendo-un-colega', 'Me lo recomendó un colega', 25],
       ['06-el-80-por-ciento-se-lo-dije-yo', 'El 80 % de las mejoras las pedí yo', 22],
       ['07-me-siento-comodo-con-el-sistema', 'Me siento cómodo para crecer', 34],
+    ]),
+    entrevista: null,
+  },
+  {
+    id: 'truvari',
+    negocio: 'Truvari Bebidas',
+    persona: 'Fernando',
+    rubro: 'Distribuidora de vinos en Córdoba',
+    cita: 'Si me preguntás si lo recomendaría, sí, totalmente que lo recomiendo.',
+    logo: 'truvari',
+    clips: clips('test-truvari', [
+      ['01-lo-recomiendo-totalmente', 'Lo recomiendo totalmente', 31],
+      ['02-google-se-amigo-con-la-pagina', 'Google se amigó con la página', 39],
+      ['03-me-ayuda-a-vender-me-encanta', 'Me ayuda a vender, me encanta', 33],
+      ['04-es-directamente-proporcional', 'Es directamente proporcional', 29],
     ]),
     entrevista: null,
   },
