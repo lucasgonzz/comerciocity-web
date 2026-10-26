@@ -1,16 +1,20 @@
 <template>
-  <!-- El bloque de precio. 🔴 NO SE RENDERIZA salvo que `VITE_MOSTRAR_PRECIO` diga que sí
-       (ver src/config.js): quién lo decide es Lucas, es la decisión D2 del plan del
-       13/10/2026, y hasta que la tome la página sale igual que siempre.
+  <!-- El bloque de precio. Desde el 26/10/2026 se publica siempre: Lucas lo pidió ese día
+       (era la decisión D2 del plan del 13/10/2026, que estaba detrás de `VITE_MOSTRAR_PRECIO`).
 
-       Qué dice y por qué, del informe del 5/10/2026 §6:
-       - La mensualidad VA con número: es el mejor número que tenemos (el más bajo del
-         relevamiento), no sube con las ventas, el agente ya la dice al primer pedido de
-         precio y el que no puede pagarla no escribe.
-       - La puesta en marcha va SIN número: hoy no es uno solo (el recurso del agente dice
-         1.000 y 1.500; en la llamada del 23/9 se cotizó 2.500 y 1.800). Se nombra, se
-         explica qué incluye, y se cotiza después de la demo.
-       - Lo que NO se publica: "sin límite de usuarios". El usuario adicional se cobra. -->
+       Qué dice y de dónde sale (manual_sistema/general/precios-y-contratacion.md y
+       agentes/lead/recursos/precios.md del repo de conocimiento, vigentes desde el 26/10/2026):
+       - "Desde $80.000 por mes" es el abono de GESTIÓN SOLA pagado por año: $960.000 por
+         adelantado (20 % menos que $100.000 × 12). Lucas pidió exactamente eso: "el precio más
+         barato que tengamos, el que ya tiene el descuento por pago anual, solo gestión".
+         🔴 Por eso la cifra va SIEMPRE con su aclaración al lado (abono anual, y el mes a mes
+         de $100.000): la regla de precios dice que nunca se confunde un equivalente mensual
+         con un cobro mensual.
+       - Lo que incluye es la lista que dictó Lucas. E-commerce y Agentes NO están en el abono
+         de Gestión sola, así que esos dos renglones llevan su etiqueta ("si lo sumás"): sin
+         ella la página prometería en público algo que el precio de arriba no incluye.
+       - La licencia inicial va SIN número (se cotiza después de la demo), y el usuario extra
+         con el suyo. -->
   <section ref="seccion" class="demo-precio demo-seccion-flujo">
     <div ref="grupo" class="demo-precio__grupo" :style="estilo_grupo('grupo')">
       <h2 class="demo-titulo-seccion demo-paso">Lo que cuesta.</h2>
@@ -18,36 +22,36 @@
         Sin letra chica y sin planes que suben cuando te va bien.
       </p>
 
-      <ul class="demo-precio__tarjetas">
-        <li class="demo-precio__tarjeta demo-precio__tarjeta--mensual demo-paso">
+      <div class="demo-precio__tarjeta demo-paso">
+        <div class="demo-precio__cabeza">
           <span class="demo-precio__rotulo">Mensualidad</span>
           <p class="demo-precio__cifra">
             <span class="demo-precio__desde">Desde</span>
-            <strong>$20.000</strong>
+            <strong>$80.000</strong>
             <span class="demo-precio__periodo">por mes</span>
           </p>
-          <p class="demo-precio__texto">
-            Sin límite de ventas ni de comprobantes. Vendas lo que vendas, la mensualidad es
-            la misma. Incluye el sistema, la tienda online, el asistente por WhatsApp y el
-            soporte de lunes a sábado.
+          <p class="demo-precio__aclaracion">
+            Sistema de gestión con el abono anual: $960.000 por adelantado. Mes a mes, $100.000.
           </p>
-        </li>
+        </div>
 
-        <li class="demo-precio__tarjeta demo-paso">
-          <span class="demo-precio__rotulo">Puesta en marcha</span>
-          <p class="demo-precio__cifra demo-precio__cifra--sin-numero">
-            <strong>Pago único</strong>
-          </p>
-          <p class="demo-precio__texto">
-            Migramos tus productos, tus clientes y proveedores con sus saldos, las imágenes de
-            tu catálogo, ARCA y la capacitación. Te la cotizamos después de la demo, según tu
-            negocio.
-          </p>
-        </li>
-      </ul>
+        <div class="demo-precio__cuerpo">
+          <p class="demo-precio__incluye">Tu mensualidad incluye:</p>
+          <ul class="demo-precio__lista">
+            <li v-for="item in incluye" :key="item.texto">
+              <i class="bi" :class="item.icono" aria-hidden="true"></i>
+              <span>
+                {{ item.texto }}
+                <span v-if="item.etiqueta" class="demo-precio__etiqueta">{{ item.etiqueta }}</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
 
       <p class="demo-precio__nota demo-paso">
-        Cada usuario adicional se cobra aparte. Te lo decimos antes, no después.
+        E-commerce y Agentes se suman a tu plan. La licencia inicial depende de los sistemas que
+        elijas y te la cotizamos después de la demo. Cada usuario adicional, $15.000 por mes.
       </p>
 
       <botones-demo
@@ -64,6 +68,16 @@
 <script>
 import BotonesDemo from './BotonesDemo.vue'
 import entrada_por_scroll from './entrada-por-scroll'
+
+/** Lo que incluye la mensualidad, con las palabras de Lucas (26/10/2026). */
+const INCLUYE = [
+  { icono: 'bi-laptop', texto: 'Acceso al sistema desde cualquier dispositivo.' },
+  { icono: 'bi-bag-check', texto: 'El e-commerce de tu negocio funcionando 24/7.', etiqueta: 'si sumás E-commerce' },
+  { icono: 'bi-stars', texto: 'El sistema de agentes, con los tokens para usarlo.', etiqueta: 'si sumás Agentes' },
+  { icono: 'bi-whatsapp', texto: 'Soporte por WhatsApp de por vida.' },
+  { icono: 'bi-sliders', texto: 'Desarrollo de funcionalidades a medida.' },
+  { icono: 'bi-arrow-repeat', texto: 'Actualizaciones constantes de la plataforma.' },
+]
 
 export default {
   name: 'SeccionPrecio',
@@ -87,6 +101,13 @@ export default {
     abrir_agenda: {
       type: Function,
       default: function () {},
+    },
+  },
+
+  computed: {
+    /** @returns {Array} */
+    incluye() {
+      return INCLUYE
     },
   },
 
@@ -115,32 +136,36 @@ export default {
   max-width: 540px;
 }
 
-.demo-precio__tarjetas {
-  list-style: none;
-  margin: clamp(32px, 5vw, 56px) 0 0;
-  padding: 0;
+/* Una sola tarjeta, partida en dos: la cifra a la izquierda (arriba en el teléfono) y lo
+   que incluye a la derecha. El borde y la sombra azules son los de la marca: es el número
+   que tiene que ganar la mirada. */
+.demo-precio__tarjeta {
   width: 100%;
+  margin-top: clamp(28px, 4.5vw, 48px);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(16px, 2.4vw, 24px);
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(11, 132, 248, 0.35);
+  background: var(--demo-color-superficie);
+  box-shadow: 0 24px 50px -30px rgba(11, 132, 248, 0.6);
   text-align: left;
 }
 
-.demo-precio__tarjeta {
+.demo-precio__cabeza {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 10px;
-  padding: clamp(22px, 3vw, 30px);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(17, 24, 39, 0.08);
-  box-shadow: 0 18px 40px -28px rgba(17, 24, 39, 0.4);
+  padding: clamp(24px, 3.2vw, 36px);
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(11, 132, 248, 0.32), transparent 60%),
+    radial-gradient(100% 80% at 100% 100%, rgba(58, 49, 252, 0.22), transparent 60%),
+    #f2f6ff;
 }
 
-/* La mensualidad es la que tiene que ganar la mirada: es nuestro mejor número. */
-.demo-precio__tarjeta--mensual {
-  border-color: rgba(11, 132, 248, 0.35);
-  box-shadow: 0 20px 44px -26px rgba(11, 132, 248, 0.5);
+.demo-precio__cuerpo {
+  padding: clamp(22px, 3vw, 34px);
 }
 
 .demo-precio__rotulo {
@@ -157,68 +182,88 @@ export default {
   align-items: baseline;
   flex-wrap: wrap;
   gap: 8px;
-  line-height: 1.1;
+  line-height: 1.05;
   color: var(--demo-color-texto);
 }
 
 .demo-precio__cifra strong {
-  font-size: clamp(2rem, 4.4vw, 2.75rem);
+  font-size: clamp(2.6rem, 6vw, 3.6rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-/* "Pago único" no es una cifra: entra un escalón más chico para que no compita con $20.000. */
-.demo-precio__cifra--sin-numero strong {
-  font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+  letter-spacing: -0.03em;
+  color: #1c2333;
 }
 
 .demo-precio__desde,
 .demo-precio__periodo {
-  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+  font-size: clamp(1rem, 1.5vw, 1.1rem);
   font-weight: 500;
   color: var(--demo-color-texto-suave);
 }
 
-.demo-precio__texto {
+.demo-precio__aclaracion {
   margin: 0;
-  font-size: clamp(0.95rem, 1.3vw, 1.02rem);
+  max-width: 34ch;
+  font-size: clamp(0.9rem, 1.25vw, 0.98rem);
+  line-height: 1.5;
+  color: #3f4a63;
+}
+
+.demo-precio__incluye {
+  margin: 0 0 14px;
+  font-size: clamp(1rem, 1.4vw, 1.08rem);
+  font-weight: 700;
+  color: var(--demo-color-texto);
+}
+
+.demo-precio__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.demo-precio__lista li {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  font-size: clamp(0.96rem, 1.3vw, 1.03rem);
+  line-height: 1.45;
+  color: var(--demo-color-texto);
+}
+
+.demo-precio__lista .bi {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--demo-color-azul);
+  font-size: 1.1rem;
+}
+
+/* "si sumás E-commerce": un dato, no un adorno. Chica, en el renglón, sin competir. */
+.demo-precio__etiqueta {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(86, 96, 120, 0.1);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--demo-color-texto-suave);
+  white-space: nowrap;
+}
+
+.demo-precio__nota {
+  margin: clamp(20px, 3vw, 28px) 0 clamp(18px, 2.4vw, 26px);
+  max-width: 600px;
+  font-size: clamp(0.88rem, 1.2vw, 0.95rem);
   line-height: 1.55;
   color: var(--demo-color-texto-suave);
 }
 
-.demo-precio__nota {
-  margin: clamp(22px, 3vw, 32px) 0 clamp(18px, 2.4vw, 26px);
-  max-width: 560px;
-  font-size: clamp(0.88rem, 1.2vw, 0.95rem);
-  color: var(--demo-color-texto-suave);
-}
-
 @media (min-width: 768px) {
-  .demo-precio__tarjetas {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Teléfono: la sección entra en una pantalla de 844 px de alto. Sin este apriete medía 924
-   y el botón quedaba 5 px abajo del pliegue -- lo peor de los dos mundos, porque se lee como
-   un botón cortado y no como "hay más abajo". Medido en 390x844. */
-@media (max-width: 767.98px) {
-  .demo-precio {
-    padding-top: clamp(48px, 8dvh, 90px);
-    padding-bottom: clamp(48px, 8dvh, 90px);
-  }
-
-  .demo-precio__tarjetas {
-    margin-top: 20px;
-    gap: 12px;
-  }
-
   .demo-precio__tarjeta {
-    padding: 18px;
-  }
-
-  .demo-precio__nota {
-    margin: 14px 0 12px;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   }
 }
 </style>

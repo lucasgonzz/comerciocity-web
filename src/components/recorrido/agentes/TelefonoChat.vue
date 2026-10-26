@@ -182,9 +182,29 @@ import crear_motor from './motor-guion'
 import { formatear } from './guiones'
 import ISOTIPO from '../../../assets/marca/isotipo-comerciocity.svg'
 
-/** Ritmo de las palabras que aparecen solas: la transcripción y lo que se tipea abajo. */
-const MS_POR_PALABRA_TRANSCRIPCION = 70
-const MS_POR_PALABRA_TIPEO = 80
+/** Ritmo de las palabras que aparecen solas: la transcripción y lo que se tipea abajo.
+ *  26/10/2026: de 70/80 a 25/35 -- pedido de Lucas de que cada escena dure entre 7 y 15 s
+ *  (antes el chat del asistente tardaba ~34 s y se perdía la mitad grabando y transcribiendo). */
+const MS_POR_PALABRA_TRANSCRIPCION = 25
+const MS_POR_PALABRA_TIPEO = 35
+
+/**
+ * Las esperas de cada paso, en ms. Todas juntas para poder calibrar la escena de un vistazo.
+ * Lo mecánico (grabar, transcribir, "escribiendo…") va corto: es lo que Lucas dijo que
+ * "pierde tiempo". Lo que se deja leer es `tiempo_de_lectura()`. Valores del 26/10/2026;
+ * los anteriores, entre paréntesis.
+ */
+const ESPERA = {
+  chip: 200, // (500)
+  salto: 700, // (1500)
+  grabar: 700, // (2000)
+  saliente: 400, // (900)
+  leer: 250, // (550)
+  transcribir: 400, // (1500)
+  transcripto: 500, // (1100) + las palabras
+  tipear: 250, // (550) + las palabras
+  escribiendo: 600, // (1000 + hasta 1200 según el largo)
+}
 
 /** Alturas de las barritas de la onda del audio: fijas, para que no cambien en cada render. */
 const ONDA = [6, 10, 14, 9, 16, 12, 7, 13, 18, 11, 8, 15, 10, 6, 12, 17, 9, 13, 7, 11, 15, 8, 5, 9]
@@ -197,7 +217,8 @@ const ONDA = [6, 10, 14, 9, 16, 12, 7, 13, 18, 11, 8, 15, 10, 6, 12, 17, 9, 13, 
  * @returns {number}
  */
 function tiempo_de_lectura(caracteres) {
-  return Math.min(5600, 1400 + caracteres * 30)
+  /* (26/10/2026) Antes min(5600, 1400 + 30 por carácter). */
+  return Math.min(2400, 600 + caracteres * 12)
 }
 
 /**
@@ -210,27 +231,49 @@ function tiempo_de_lectura(caracteres) {
 function expandir(pasos) {
   const micro = []
   pasos.forEach(function (p) {
+    const desde = micro.length
     if (p.tipo === 'chip' || p.tipo === 'salto') {
       micro.push({ op: p.tipo, texto: p.texto })
-      return
-    }
-    if (p.tipo === 'audio') {
+    } else if (p.tipo === 'audio') {
       micro.push({ op: 'grabar' })
       micro.push({ op: 'agregar', mensaje: Object.assign({}, p, { estado: 'enviado', leido: false }) })
       micro.push({ op: 'leer' })
       micro.push({ op: 'transcribir' })
       micro.push({ op: 'transcripto', palabras: p.transcripcion.split(' ').length })
-      return
-    }
-    /* texto o enlace */
-    if (p.lado === 'saliente') {
-      micro.push({ op: 'tipear', texto: p.texto })
     } else {
-      micro.push({ op: 'escribiendo' })
+      /* texto o enlace */
+      if (p.lado === 'saliente') {
+        micro.push({ op: 'tipear', texto: p.texto })
+      } else {
+        micro.push({ op: 'escribiendo' })
+      }
+      micro.push({ op: 'agregar', mensaje: Object.assign({}, p, { leido: false }) })
     }
-    micro.push({ op: 'agregar', mensaje: Object.assign({}, p, { leido: false }) })
+    /* `ya_enviado` en el guion: la escena entra con ese paso ya hecho (ver pasos_previos). */
+    if (p.ya_enviado) {
+      for (let i = desde; i < micro.length; i++) {
+        micro[i].previo = true
+      }
+    }
   })
   return micro
+}
+
+/**
+ * Cuántos pasos chicos aplica la escena de una al montarse: hasta el último marcado como
+ * `previo`, incluido lo que haya antes (el chip del día).
+ *
+ * @param {Array} micro
+ * @returns {number}
+ */
+function pasos_previos(micro) {
+  let cantidad = 0
+  micro.forEach(function (paso, i) {
+    if (paso.previo) {
+      cantidad = i + 1
+    }
+  })
+  return cantidad
 }
 
 export default {
@@ -284,7 +327,8 @@ export default {
     })
     this.reloj = primero ? primero.hora : '9:41'
 
-    this.motor = crear_motor(expandir(this.chat.pasos), {
+    const micro = expandir(this.chat.pasos)
+    this.motor = crear_motor(micro, {
       aplicar: this.aplicar,
       al_progresar(fraccion) {
         self.$emit('progreso', fraccion)
@@ -296,7 +340,10 @@ export default {
 
     if (this.reducido) {
       this.motor.completar()
-    } else if (this.reproduciendo) {
+      return
+    }
+    this.motor.adelantar(pasos_previos(micro))
+    if (this.reproduciendo) {
       this.motor.reproducir()
     }
   },
@@ -350,11 +397,11 @@ export default {
       switch (paso.op) {
         case 'chip':
           this.agregar({ tipo: 'chip', texto: paso.texto })
-          return 500
+          return ESPERA.chip
 
         case 'salto':
           this.agregar({ tipo: 'salto', texto: paso.texto })
-          return 1500
+          return ESPERA.salto
 
         case 'grabar':
           if (instantaneo) {
@@ -362,7 +409,7 @@ export default {
           }
           this.entrada = 'grabando'
           this.arrancar_grabacion()
-          return 2000
+          return ESPERA.grabar
 
         case 'tipear':
           if (instantaneo) {
@@ -370,7 +417,7 @@ export default {
           }
           this.entrada = 'tipeando'
           this.texto_entrada = paso.texto
-          return this.palabras(paso.texto).length * MS_POR_PALABRA_TIPEO + 550
+          return this.palabras(paso.texto).length * MS_POR_PALABRA_TIPEO + ESPERA.tipear
 
         case 'escribiendo':
           this.marcar_leidos()
@@ -379,22 +426,22 @@ export default {
           }
           this.escribiendo = true
           this.agregar({ tipo: 'escribiendo', lado: 'entrante' })
-          return 1000 + Math.min(1200, this.largo_del_siguiente() * 6)
+          return ESPERA.escribiendo
 
         case 'agregar':
           return this.agregar_mensaje(paso.mensaje)
 
         case 'leer':
           this.marcar_leidos()
-          return 550
+          return ESPERA.leer
 
         case 'transcribir':
           this.cambiar_estado_audio(instantaneo ? 'transcripto' : 'transcribiendo')
-          return 1500
+          return ESPERA.transcribir
 
         case 'transcripto':
           this.cambiar_estado_audio('transcripto')
-          return paso.palabras * MS_POR_PALABRA_TRANSCRIPCION + 1100
+          return paso.palabras * MS_POR_PALABRA_TRANSCRIPCION + ESPERA.transcripto
 
         default:
           return 0
@@ -422,7 +469,7 @@ export default {
       this.agregar(mensaje)
 
       if (mensaje.lado === 'saliente') {
-        return 900
+        return ESPERA.saliente
       }
       const largo = (mensaje.texto || '').length + (mensaje.texto_final || '').length
       return tiempo_de_lectura(largo + (mensaje.tarjeta ? 30 : 0) + (mensaje.enlace ? 60 : 0))
@@ -450,23 +497,6 @@ export default {
           return
         }
       }
-    },
-
-    /**
-     * Largo del próximo mensaje entrante: el "escribiendo…" dura más antes de uno largo.
-     *
-     * @returns {number}
-     */
-    largo_del_siguiente() {
-      const pasos = this.chat.pasos
-      const ya = this.mensajes.filter(function (m) {
-        return m.tipo !== 'escribiendo' && m.tipo !== 'chip' && m.tipo !== 'salto'
-      }).length
-      const pendientes = pasos.filter(function (p) {
-        return p.tipo === 'texto' || p.tipo === 'enlace' || p.tipo === 'audio'
-      })
-      const siguiente = pendientes[ya]
-      return siguiente ? (siguiente.texto || '').length + (siguiente.texto_final || '').length : 40
     },
 
     arrancar_grabacion() {

@@ -1,60 +1,64 @@
 <template>
+  <!-- "Bienvenido a la nueva era", reescrita el 26/10/2026 a pedido de Lucas: comunica dos
+       cosas y nada más. Que migramos TODA la información de la empresa y le entregamos la
+       plataforma con los productos y las imágenes ya cargados, y que le entregamos los TRES
+       sistemas, cada uno en su tarjeta y con su color: gestión (el celeste azulado de la
+       marca), e-commerce (amarillo) y agentes (naranja).
+
+       Hasta esa fecha esta sección traía el tipeo de "no es fácil, y lo sabemos" y las cuatro
+       tarjetas de la implementación (migración, ARCA, imágenes, desarrollos a medida). La
+       migración y las imágenes quedaron acá arriba; los desarrollos a medida tienen ahora su
+       propia sección (SeccionDesarrolloMedida.vue). -->
   <section ref="seccion" class="demo-nueva-era demo-seccion-flujo">
     <div ref="grupo_era" class="demo-nueva-era__grupo" :style="estilo_grupo('era')">
       <h2 class="demo-titulo-seccion demo-paso">Bienvenido a la nueva era.</h2>
-      <!-- Hasta el 13/10/2026 acá decía "Esto no es un sistema de gestión, es LA MEJOR
-           PLATAFORMA DE ARGENTINA para automatizar tus operaciones diarias". Las dos mitades
-           estaban mal (informe del 5/10/2026, §9): el ferretero está buscando justamente un
-           sistema de gestión y negárselo le suma confusión -- la diferencia no es que no
-           seamos un sistema, es la frase siguiente --, y "la mejor plataforma de Argentina"
-           no se puede sostener y suena a lo que el lead desconfiado espera oír. -->
       <p class="demo-nueva-era__parrafo demo-paso">
-        Migramos tus productos, tus clientes con sus saldos, las imágenes de tu catálogo y
-        ARCA.
-        <strong class="demo-nueva-era__remate-inline">El día uno ya estás vendiendo.</strong>
+        Nos encargamos de migrar toda la información de tu empresa y te entregamos la
+        plataforma lista para usar:
+        <strong class="demo-nueva-era__remate-inline">
+          con todos tus productos cargados y sus imágenes.
+        </strong>
       </p>
+      <ul class="demo-nueva-era__migrado demo-paso" aria-label="Lo que migramos">
+        <li v-for="item in migrado" :key="item.texto">
+          <i class="bi" :class="item.icono" aria-hidden="true"></i>
+          <span>{{ item.texto }}</span>
+        </li>
+      </ul>
     </div>
 
     <div
-      ref="grupo_implementacion"
+      ref="grupo_sistemas"
       class="demo-nueva-era__grupo demo-nueva-era__grupo--ancho"
-      :style="estilo_grupo('implementacion')"
+      :style="estilo_grupo('sistemas')"
     >
-      <!-- La coma vive DENTRO del texto que se tipea, y no suelta antes del <em>. Con la coma
-           afuera, la frase se leía "no es fácil, : todos nuestros clientes" durante los cuatro
-           segundos de espera y para cualquiera que no llegara a ver el tipeo (la errata que
-           denuncia el informe del 5/10/2026, §9.5). Así los dos estados estables se leen
-           bien: "no es fácil: todos..." antes, "no es fácil, y lo sabemos: todos..." después. -->
-      <p class="demo-nueva-era__parrafo demo-paso">
-        Pasar de un sistema a otro
-        <strong class="demo-nueva-era__enfasis">no es fácil</strong><em
-          class="demo-nueva-era__tipeo"
-          :class="{ 'demo-nueva-era__tipeo--cursor': tipeo_cursor_visible }"
-        >{{ tipeo_texto }}</em>:
-        todos nuestros clientes venían de un sistema que ya no les permitía crecer.
-      </p>
       <p class="demo-nueva-era__resaltado demo-paso">
-        Por eso un pilar de nuestro servicio es la implementación personalizada.
+        Y te entregamos los tres sistemas de la plataforma.
       </p>
 
-      <!-- Las cuatro tarjetas de la implementación. Cada una con su color (4/10/2026, pedido
-           de Lucas: "dales un poco más de color"): azul y violeta son los dos colores de marca,
-           la de las imágenes lleva el naranja -- el acento ÚNICO de la marca, una sola vez en
-           toda la grilla -- y la de los desarrollos a medida el degradé de los dos. -->
-      <ul class="demo-nueva-era__pilares">
+      <ul class="demo-nueva-era__sistemas">
         <li
-          v-for="pilar in pilares"
-          :key="pilar.icono"
-          class="demo-nueva-era__pilar demo-paso"
-          :class="'demo-nueva-era__pilar--' + pilar.color"
+          v-for="sistema in sistemas"
+          :key="sistema.clave"
+          class="demo-nueva-era__sistema demo-paso"
+          :class="'demo-nueva-era__sistema--' + sistema.clave"
         >
-          <span class="demo-nueva-era__pilar-disco" aria-hidden="true">
-            <i class="bi" :class="pilar.icono"></i>
+          <span class="demo-nueva-era__sistema-disco" aria-hidden="true">
+            <i class="bi" :class="sistema.icono"></i>
           </span>
-          <span class="demo-nueva-era__pilar-cuerpo">
-            <span class="demo-nueva-era__pilar-titulo">{{ pilar.titulo }}</span>
-            <span class="demo-nueva-era__pilar-texto">{{ pilar.texto }}</span>
-          </span>
+          <span class="demo-nueva-era__sistema-rotulo">{{ sistema.rotulo }}</span>
+          <h3 class="demo-nueva-era__sistema-titulo">{{ sistema.titulo }}</h3>
+          <p class="demo-nueva-era__sistema-texto">{{ sistema.texto }}</p>
+
+          <ul v-if="sistema.agentes" class="demo-nueva-era__agentes">
+            <li v-for="agente in sistema.agentes" :key="agente.nombre">
+              <i class="bi" :class="agente.icono" aria-hidden="true"></i>
+              <span>
+                <strong>{{ agente.nombre }}</strong>
+                {{ agente.texto }}
+              </span>
+            </li>
+          </ul>
         </li>
       </ul>
     </div>
@@ -64,106 +68,88 @@
 <script>
 import entrada_por_scroll from './entrada-por-scroll'
 
+/** Lo que migramos, en fichas. Productos e imágenes primero: es lo que Lucas pidió subrayar. */
+const MIGRADO = [
+  { icono: 'bi-box-seam', texto: 'Productos y precios' },
+  { icono: 'bi-images', texto: 'Imágenes de cada producto' },
+  { icono: 'bi-people', texto: 'Clientes y proveedores, con sus saldos' },
+  { icono: 'bi-receipt', texto: 'ARCA conectado' },
+]
+
 /**
- * Los cuatro pilares de la implementación personalizada. El texto de los tres primeros es
- * de Lucas (10/9/2026); el cuarto lo pidió el 4/10/2026: las imágenes de los catálogos y
- * las páginas web de los proveedores, cargadas antes de que el negocio arranque.
+ * Los tres sistemas, con el texto que dictó Lucas el 26/10/2026. Los agentes son los tres
+ * principales que nombró, y existen los tres (agentes/lead/recursos/posicionamiento.md del
+ * repo de conocimiento): el asistente personal por WhatsApp, la carga de compras desde la
+ * foto de la factura y el agente que atiende a los clientes.
  */
-const PILARES = [
+const SISTEMAS = [
   {
-    color: 'azul',
-    icono: 'bi-database-check',
-    titulo: 'Migramos tu información',
-    texto: 'Pasamos toda tu información y te entregamos el sistema listo para vender.',
-  },
-  {
-    color: 'violeta',
-    icono: 'bi-receipt',
-    titulo: 'Configuramos ARCA',
-    texto: 'Dejamos tus puntos de venta de ARCA conectados para que factures solo lo que querés.',
-  },
-  {
-    color: 'naranja',
-    icono: 'bi-images',
-    titulo: 'Cargamos las imágenes de tus proveedores',
+    clave: 'gestion',
+    icono: 'bi-grid-1x2',
+    rotulo: 'ComercioCity',
+    titulo: 'Sistema de gestión',
     texto:
-      'Nos encargamos de traer todas las imágenes de los catálogos y las páginas web de tus ' +
-      'proveedores, para que tengas cada producto con su foto desde el primer día.',
+      'Con el que administrás tu negocio por dentro: ventas, stock, compras, caja, cuentas ' +
+      'corrientes y facturación, desde cualquier dispositivo.',
   },
   {
-    color: 'marca',
-    icono: 'bi-sliders',
-    titulo: 'Desarrollos a tu medida',
-    texto: 'Si tu negocio lo requiere, hacemos desarrollos a tu medida.',
+    clave: 'ecommerce',
+    icono: 'bi-bag-check',
+    rotulo: 'Tu tienda online',
+    /* Con guion que no parte (U+2011): a ~900 px de ancho el título quedaba "e-" / "commerce". */
+    titulo: 'Sistema de e‑commerce',
+    texto:
+      'El portal por el que tus clientes interactúan con tu marca: ven tu catálogo con ' +
+      'precios y stock al día y te compran de una forma mucho más práctica.',
+  },
+  {
+    clave: 'agentes',
+    icono: 'bi-stars',
+    rotulo: 'Inteligencia artificial',
+    titulo: 'Sistema de agentes',
+    texto: 'Agentes de IA que trabajan en tu negocio. Los principales:',
+    agentes: [
+      {
+        icono: 'bi-person-badge',
+        nombre: 'Tu agente personal.',
+        texto: 'Le preguntás y le pedís cosas por WhatsApp, como a un empleado de confianza.',
+      },
+      {
+        icono: 'bi-camera',
+        nombre: 'El agente de compras.',
+        texto: 'Le mandás una foto de la factura y te carga la compra.',
+      },
+      {
+        icono: 'bi-whatsapp',
+        nombre: 'El agente de atención.',
+        texto: 'Contesta y asesora a tus clientes por WhatsApp, a cualquier hora.',
+      },
+    ],
   },
 ]
 
 /**
- * Texto que se revela con efecto de máquina de escribir dentro del segundo párrafo. La coma
- * de adelante es parte del texto tipeado a propósito: ver el comentario del template.
- */
-const TEXTO_TIPEADO = ', y lo sabemos'
-/** Espera desde que la sección entra en el viewport hasta que arranca el tipeo, en ms. */
-const TIPEO_ESPERA_MS = 4000
-/** Cuánto tarda en aparecer cada letra, en ms. */
-const TIPEO_VELOCIDAD_MS = 55
-
-/**
- * "Bienvenido a la nueva era" + los cuatro pilares de la implementación personalizada.
+ * "Bienvenido a la nueva era": la migración y los tres sistemas.
  *
  * Sección de texto, en el flujo normal: no se pinnea. La entrada de cada renglón es función
  * pura del progreso del grupo (mixin entrada-por-scroll), así que la reversa al subir sale
- * gratis. El tipeo de "y lo sabemos" es la excepción deliberada: un evento que pasa UNA
- * vez, con un IntersectionObserver de una sola vía que se desconecta solo.
+ * gratis.
  */
 export default {
   name: 'SeccionNuevaEra',
 
   mixins: [entrada_por_scroll],
 
-  data() {
-    return {
-      tipeo_texto: '',
-      tipeo_observador: null,
-      tipeo_espera_timeout: null,
-      tipeo_intervalo: null,
-    }
-  },
-
   computed: {
     /** @returns {Array} */
-    pilares() {
-      return PILARES
+    migrado() {
+      return MIGRADO
     },
 
-    /**
-     * true mientras conviene mostrar el cursor parpadeante: antes de que arranque el tipeo y
-     * mientras está en curso. Sin esto queda un hueco entre la coma y los dos puntos.
-     *
-     * @returns {boolean}
-     */
-    tipeo_cursor_visible() {
-      return this.tipeo_texto !== TEXTO_TIPEADO
+    /** @returns {Array} */
+    sistemas() {
+      return SISTEMAS
     },
-  },
-
-  mounted() {
-    this.iniciar_tipeo()
-  },
-
-  beforeUnmount() {
-    if (this.tipeo_observador) {
-      this.tipeo_observador.disconnect()
-      this.tipeo_observador = null
-    }
-    if (this.tipeo_espera_timeout !== null) {
-      window.clearTimeout(this.tipeo_espera_timeout)
-      this.tipeo_espera_timeout = null
-    }
-    if (this.tipeo_intervalo !== null) {
-      window.clearInterval(this.tipeo_intervalo)
-      this.tipeo_intervalo = null
-    }
   },
 
   methods: {
@@ -171,46 +157,8 @@ export default {
     grupos() {
       return {
         era: this.$refs.grupo_era,
-        implementacion: this.$refs.grupo_implementacion,
+        sistemas: this.$refs.grupo_sistemas,
       }
-    },
-
-    /** @returns {void} */
-    iniciar_tipeo() {
-      if (this.movimiento_reducido || typeof IntersectionObserver !== 'function') {
-        this.tipeo_texto = TEXTO_TIPEADO
-        return
-      }
-
-      const self = this
-
-      this.tipeo_observador = new IntersectionObserver(function (entradas) {
-        if (!entradas[entradas.length - 1].isIntersecting) {
-          return
-        }
-        self.tipeo_espera_timeout = window.setTimeout(function () {
-          self.tipeo_espera_timeout = null
-          self.tipear()
-        }, TIPEO_ESPERA_MS)
-        self.tipeo_observador.disconnect()
-      })
-
-      this.tipeo_observador.observe(this.$refs.seccion)
-    },
-
-    /** @returns {void} */
-    tipear() {
-      const self = this
-      let i = 0
-
-      this.tipeo_intervalo = window.setInterval(function () {
-        i++
-        self.tipeo_texto = TEXTO_TIPEADO.slice(0, i)
-        if (i >= TEXTO_TIPEADO.length) {
-          window.clearInterval(self.tipeo_intervalo)
-          self.tipeo_intervalo = null
-        }
-      }, TIPEO_VELOCIDAD_MS)
     },
   },
 }
@@ -220,28 +168,27 @@ export default {
 .demo-nueva-era__grupo {
   --p: 1;
   width: 100%;
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
+  text-align: center;
 }
 
 .demo-nueva-era__grupo + .demo-nueva-era__grupo {
-  margin-top: clamp(56px, 9vh, 112px);
-  margin-top: clamp(56px, 9dvh, 112px);
+  margin-top: clamp(48px, 8vh, 96px);
+  margin-top: clamp(48px, 8dvh, 96px);
 }
 
 .demo-nueva-era__grupo--ancho {
-  max-width: 1040px;
+  max-width: 1120px;
 }
 
 .demo-nueva-era__parrafo {
-  margin: clamp(16px, 2.4vw, 26px) 0 0;
+  margin: clamp(16px, 2.4vw, 26px) auto 0;
+  max-width: 640px;
   font-size: clamp(1.05rem, 1.6vw, 1.25rem);
   line-height: 1.6;
   color: var(--demo-color-texto-suave);
-}
-
-.demo-nueva-era__grupo--ancho .demo-nueva-era__parrafo {
-  margin-top: 0;
+  text-wrap: pretty;
 }
 
 /* Jerarquía tenue y deliberada: cuerpo en suave, remate en el color fuerte. */
@@ -250,169 +197,177 @@ export default {
   color: var(--demo-color-texto);
 }
 
-.demo-nueva-era__enfasis {
-  font-weight: 700;
+.demo-nueva-era__migrado {
+  list-style: none;
+  margin: clamp(20px, 3vw, 30px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
 }
 
-.demo-nueva-era__tipeo {
-  font-style: italic;
+.demo-nueva-era__migrado li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--demo-color-borde-superficie);
+  background: var(--demo-color-superficie);
+  font-size: clamp(0.9rem, 1.3vw, 1rem);
+  font-weight: 500;
+  color: var(--demo-color-texto);
 }
 
-.demo-nueva-era__tipeo--cursor::after {
-  content: '';
-  display: inline-block;
-  width: 2px;
-  height: 1em;
-  margin-left: 1px;
-  vertical-align: text-bottom;
-  background: currentColor;
-  animation: demo-nueva-era-cursor 0.9s step-end infinite;
-}
-
-@keyframes demo-nueva-era-cursor {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+.demo-nueva-era__migrado .bi {
+  color: var(--demo-color-azul);
 }
 
 .demo-nueva-era__resaltado {
-  margin: clamp(14px, 2vw, 20px) 0 0;
-  font-size: clamp(1.2rem, 1.9vw, 1.5rem);
-  font-weight: 600;
-  line-height: 1.35;
+  margin: 0;
+  font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
   color: var(--demo-color-texto);
+  text-wrap: balance;
 }
 
-.demo-nueva-era__pilares {
+.demo-nueva-era__sistemas {
   list-style: none;
-  margin: clamp(28px, 4vw, 44px) 0 0;
+  margin: clamp(26px, 4vw, 42px) 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(12px, 1.6vw, 18px);
+  gap: clamp(14px, 1.8vw, 20px);
+  text-align: left;
 }
 
-/* La tarjeta: blanca con un lavado de SU color en la esquina del ícono y un borde apenas
-   teñido. El color entra por tres variables que cada modificador define; la tarjeta no sabe
-   cuál le tocó. */
-.demo-nueva-era__pilar {
+/* La tarjeta de cada sistema. El color entra por tres variables que define cada modificador:
+   el tinte (RGB, para lavados y bordes), el disco del ícono y el color del ícono adentro
+   del disco (oscuro sobre el amarillo, que con blanco no se lee). */
+.demo-nueva-era__sistema {
   --tinte: 11, 132, 248;
-  --disco: var(--demo-color-azul);
-  --sombra: rgba(11, 132, 248, 0.3);
+  --disco: #0b84f8;
+  --icono: #fff;
   position: relative;
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  padding: clamp(16px, 2vw, 22px);
-  border: 1px solid rgba(var(--tinte), 0.22);
-  border-radius: 16px;
+  flex-direction: column;
+  gap: 8px;
+  padding: clamp(20px, 2.4vw, 28px);
+  border: 1px solid rgba(var(--tinte), 0.3);
+  border-top: 4px solid var(--disco);
+  border-radius: 18px;
   background:
-    radial-gradient(120% 80% at 0% 0%, rgba(var(--tinte), 0.14), transparent 55%),
+    radial-gradient(120% 70% at 0% 0%, rgba(var(--tinte), 0.16), transparent 60%),
     var(--demo-color-superficie);
-  box-shadow: 0 10px 30px -18px rgba(var(--tinte), 0.45);
+  box-shadow: 0 16px 36px -22px rgba(var(--tinte), 0.6);
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.demo-nueva-era__pilar:hover {
+.demo-nueva-era__sistema:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 36px -18px rgba(var(--tinte), 0.6);
+  box-shadow: 0 22px 40px -22px rgba(var(--tinte), 0.75);
 }
 
-.demo-nueva-era__pilar--azul {
+/* Gestión: el celeste azulado de ComercioCity. */
+.demo-nueva-era__sistema--gestion {
   --tinte: 11, 132, 248;
   --disco: #0b84f8;
-  --sombra: rgba(11, 132, 248, 0.32);
+  --icono: #fff;
 }
 
-.demo-nueva-era__pilar--violeta {
-  --tinte: 58, 49, 252;
-  --disco: #3a31fc;
-  --sombra: rgba(58, 49, 252, 0.32);
+/* E-commerce: amarillo. */
+.demo-nueva-era__sistema--ecommerce {
+  --tinte: 245, 179, 1;
+  --disco: #f5b301;
+  --icono: #3a2a00;
 }
 
-/* El naranja de marca: una sola tarjeta de las cuatro. No repetirlo. */
-.demo-nueva-era__pilar--naranja {
+/* Agentes: el naranja de la marca. */
+.demo-nueva-era__sistema--agentes {
   --tinte: 250, 126, 6;
   --disco: #fa7e06;
-  --sombra: rgba(250, 126, 6, 0.32);
+  --icono: #fff;
 }
 
-.demo-nueva-era__pilar--marca {
-  --tinte: 34, 90, 250;
-  --disco: var(--demo-gradient-marca);
-  --sombra: rgba(34, 90, 250, 0.32);
-}
-
-.demo-nueva-era__pilar-disco {
-  flex: 0 0 auto;
+.demo-nueva-era__sistema-disco {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 6px;
+  border-radius: 14px;
   background: var(--disco);
-  color: #fff;
-  font-size: 1.25rem;
-  box-shadow: 0 8px 18px -6px var(--sombra);
+  color: var(--icono);
+  font-size: 1.35rem;
+  box-shadow: 0 10px 20px -8px rgba(var(--tinte), 0.7);
 }
 
-.demo-nueva-era__pilar-cuerpo {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-
-.demo-nueva-era__pilar-titulo {
-  font-size: clamp(1.02rem, 1.4vw, 1.12rem);
+.demo-nueva-era__sistema-rotulo {
+  font-size: 0.78rem;
   font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  color: var(--demo-color-texto);
-}
-
-.demo-nueva-era__pilar-texto {
-  font-size: clamp(0.95rem, 1.3vw, 1.02rem);
-  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--demo-color-texto-suave);
 }
 
-@media (max-width: 767.98px) {
-  .demo-nueva-era__grupo + .demo-nueva-era__grupo {
-    margin-top: clamp(40px, 7vh, 80px);
-    margin-top: clamp(40px, 7dvh, 80px);
-  }
-
-  .demo-nueva-era__pilares {
-    margin-top: clamp(20px, 3vw, 32px);
-  }
+.demo-nueva-era__sistema-titulo {
+  margin: 0;
+  font-size: clamp(1.25rem, 1.9vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: var(--demo-color-texto);
 }
 
-/* Tablet y para arriba: dos por fila. Cuatro en una fila quedan angostas y el texto de la
-   tercera (el más largo) se vuelve una columna. */
-@media (min-width: 768px) {
-  .demo-nueva-era__pilares {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.demo-nueva-era__sistema-texto {
+  margin: 0;
+  font-size: clamp(0.97rem, 1.3vw, 1.04rem);
+  line-height: 1.55;
+  color: var(--demo-color-texto-suave);
+}
 
-  .demo-nueva-era__pilar {
-    gap: 16px;
-    padding: clamp(18px, 2.2vw, 26px);
+.demo-nueva-era__agentes {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.demo-nueva-era__agentes li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: clamp(0.94rem, 1.25vw, 1rem);
+  line-height: 1.45;
+  color: var(--demo-color-texto-suave);
+}
+
+.demo-nueva-era__agentes strong {
+  color: var(--demo-color-texto);
+}
+
+.demo-nueva-era__agentes .bi {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--disco);
+  font-size: 1.1rem;
+}
+
+/* Tablet y para arriba: las tres en una fila. */
+@media (min-width: 900px) {
+  .demo-nueva-era__sistemas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .demo-nueva-era__tipeo--cursor::after {
-    animation: none;
-    opacity: 0;
-  }
-
-  .demo-nueva-era__pilar {
+  .demo-nueva-era__sistema {
     transition: none;
   }
 }

@@ -80,6 +80,24 @@ export default function crear_motor(pasos, opciones) {
     },
 
     /**
+     * Aplica de una, sin esperas, los primeros `cantidad` pasos, antes de arrancar. Es para
+     * las escenas que tienen que ENTRAR con algo ya pasado (pedido de Lucas, 26/10/2026: "ni
+     * bien entra, el audio ya se envió"). No hace nada si la escena ya empezó a correr.
+     *
+     * @param {number} cantidad
+     */
+    adelantar(cantidad) {
+      if (corriendo || terminado || destruido || indice > 0) {
+        return
+      }
+      while (indice < Math.min(cantidad, pasos.length)) {
+        opciones.aplicar(pasos[indice], true)
+        indice++
+      }
+      progresar()
+    },
+
+    /**
      * Aplica de una todos los pasos que faltan, sin esperas (movimiento reducido): la escena
      * queda en su estado final y quieta.
      */

@@ -33,6 +33,20 @@ export function logo_cliente(id) {
  * negocios reales unas 48 (sin DEMO, el registro de Lucas, Scrap Free, un promovido sin
  * instalar y un duplicado). Los que operan y no tienen logo cargado en ningún lado (Rosmar,
  * Feitoamao, Electro Lacarra, Kas, Jorge Bello) no están acá: no se fuerza un logo malo.
+ *
+ * Vuelto a medir el 26/10/2026 (`claude/query?model=client`, 53 filas, todas `is_active`):
+ * son clientes actuales 50 (afuera DEMO, el registro de Lucas y Scrap Free; Kas y Jorge Bello
+ * no tienen ClientApi pero operan en la base compartida del shared, y Distribuidora Pets opera
+ * con base y tienda propias). Los que faltaban se buscaron en la imagen del usuario dueño
+ * (`users.image_url`) y en `online_configurations.logo_url` de la base de cada uno, por SSH de
+ * solo lectura. Entraron siete (tanda del 26/10, al final de la lista: seis a la pared y
+ * Ananda fuera de ella); Rosmar y Feitoamao ya tienen logo cargado. Siguen afuera, sin
+ * logo usable:
+ *   · Electro Lacarra: su imagen apunta al storage de la demo y da 404.
+ *   · Kas (Kablan): sin imagen, y su dominio kasaberturas.com ya no resuelve.
+ *   · Jorge Bello: lo cargado es la foto de una tarjeta con teléfono y mail, no un logo.
+ * Bad Girls, Chevrocar, MZA Group y Renacer Joyas siguen en la pared pero ya no figuran en
+ * `clients` del admin: se dejan hasta que Lucas decida.
  */
 export const clientes = [
   { id: 'golonorte', nombre: 'Distribuidora Golonorte' },
@@ -86,6 +100,16 @@ export const clientes = [
   { id: 'quino2', nombre: 'Grupo Quino2' },
   { id: 'pack-descartables', nombre: 'Pack Descartables' },
   { id: 'candyguay', nombre: 'Candyguay' },
+  // Tanda del 26/10/2026 (imagen del dueño en la base de cada cliente; ver la cabecera).
+  { id: 'doblep-herrajes', nombre: 'DobleP Herrajes' },
+  { id: 'mayorista-de-pesca', nombre: 'Mayorista de Pesca' },
+  { id: 'los-pena', nombre: 'Distribuidora Los Peña' },
+  { id: 'distribuidora-pets', nombre: 'Distribuidora Pets' },
+  { id: 'rosmar', nombre: 'Distribuidora Ros-Mar' },
+  { id: 'feitoamao', nombre: 'Feito a Mão' },
+  // Cliente actual, pero el logo es de un club cannábico ("420 Club & Breeding"): fuera de la
+  // pared hasta que Lucas lo decida, porque la página es destino de los anuncios de Meta.
+  { id: 'ananda', nombre: 'Ananda', en_la_pared: false },
 ]
 
 /**
@@ -112,8 +136,23 @@ export const logos_clientes = clientes
  *   · Unicas pasó a ser tienda ComercioCity (instalada el 21/9/2026).
  *   · Entran La Cava de Don Juan (20/9) y DobleP Herrajes (22/9), las dos tienda ComercioCity.
  *
- * `activa: false` saca una tienda de la página sin borrar su entrada. `logo: null` dibuja
- * la inicial del nombre en lugar de la imagen (DobleP no tiene logo cargado todavía).
+ * Vueltas a verificar el 26/10/2026, las 17 de arriba más las nuevas: HTTP 200 + plataforma
+ * leída del HTML; en las nuestras, además, la tienda-api del `config.js` (o del bundle)
+ * devolviendo artículos en `/api/articles/featured-last-uploads/{commerce_id}`, y las cuatro
+ * nuevas miradas en el navegador con el catálogo cargado. Ninguna está caída.
+ *   · Entran cuatro tiendas ComercioCity que no estaban en el módulo de ecommerce del admin
+ *     (las del VPS y la de Pets, en el shared): Masquito, Mayorista de Pesca, Los Peña y
+ *     Distribuidora Pets.
+ *   · Entra HT5 (ht5.com.ar, Tienda Nube; el admin la marca `tiene_tienda_nube`).
+ *   · DobleP ya tiene logo (el del dueño): se le saca `sin_logo`.
+ *   · Ojo con la etiqueta Tienda Nube: sincronizan por la integración (TN_USER_ID en el
+ *     `.env` de su empresa-api) solo Trama, 3DTisk y 2R. Golden Breeze, Innovate y HT5 son
+ *     tiendas de Tienda Nube de clientes actuales, pero sin la integración medida.
+ *   · Afuera: Kas (kasaberturas.com ya no resuelve), y SecurePoint y El Kiosco Verde, que el
+ *     admin marca con ecommerce pero no tienen tienda publicada que se haya encontrado.
+ *
+ * `activa: false` saca una tienda de la página sin borrar su entrada. `sin_logo: true` dibuja
+ * la inicial del nombre en lugar de la imagen (hoy no lo usa ninguna).
  */
 export const clientes_ecommerce = [
   { id: 'ferretotal', nombre: 'Ferretotal', rubro: 'Ferretería', url: 'https://ferretotalmatheu.com.ar/', plataforma: 'comerciocity' },
@@ -129,10 +168,16 @@ export const clientes_ecommerce = [
   { id: 'quino2', nombre: 'Quino2', rubro: 'Distribuidora', url: 'https://quino2.com.ar/', plataforma: 'comerciocity' },
   { id: 'unicas', nombre: 'Unicas', rubro: 'Productos capilares', url: 'https://unicas.com.ar/', plataforma: 'comerciocity' },
   { id: 'la-cava-de-don-juan', nombre: 'La Cava de Don Juan', rubro: 'Vinoteca', url: 'https://lacavadedonjuan.com.ar/', plataforma: 'comerciocity' },
-  { id: 'doblep-herrajes', nombre: 'DobleP Herrajes', rubro: 'Herrajes', url: 'https://doblepherrajes.com.ar/', plataforma: 'comerciocity', sin_logo: true },
+  { id: 'doblep-herrajes', nombre: 'DobleP Herrajes', rubro: 'Herrajes', url: 'https://doblepherrajes.com.ar/', plataforma: 'comerciocity' },
   { id: 'golden-breeze', nombre: 'Golden Breeze', rubro: 'Mascotas', url: 'https://goldenbreeze.mitiendanube.com/', plataforma: 'tiendanube' },
   { id: 'innovate', nombre: 'Innovate Materiales', rubro: 'Materiales de construcción', url: 'https://www.innovatemateriales.com.ar/', plataforma: 'tiendanube' },
   { id: '3dtisk', nombre: '3DTisk', rubro: 'Impresión 3D', url: 'https://3dtisk.com.ar/', plataforma: 'tiendanube' },
+  // Tanda del 26/10/2026.
+  { id: 'masquito', nombre: 'Masquito', rubro: 'Herramientas', url: 'https://masquitoreparaciones.com.ar/', plataforma: 'comerciocity' },
+  { id: 'mayorista-de-pesca', nombre: 'Mayorista de Pesca', rubro: 'Pesca y camping', url: 'https://mayoristadepesca.com.ar/', plataforma: 'comerciocity' },
+  { id: 'los-pena', nombre: 'Los Peña', rubro: 'Distribuidora de alimentos', url: 'https://lospena.com.ar/', plataforma: 'comerciocity' },
+  { id: 'distribuidora-pets', nombre: 'Distribuidora Pets', rubro: 'Juguetería mayorista', url: 'https://distribuidorapets.com.ar/', plataforma: 'comerciocity' },
+  { id: 'ht5', nombre: 'HT5', rubro: 'Tote bags personalizadas', url: 'https://ht5.com.ar/', plataforma: 'tiendanube' },
 ].map((cliente) => ({
   ...cliente,
   logo: cliente.sin_logo ? null : logo_cliente(cliente.id),

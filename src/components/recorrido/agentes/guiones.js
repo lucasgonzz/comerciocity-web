@@ -30,6 +30,8 @@ const CHAT_ASISTENTE = {
     { tipo: 'chip', texto: 'Jueves' },
     {
       tipo: 'audio',
+      /* La escena entra con este audio ya enviado y transcripto (Lucas, 26/10/2026). */
+      ya_enviado: true,
       lado: 'saliente',
       duracion: '0:06',
       hora: '18:42',
@@ -78,6 +80,8 @@ const CHAT_AGENTE = {
     { tipo: 'chip', texto: 'Hoy' },
     {
       tipo: 'texto',
+      /* Entra ya enviada: la escena arranca con la pregunta del cliente a la vista. */
+      ya_enviado: true,
       lado: 'saliente',
       hora: '20:31',
       texto: 'Hola! Busco pintura para el interior de mi casa, algún color claro. ¿Qué me recomendás?',
@@ -153,10 +157,12 @@ const CHAT_IA = {
   pasos: [
     {
       tipo: 'dictado',
+      /* Entra ya enviado (26/10/2026): la escena arranca con ChatGPT trabajando. */
+      ya_enviado: true,
       texto:
         'Analizá todas mis ventas del último año y buscá en internet qué se viene en la zona el mes que viene. Quiero saber qué me conviene comprar y qué promociones armar.',
     },
-    { tipo: 'pensando', texto: 'Pensando', ms: 1100 },
+    { tipo: 'pensando', texto: 'Pensando', ms: 500 },
     {
       tipo: 'herramienta',
       fuente: 'comerciocity',
@@ -181,7 +187,7 @@ const CHAT_IA = {
       accion: 'Buscó en la web: pronóstico extendido',
       resultado: 'Calor anticipado: máximas de 30 °C esas semanas',
     },
-    { tipo: 'pensando', texto: 'Cruzando tu historial con lo que encontré', ms: 1400 },
+    { tipo: 'pensando', texto: 'Cruzando tu historial con lo que encontré', ms: 500 },
     {
       tipo: 'respuesta',
       bloques: [
@@ -189,41 +195,25 @@ const CHAT_IA = {
         {
           item: 'En octubre del año pasado la lata te vendió *+61 %* y el viernes de la fiesta te quedaste sin la de 473 ml: *3 días sin stock* en la semana más fuerte.',
         },
-        { item: 'En el *74 %* de los pedidos de kioscos que llevan fernet también va gaseosa cola.' },
         { item: 'La fiesta llena el valle dos fines de semana seguidos, y se viene calor.' },
         { titulo: 'Plan de acción' },
         { num: '1', item: 'Comprar *60 bultos* de lata 473 antes del jueves: con 18 no llegás al segundo finde.' },
         { num: '2', item: 'Combo *«Previa Oktoberfest»*: fernet 750 ml + 2 cola 2,25 L a *$18.900* (margen 27 %).' },
         { num: '3', item: 'Lata 473: *8 % off llevando 24 o más*.' },
         { num: '4', item: 'Te agendo el pedido al proveedor como tarea.' },
-      ],
-    },
-    {
-      tipo: 'escrito',
-      texto: 'Bien. El combo armalo con la cola de 1,5 que la de 2,25 la tengo justa. Y la oferta de la lata, desde 48.',
-    },
-    { tipo: 'pensando', texto: 'Recalculando', ms: 900 },
-    {
-      tipo: 'herramienta',
-      fuente: 'comerciocity',
-      accion: 'Revisó el stock de cola 1,5 L',
-      resultado: '312 unidades · alcanza para 3 semanas',
-    },
-    {
-      tipo: 'respuesta',
-      bloques: [
-        { item: 'Combo *«Previa Oktoberfest»*: fernet 750 ml + 2 cola 1,5 L a *$16.900*, margen *29 %*.' },
-        { item: 'Lata 473: *10 % off llevando 48 o más*. El margen queda en 21 %.' },
         { texto: '¿Lo publico?' },
       ],
     },
+    /* Hasta el 26/10/2026 acá había una vuelta más (el dueño ajustaba el combo a la cola de
+       1,5 L y la oferta a 48 u., y ChatGPT recalculaba). Se sacó para que la escena dure
+       ~15 s y no ~54: pedido de Lucas. */
     { tipo: 'escrito', texto: 'Dale, publicalo.' },
     {
       tipo: 'confirmar',
       titulo: 'ComercioCity · 3 cambios para confirmar',
       acciones: [
-        'Crear el combo «Previa Oktoberfest» a $16.900',
-        'Crear la oferta: lata 473 ml, 10 % off desde 48 u.',
+        'Crear el combo «Previa Oktoberfest» a $18.900',
+        'Crear la oferta: lata 473 ml, 8 % off desde 24 u.',
         'Agendar: pedir 60 bultos de lata, jueves 9:00',
       ],
     },

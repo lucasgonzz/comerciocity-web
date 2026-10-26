@@ -6,7 +6,9 @@
        sticky de los pines ancla contra este contenedor, cada sección encuentra su ancestro
        con scroll subiendo por el DOM, y el avance guiado escucha la rueda, el dedo y el
        teclado sobre este elemento (con `window` no se crea). -->
-  <main ref="scroller" class="sitio-scroller demo-scroll-guiado">
+  <!-- `demo-scroll-guiado` (el scroll-snap obligatorio) solo con SCROLL_GUIADO prendido: desde
+       el 26/10/2026 la página scrollea normal (ver config.js). -->
+  <main ref="scroller" class="sitio-scroller" :class="{ 'demo-scroll-guiado': SCROLL_GUIADO }">
     <div class="demo-experiencia-page">
       <!-- Se monta recién cuando el controlador de avance existe (ver mounted): las
            secciones preguntan "¿queda alguna más abajo?" al montarse y una respuesta dada sin
@@ -38,7 +40,7 @@ import AgendaDemoModal from '@/components/recorrido/AgendaDemoModal.vue'
 import crear_avance_guiado from '@/components/recorrido/avance-guiado'
 import { registrar_evento } from '@/analitica/meta-pixel'
 import { armar_url_whatsapp, obtener_atribucion, solicitar_referencia } from '@/analitica/atribucion-whatsapp'
-import { WHATSAPP_REFERENCIAS_URL } from '@/config'
+import { WHATSAPP_REFERENCIAS_URL, SCROLL_GUIADO } from '@/config'
 import '@/assets/scss/experiencia.scss'
 
 /**
@@ -95,6 +97,7 @@ export default {
   data() {
     return {
       CTA_URL,
+      SCROLL_GUIADO,
       listo: false,
       avance: null,
       cta_montado: false,
@@ -112,8 +115,10 @@ export default {
       .then((reference) => {
         if (reference && this.cta_montado) this.CTA_URL = armar_url_whatsapp(reference)
       })
+    /* Sin avance guiado, la rueda, el dedo y el teclado le llegan derechos al navegador, y
+       los chevrons de "siguiente sección" no se dibujan (`hay_siguiente()` da false). */
     const scroller = this.$refs.scroller
-    if (scroller) {
+    if (scroller && SCROLL_GUIADO) {
       this.avance = crear_avance_guiado(scroller)
     }
     this.listo = true
@@ -154,7 +159,7 @@ export default {
      * El botón se toma del evento y no de `document.activeElement`: Safari no enfoca un
      * <button> al hacerle clic, y el foco tiene que volver a él al cerrar.
      *
-     * @param {string} seccion hero, agentes_ia, implementacion, precio, cierre.
+     * @param {string} seccion hero, agentes_ia, precio, cierre.
      * @param {Event} [evento] El clic.
      * @returns {void}
      */

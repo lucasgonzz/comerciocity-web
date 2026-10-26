@@ -1,22 +1,30 @@
 <template>
-  <!-- El recorrido de la web pública. Es ScrollDolor.vue de la página de experiencia del
-       admin, con el orden que Lucas pidió el 4/10/2026 para unificar las dos páginas:
+  <!-- El recorrido de la web pública. Nació como ScrollDolor.vue de la página de experiencia
+       del admin (4/10/2026) y el 26/10/2026 Lucas lo reordenó así:
 
-         1. El video hero (reemplaza a la animación del procesador).
-         2. "Tu negocio funciona porque vos te acordás. / Y eso tiene un límite."
-         3. Los clientes: el número, la pared de logos y las tiendas.
-         4. "Bienvenido a la nueva era" con las cuatro tarjetas de la implementación.
-         5. Los agentes de IA: carrusel de tres escenas animadas (asistente, agente de ventas,
-            MCP). Reemplazó el 7/10/2026 al hero partido de la web vieja ("Profesionalizá tu
-            negocio"), con su misma forma de pantalla partida.
-         6. "No es un sistema de facturación. Es otra cosa."
-         7. "No te dejamos solo."
-         8. Las reseñas de Google.
-         9. Los testimonios en video, por negocio.
+         1. El video hero.
+         2. "Bienvenido a la nueva era": la migración y los tres sistemas (gestión, e-commerce
+            y agentes), cada uno en su tarjeta y con su color.
+         3. La inteligencia artificial como pilar, y la capacitación por videollamada.
+         4. Los agentes de IA: carrusel de tres escenas animadas (asistente, agente de ventas,
+            MCP), de 7 a 15 s cada una.
+         5. Los clientes: "No sos el primero en dar este paso", las categorías, la pared de
+            logos y las tiendas. Con el fondo vivo de la apertura que se sacó.
+         6. Las reseñas de Google.
+         7. Los testimonios en video, por negocio.
+         8. El precio.
+         9. El desarrollo a medida.
         10. El CTA: elegir día y hora de la demo (WhatsApp como segunda opción).
 
-       Salieron, por pedido explícito: la portada "Nada de esto es sobre el sistema", el cubo
-       y la tarjeta de los hitos ("De operar tu negocio a dirigirlo").
+       Salieron ese día, por pedido explícito: la apertura "Tu negocio funciona porque vos te
+       acordás. / Y eso tiene un límite.", "No es un sistema de facturación. Es otra cosa."
+       (SeccionPosicionamiento) y "No te dejamos solo" (SeccionImplementacion). Antes habían
+       salido la portada "Nada de esto es sobre el sistema", el cubo y la tarjeta de los hitos.
+       Todo está en el historial de git.
+
+       Y el scroll pasó a ser NORMAL (SCROLL_GUIADO en config.js): sin snap, sin "un gesto,
+       una sección" y sin pines que retienen la pantalla. El código del scroll guiado sigue
+       entero; prender la constante lo devuelve.
 
        Siempre en tema claro: el video del hero es claro y la página sigue su luz. La clase
        `demo-scroll-dolor` se conserva porque es el scope de las variables de color del tema
@@ -24,72 +32,30 @@
   <section ref="raiz" class="demo-scroll-dolor" :class="{ 'demo-scroll-dolor--claro': tema === 'claro' }">
     <hero-video :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
 
-    <fondo-seccion-sticky variante="apertura" :contenido_full_bleed="true" v-slot="{ progreso }">
-      <!-- `--espera` retiene la entrada hasta que la apertura SE VE: sin eso los ~2,4 s de
-           animación corren mientras el lead todavía mira el video, y al llegar el titular ya
-           está en su estado final. Sigue siendo el TIEMPO el que decide cuándo TERMINA (el
-           animationend del subtítulo); lo único que cambia es cuándo EMPIEZA. -->
-      <header
-        class="demo-scroll-dolor__apertura"
-        :class="{
-          'demo-scroll-dolor__apertura--espera': !apertura_vista,
-          'demo-scroll-dolor__apertura--carga': apertura_vista && !apertura_entrada_terminada,
-        }"
-      >
-        <h1 class="demo-scroll-dolor__apertura-titulo" :style="estilo_apertura(progreso, 0)">
-          {{ contenido.apertura.titulo }}
-        </h1>
-        <p class="demo-scroll-dolor__apertura-subtitulo" :style="estilo_apertura(progreso, 1)">
-          {{ contenido.apertura.subtitulo }}
-        </p>
-        <!-- "Qué es", con la palabra que el ferretero busca, y la diferencia en una línea
-             (informe del 5/10/2026, §9.2 y §9.3). Es el primer texto de la página que contesta
-             "¿qué me están vendiendo?", y es la bandera que ningún competidor de alta
-             inmediata puede decir. El `animationend` cuelga de ACÁ y no del subtítulo: es el
-             último renglón en entrar, y la clase --carga tiene que irse recién cuando terminó
-             todo (si se va antes, el que todavía está animando pega un salto). -->
-        <p
-          ref="apertura_cierre"
-          class="demo-scroll-dolor__apertura-cierre"
-          :style="estilo_apertura(progreso, 2)"
-          @animationend="on_entrada_apertura_terminada"
-        >
-          Sistema de gestión, tienda online y asistente por WhatsApp.
-          <strong>Te lo entregamos andando.</strong>
-        </p>
-      </header>
-    </fondo-seccion-sticky>
-
-    <!-- Suelta en el scroll, NO dentro de un fondo-seccion-sticky: trae su propio pin. Dos
-         sticky anidados se despegan en momentos distintos. -->
-    <seccion-clientes />
-
     <seccion-nueva-era />
+
+    <seccion-ia-nativa />
 
     <seccion-agentes-ia :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
 
-    <seccion-posicionamiento />
-
-    <seccion-implementacion :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
-
-    <!-- El precio, detrás del interruptor `VITE_MOSTRAR_PRECIO` (decisión D2 del plan del
-         13/10/2026, que toma Lucas). Apagado por defecto: el bloque existe, está verificado y
-         no se renderiza. Va acá, después de la implementación y antes de las reseñas: el
-         precio se lee distinto cuando ya se sabe qué incluye y antes de la prueba social. -->
-    <seccion-precio
-      v-if="mostrar_precio"
-      :cta_url="cta_url"
-      :emitir_evento="emitir_evento"
-      :abrir_agenda="abrir_agenda"
-    />
+    <!-- Suelta en el scroll, NO dentro de un fondo-seccion-sticky: trae su propio pin (que con
+         el scroll normal no se usa: la sección va en el flujo). -->
+    <seccion-clientes />
 
     <seccion-resenas />
 
     <seccion-testimonios :emitir_evento="emitir_evento" />
 
-    <!-- El cierre: el CTA, dentro del mismo fondo sticky que usaba el puente al formulario.
-         `boton_avance` apagado: es la última sección y el chevron no tendría a dónde ir. -->
-    <fondo-seccion-sticky variante="puente" :boton_avance="false" v-slot="{ progreso }">
+    <seccion-precio :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
+
+    <seccion-desarrollo-medida />
+
+    <!-- El cierre: el CTA. Con el scroll guiado va dentro del fondo sticky que usaba el puente
+         al formulario (`boton_avance` apagado: es la última sección). Con el scroll normal va
+         en el flujo con el mismo fondo y el CTA ya entrado: adentro del pin, el CTA solo
+         aparece cuando el borde de la sección llega al tope, y bajando a mano se veía una
+         pantalla vacía. -->
+    <fondo-seccion-sticky v-if="scroll_guiado" variante="puente" :boton_avance="false" v-slot="{ progreso }">
       <cta-demo
         :cta_url="cta_url"
         :progreso="progreso"
@@ -97,6 +63,16 @@
         :abrir_agenda="abrir_agenda"
       />
     </fondo-seccion-sticky>
+    <section v-else class="demo-scroll-dolor__cierre demo-fondo-seccion--puente">
+      <div class="demo-fondo-seccion__fondo demo-scroll-dolor__cierre-fondo" aria-hidden="true"></div>
+      <cta-demo
+        class="demo-scroll-dolor__cierre-cta"
+        :cta_url="cta_url"
+        :progreso="1"
+        :emitir_evento="emitir_evento"
+        :abrir_agenda="abrir_agenda"
+      />
+    </section>
   </section>
 </template>
 
@@ -105,44 +81,14 @@ import FondoSeccionSticky from './FondoSeccionSticky.vue'
 import HeroVideo from './HeroVideo.vue'
 import SeccionClientes from './SeccionClientes.vue'
 import SeccionNuevaEra from './SeccionNuevaEra.vue'
+import SeccionIaNativa from './SeccionIaNativa.vue'
 import SeccionAgentesIa from './SeccionAgentesIa.vue'
-import SeccionPosicionamiento from './SeccionPosicionamiento.vue'
-import SeccionImplementacion from './SeccionImplementacion.vue'
 import SeccionPrecio from './SeccionPrecio.vue'
+import SeccionDesarrolloMedida from './SeccionDesarrolloMedida.vue'
 import SeccionResenas from './SeccionResenas.vue'
 import SeccionTestimonios from './SeccionTestimonios.vue'
 import CtaDemo from './CtaDemo.vue'
-import { MOSTRAR_PRECIO } from '@/config'
-
-/**
- * Copy de la apertura, transcripto de contexto/demo_pagina.md §1 (versión dueño) del repo
- * claude-comerciocity. No parafrasear acá: cualquier cambio de texto se hace allá.
- */
-const CONTENIDO = {
-  apertura: {
-    titulo: 'Tu negocio funciona porque vos te acordás.',
-    subtitulo: 'Y eso tiene un límite.',
-  },
-}
-
-/* Tramos de la coreografía de la apertura, en unidades de progreso [0,1] de su sección:
-   la apertura no tiene entrada por scroll (entra con su animación de carga) y sale entre
-   SALIDA_INICIO y 1. Mismos números que la página de experiencia. */
-const SALIDA_INICIO = 0.72
-const DESFASE_PIEZA = 0.075
-const SALIDA_Y = -48
-/* La salida no llega a 0: un bloque que se va del todo deja un hueco en medio del recorrido. */
-const SALIDA_OPACIDAD = 0.35
-
-/**
- * La curva de toda la página: 1 - (1-t)³. Dos curvas distintas en la misma página se notan.
- *
- * @param {number} t
- * @returns {number}
- */
-function ease_out(t) {
-  return 1 - Math.pow(1 - t, 3)
-}
+import { SCROLL_GUIADO } from '@/config'
 
 export default {
   name: 'Recorrido',
@@ -152,10 +98,10 @@ export default {
     HeroVideo,
     SeccionClientes,
     SeccionNuevaEra,
+    SeccionIaNativa,
     SeccionAgentesIa,
-    SeccionPosicionamiento,
-    SeccionImplementacion,
     SeccionPrecio,
+    SeccionDesarrolloMedida,
     SeccionResenas,
     SeccionTestimonios,
     CtaDemo,
@@ -192,41 +138,9 @@ export default {
 
   data() {
     return {
-      /** true si el sistema operativo pide reduced-motion. Resuelto antes del primer render. */
-      reduced_motion: !!(
-        typeof window !== 'undefined' &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ),
-      /**
-       * false hasta que la entrada de carga de la apertura TERMINÓ de correr. Lo decide el
-       * TIEMPO (animationend), nunca el scroll: una condición de scroll acá dejaba la
-       * entrada a merced del primer píxel de scroll y el titular "simplemente aparecía".
-       */
-      apertura_entrada_terminada: false,
-      /** false hasta que la apertura entró al viewport por primera vez. */
-      apertura_vista: false,
+      scroll_guiado: SCROLL_GUIADO,
       observador_secciones: null,
-      observador_apertura: null,
     }
-  },
-
-  computed: {
-    /** @returns {object} */
-    contenido() {
-      return CONTENIDO
-    },
-
-    /**
-     * Interruptor del bloque de precio. Se resuelve en tiempo de build (Vite reemplaza la
-     * variable por su valor), así que no cambia en vivo: para prenderlo hay que buildear de
-     * nuevo con `VITE_MOSTRAR_PRECIO=1`.
-     *
-     * @returns {boolean}
-     */
-    mostrar_precio() {
-      return MOSTRAR_PRECIO
-    },
   },
 
   mounted() {
@@ -238,17 +152,12 @@ export default {
       this.observador_secciones.disconnect()
       this.observador_secciones = null
     }
-    if (this.observador_apertura) {
-      this.observador_apertura.disconnect()
-      this.observador_apertura = null
-    }
   },
 
   methods: {
     /**
-     * Reporta qué secciones vio el visitante (una vez por sección) y dispara la entrada de
-     * la apertura cuando entra en pantalla. Los componentes no se enteran: se observan sus
-     * nodos raíz desde afuera.
+     * Reporta qué secciones vio el visitante (una vez por sección). Los componentes no se
+     * enteran: se observan sus nodos raíz desde afuera.
      *
      * @returns {void}
      */
@@ -260,16 +169,14 @@ export default {
       const self = this
       const secciones = [
         ['.demo-hero-video', 'hero.video'],
-        ['.demo-clientes', 'clientes'],
         ['.demo-nueva-era', 'nueva_era'],
+        ['.demo-ia', 'ia'],
         ['.demo-agentes', 'agentes_ia'],
-        ['.demo-posicionamiento', 'posicionamiento'],
-        ['.demo-implementacion', 'implementacion'],
-        /* Solo existe si el bloque de precio está prendido; `querySelector` devuelve null y
-           el forEach de abajo lo saltea. */
-        ['.demo-precio', 'precio'],
+        ['.demo-clientes', 'clientes'],
         ['.demo-resenas', 'resenas'],
         ['.demo-testimonios', 'testimonios'],
+        ['.demo-precio', 'precio'],
+        ['.demo-medida', 'desarrollo_medida'],
         ['.demo-cta', 'cta'],
       ]
 
@@ -292,23 +199,6 @@ export default {
       )
 
       const raiz = self.$refs.raiz
-      const apertura = raiz && raiz.querySelector('.demo-scroll-dolor__apertura')
-      if (apertura) {
-        self.observador_apertura = new IntersectionObserver(
-          function (entradas) {
-            if (!entradas[entradas.length - 1].isIntersecting) {
-              return
-            }
-            self.observador_apertura.disconnect()
-            self.observador_apertura = null
-            self.apertura_vista = true
-            self.red_de_seguridad_apertura()
-          },
-          { threshold: 0.15 },
-        )
-        self.observador_apertura.observe(apertura)
-      }
-
       secciones.forEach(function (par) {
         const nodo = raiz && raiz.querySelector(par[0])
         if (!nodo) {
@@ -324,10 +214,9 @@ export default {
      * tapada por ella: lo que ocurra con la más chica de las dos.
      *
      * 🔴 El `threshold: 0.5` a secas, que es lo que había hasta el 13/10/2026, miente en las
-     * secciones altas. `.demo-clientes` mide 380vh (la pared de logos con su pin): su razón
-     * de intersección no puede pasar de 0,26 por más que ocupe la pantalla entera, así que
-     * nunca llegaba al umbral y NUNCA emitió su evento -- medido en 1366x768. Con el píxel
-     * conectado eso sería un `ViewContent` menos, en silencio y para siempre.
+     * secciones altas: la de clientes mide varias pantallas y su razón de intersección no
+     * llega nunca a 0,5 aunque ocupe la pantalla entera -- con el píxel conectado sería un
+     * `ViewContent` menos, en silencio y para siempre.
      *
      * @param {IntersectionObserverEntry} entrada
      * @returns {boolean}
@@ -340,72 +229,13 @@ export default {
       const referencia = Math.min(window.innerHeight || alto_seccion, alto_seccion)
       return entrada.intersectionRect.height / referencia >= 0.5
     },
-
-    /**
-     * Si la entrada de la apertura no llegó a existir como animación (reduced-motion), la da
-     * por terminada a mano; si no, la apertura quedaría clavada en su estado de carga.
-     *
-     * @returns {void}
-     */
-    red_de_seguridad_apertura() {
-      const self = this
-      this.$nextTick(function () {
-        const cierre = self.$refs.apertura_cierre
-        if (!cierre || !cierre.getAnimations || cierre.getAnimations().length === 0) {
-          self.apertura_entrada_terminada = true
-        }
-      })
-    },
-
-    /**
-     * @param {number} p
-     * @param {number} inicio
-     * @param {number} fin
-     * @returns {number}
-     */
-    normalizar(p, inicio, fin) {
-      if (p <= inicio) {
-        return 0
-      }
-      if (p >= fin) {
-        return 1
-      }
-      return (p - inicio) / (fin - inicio)
-    },
-
-    /**
-     * Estilo de la apertura: sin tramo de entrada (la hace la animación de carga), con la
-     * salida que al subir se recorre al revés y hace que el titular "vuelva a entrar".
-     *
-     * @param {number} p
-     * @param {number} orden 0 titular, 1 subtítulo, 2 la línea de "qué es".
-     * @returns {object}
-     */
-    estilo_apertura(p, orden) {
-      if (this.reduced_motion) {
-        return {}
-      }
-
-      const desfase = (orden || 0) * DESFASE_PIEZA
-      const salida = ease_out(this.normalizar(p, SALIDA_INICIO + desfase, 1))
-
-      return {
-        opacity: String(1 - salida * (1 - SALIDA_OPACIDAD)),
-        transform: 'translateY(' + salida * SALIDA_Y + 'px)',
-      }
-    },
-
-    /** @returns {void} */
-    on_entrada_apertura_terminada() {
-      this.apertura_entrada_terminada = true
-    },
   },
 }
 </script>
 
 <style scoped>
-/* Sin gap entre secciones: cada una trae su propio fondo dentro de su pin, y cualquier
-   aire acá quedaría sin fondo detrás. */
+/* Sin gap entre secciones: cada una trae su propio fondo, y cualquier aire acá quedaría sin
+   fondo detrás. */
 .demo-scroll-dolor {
   max-width: none;
   margin: 0;
@@ -415,105 +245,28 @@ export default {
   gap: 0;
 }
 
-.demo-scroll-dolor__apertura {
+/* El cierre con scroll normal: una pantalla, el fondo "puente" de experiencia.scss detrás y
+   el CTA centrado encima. */
+.demo-scroll-dolor__cierre {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  text-align: center;
-  gap: clamp(24px, 4vh, 48px);
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(56px, 10vh, 110px) clamp(16px, 4vw, 48px) clamp(24px, 4vh, 40px);
+  overflow: hidden;
 }
 
-.demo-scroll-dolor__apertura-titulo {
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  max-width: 780px;
-  margin: 0;
-  padding: 0 20px;
-  will-change: opacity, transform;
+.demo-scroll-dolor__cierre-fondo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-.demo-scroll-dolor__apertura-subtitulo {
-  font-size: clamp(1.1rem, 2.4vw, 1.4rem);
-  color: var(--demo-color-texto-suave);
-  margin: 0;
-  max-width: 620px;
-  padding: 0 20px;
-  will-change: opacity, transform;
-}
-
-/* "Sistema de gestión, tienda online y asistente por WhatsApp. Te lo entregamos andando."
-   Un escalón por debajo del subtítulo en tamaño: el titular sigue mandando, esta línea
-   informa. El <strong> es la bandera del posicionamiento y va con el azul de marca. */
-.demo-scroll-dolor__apertura-cierre {
-  font-size: clamp(1rem, 2vw, 1.2rem);
-  color: var(--demo-color-texto-suave);
-  margin: 0;
-  max-width: 660px;
-  padding: 0 20px;
-  line-height: 1.45;
-  text-wrap: balance;
-  will-change: opacity, transform;
-}
-
-.demo-scroll-dolor__apertura-cierre strong {
-  color: var(--demo-color-texto);
-  font-weight: 700;
-}
-
-/* La animación de carga de la apertura: zoom del titular (2 s) y rebote del subtítulo
-   (0,9 s, a 1,5 s del arranque). El subtítulo es el último en terminar, y de su
-   animationend cuelga el retiro de la clase --carga. */
-.demo-scroll-dolor__apertura--carga .demo-scroll-dolor__apertura-titulo {
-  animation: demo-apertura-zoom 2s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.demo-scroll-dolor__apertura--carga .demo-scroll-dolor__apertura-subtitulo {
-  animation: demo-apertura-bounce 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.5s both;
-}
-
-/* Medio segundo después del subtítulo, y es la última: de su animationend cuelga el retiro
-   de la clase --carga. */
-.demo-scroll-dolor__apertura--carga .demo-scroll-dolor__apertura-cierre {
-  animation: demo-apertura-bounce 0.9s cubic-bezier(0.16, 1, 0.3, 1) 2s both;
-}
-
-/* Retenida hasta que se ve. El !important no es prolijidad: los tres elementos llevan un
-   estilo inline por progreso, y un inline le gana a cualquier selector. */
-.demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-titulo,
-.demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-subtitulo,
-.demo-scroll-dolor__apertura--espera .demo-scroll-dolor__apertura-cierre {
-  opacity: 0 !important;
-}
-
-@media (max-width: 767.98px) {
-  .demo-scroll-dolor__apertura {
-    gap: clamp(30px, 5vh, 52px);
-  }
-
-  .demo-scroll-dolor__apertura-titulo {
-    font-size: clamp(2.15rem, 9.8vw, 2.55rem);
-  }
-
-  .demo-scroll-dolor__apertura-subtitulo {
-    font-size: clamp(1.2rem, 5vw, 1.4rem);
-  }
-
-  .demo-scroll-dolor__apertura-cierre {
-    font-size: clamp(1rem, 4.2vw, 1.15rem);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .demo-scroll-dolor__apertura-titulo,
-  .demo-scroll-dolor__apertura-subtitulo,
-  .demo-scroll-dolor__apertura-cierre {
-    animation: none;
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
+.demo-scroll-dolor__cierre-cta {
+  position: relative;
+  width: 100%;
+  max-width: 1080px;
 }
 </style>

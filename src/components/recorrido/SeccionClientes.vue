@@ -2,7 +2,8 @@
   <section
     ref="seccion"
     class="demo-clientes"
-    :style="movimiento_reducido ? null : { minHeight: recorrido_vh + 'vh' }"
+    :class="{ 'demo-clientes--estatica': estatica }"
+    :style="estatica ? null : { minHeight: recorrido_vh + 'vh' }"
   >
     <!-- 🔴 Punto de enganche del avance guiado, y NO es decorativo: sin esto el gesto
          deposita al lead en el BORDE de la sección, y ahí no hay nada que ver. Medido en
@@ -19,7 +20,7 @@
          (ver el <style>) porque el de FondoSeccionSticky es scoped y su atributo data-v-*
          no llega hasta acá -- el cubo hace exactamente lo mismo, por el mismo motivo. -->
     <div
-      v-if="!movimiento_reducido"
+      v-if="!estatica"
       class="demo-fondo-seccion__snap demo-clientes__ancla"
       aria-hidden="true"
     ></div>
@@ -27,20 +28,25 @@
     <div class="demo-clientes__pin">
       <div class="demo-clientes__lavado" aria-hidden="true"></div>
 
-      <!-- Momento 1: el número. Es lo único que hay en pantalla, a propósito. -->
+      <!-- Momento 1: quiénes ya trabajan así. Hasta el 26/10/2026 era el número ("Más de 50
+           negocios ya trabajan así"); Lucas pidió sacarlo ("son pocos negocios, prefiero que
+           no diga el número") y nombrar las categorías principales. -->
       <div
         class="demo-clientes__momento demo-clientes__momento--numero"
         :class="{ 'demo-clientes__momento--apagado': apagado(0) }"
         :style="estilo_momento(0)"
       >
-        <p class="demo-clientes__antetitulo">No sos el primero en dar este paso.</p>
-        <p class="demo-clientes__titulo">
-          <span class="demo-clientes__titulo-cuerpo">{{ cantidad }} negocios</span>
-          <span class="demo-clientes__titulo-remate">ya trabajan así.</span>
-        </p>
-        <p class="demo-clientes__pie">
-          Ferreterías, distribuidoras, corralones, jugueterías, kioscos, joyerías.
-        </p>
+        <h2 class="demo-clientes__titulo">
+          <span class="demo-clientes__titulo-cuerpo">No sos el primero</span>
+          <span class="demo-clientes__titulo-remate">en dar este paso.</span>
+        </h2>
+        <p class="demo-clientes__pie">Ya trabajan así negocios como el tuyo:</p>
+        <ul class="demo-clientes__rubros">
+          <li v-for="rubro in rubros" :key="rubro.nombre" class="demo-clientes__rubro">
+            <i class="bi" :class="rubro.icono" aria-hidden="true"></i>
+            <span>{{ rubro.nombre }}</span>
+          </li>
+        </ul>
       </div>
 
       <!-- Momento 2: la pared de logos, que se arma con el scroll. -->
@@ -74,9 +80,9 @@
         :style="estilo_momento(2)"
       >
         <p class="demo-clientes__rotulo">Y no solo en el mostrador</p>
-        <p class="demo-clientes__subtitulo">
-          {{ tiendas.length }} de ellos también venden por internet.
-        </p>
+        <!-- Sin el número desde el 26/10/2026 ("17 de ellos..."), mismo criterio que Lucas
+             pidió para la cantidad de negocios: con cifras chicas, mejor no decirla. -->
+        <p class="demo-clientes__subtitulo">Muchos también venden por internet.</p>
         <!-- Verdadero para las DOS plataformas (11/9/2026): desde ese día la lista trae
              también las tiendas de Tienda Nube conectadas al sistema, y cada tarjeta dice
              cuál es cuál con su etiqueta. Hasta entonces decía "su propia tienda, con su
@@ -122,6 +128,7 @@
 
 <script>
 import { logos_clientes, tiendas_de_clientes } from './clientes'
+import { SCROLL_GUIADO } from '@/config'
 
 /**
  * Cómo se llama cada plataforma en la etiqueta de la tarjeta. La clave es el campo
@@ -152,6 +159,19 @@ const ETIQUETAS_PLATAFORMA = {
  * minuto y no de una tarde.
  */
 const CANTIDAD = 'Más de 50'
+
+/**
+ * Las categorías principales de clientes, en el orden que las dictó Lucas (26/10/2026). Es lo
+ * que reemplazó al número (`CANTIDAD`, que queda sin usar en la página) en el primer momento.
+ */
+const RUBROS = [
+  { nombre: 'Ferreterías', icono: 'bi-tools' },
+  { nombre: 'Distribuidoras', icono: 'bi-truck' },
+  { nombre: 'Corralones', icono: 'bi-bricks' },
+  { nombre: 'Jugueterías', icono: 'bi-puzzle' },
+  { nombre: 'Supermercados', icono: 'bi-cart3' },
+  { nombre: 'Bazares', icono: 'bi-cup-hot' },
+]
 
 /**
  * Ventanas de cada momento sobre el progreso [0,1] de la sección.
@@ -272,6 +292,11 @@ export default {
         typeof window !== 'undefined' &&
         typeof window.matchMedia === 'function' &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      /** Con scroll libre: true cuando la pared / las tiendas ya entraron a la pantalla. */
+      pared_vista: false,
+      tiendas_vista: false,
+      /** IntersectionObserver de la entrada de las dos listas con scroll libre. */
+      observador_listas: null,
     }
   },
 
@@ -283,6 +308,24 @@ export default {
     /** @returns {string} */
     cantidad() {
       return CANTIDAD
+    },
+
+    /** @returns {Array} */
+    rubros() {
+      return RUBROS
+    },
+
+    /**
+     * true cuando la sección va en el flujo normal, sin pin ni momentos atados al scroll:
+     * con movimiento reducido (como siempre) y, desde el 26/10/2026, también con el scroll
+     * libre (`SCROLL_GUIADO` apagado en config.js). Lucas pidió "un scroll normal", y un pin
+     * de 380vh en el que la pantalla queda quieta mientras el dedo baja no lo es. La versión
+     * pinneada sigue entera en este archivo y vuelve sola si se prende `SCROLL_GUIADO`.
+     *
+     * @returns {boolean}
+     */
+    estatica() {
+      return this.movimiento_reducido || !SCROLL_GUIADO
     },
 
     /** @returns {Array} */
@@ -303,6 +346,9 @@ export default {
       if (this.movimiento_reducido) {
         return null
       }
+      if (this.estatica) {
+        return { '--p': this.pared_vista ? 1 : 0 }
+      }
 
       return { '--p': rampa(this.progreso, PARED[0], PARED[1]).toFixed(4) }
     },
@@ -315,6 +361,9 @@ export default {
       if (this.movimiento_reducido) {
         return null
       }
+      if (this.estatica) {
+        return { '--p': this.tiendas_vista ? 1 : 0 }
+      }
 
       return { '--p': rampa(this.progreso, TIENDAS[0], TIENDAS[1]).toFixed(4) }
     },
@@ -325,6 +374,11 @@ export default {
     this.escalonar(this.$refs.tiendas)
 
     if (this.movimiento_reducido) {
+      return
+    }
+
+    if (this.estatica) {
+      this.observar_listas()
       return
     }
 
@@ -354,6 +408,11 @@ export default {
   beforeUnmount() {
     this.cancelar_bucle()
 
+    if (this.observador_listas) {
+      this.observador_listas.disconnect()
+      this.observador_listas = null
+    }
+
     if (this.observador) {
       this.observador.disconnect()
       this.observador = null
@@ -369,6 +428,43 @@ export default {
   },
 
   methods: {
+    /**
+     * Con scroll libre, cada lista entra UNA vez, escalonada, cuando asoma en la pantalla: la
+     * demora de cada casilla es la misma `--d` del modo pinneado, usada como transition-delay.
+     *
+     * @returns {void}
+     */
+    observar_listas() {
+      if (typeof IntersectionObserver !== 'function') {
+        this.pared_vista = true
+        this.tiendas_vista = true
+        return
+      }
+      const self = this
+      this.observador_listas = new IntersectionObserver(
+        function (entradas) {
+          entradas.forEach(function (entrada) {
+            if (!entrada.isIntersecting) {
+              return
+            }
+            if (entrada.target === self.$refs.pared) {
+              self.pared_vista = true
+            } else if (entrada.target === self.$refs.tiendas) {
+              self.tiendas_vista = true
+            }
+            self.observador_listas.unobserve(entrada.target)
+          })
+        },
+        { threshold: 0.15 },
+      )
+      if (this.$refs.pared) {
+        this.observador_listas.observe(this.$refs.pared)
+      }
+      if (this.$refs.tiendas) {
+        this.observador_listas.observe(this.$refs.tiendas)
+      }
+    },
+
     /**
      * El texto de la etiqueta de plataforma de una tienda, o '' si la plataforma no está
      * en ETIQUETAS_PLATAFORMA.
@@ -387,7 +483,7 @@ export default {
      * @returns {Object|null} null bajo prefers-reduced-motion (el CSS ya deja todo visible).
      */
     estilo_momento(indice) {
-      if (this.movimiento_reducido) {
+      if (this.estatica) {
         return null
       }
 
@@ -423,7 +519,7 @@ export default {
      * @returns {boolean}
      */
     apagado(indice) {
-      return !this.movimiento_reducido && this.opacidad(indice) < 0.02
+      return !this.estatica && this.opacidad(indice) < 0.02
     },
 
     /**
@@ -1013,6 +1109,87 @@ export default {
     opacity: 1;
     transform: none;
   }
+}
+
+/* 🔴 Estado ESTÁTICO por scroll libre (26/10/2026): el mismo flujo normal que el de
+   movimiento reducido de arriba, pero con las listas entrando escalonadas por transición
+   cuando asoman (ver observar_listas()). Y con el fondo de la apertura que se sacó ("Tu
+   negocio funciona porque vos te acordás"): Lucas pidió ese fondo acá, "así tiene colores
+   más vivos". Es el degradé de `.demo-fondo-seccion--apertura` (experiencia.scss), con las
+   manchas estiradas en alto porque esta sección mide varias pantallas. */
+.demo-clientes--estatica {
+  background-color: var(--demo-color-fondo);
+  background-image:
+    radial-gradient(120% 55% at 20% 6%, rgba(11, 132, 248, 0.35), transparent 60%),
+    radial-gradient(100% 50% at 85% 94%, rgba(58, 49, 252, 0.3), transparent 55%);
+}
+
+.demo-clientes--estatica .demo-clientes__pin {
+  position: static;
+  display: block;
+  height: auto;
+  overflow: visible;
+}
+
+.demo-clientes--estatica .demo-clientes__lavado {
+  display: none;
+}
+
+.demo-clientes--estatica .demo-clientes__momento {
+  position: static;
+  inset: auto;
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  will-change: auto;
+  padding: clamp(24px, 3.5vw, 44px) clamp(16px, 4vw, 48px);
+}
+
+.demo-clientes--estatica .demo-clientes__momento--numero {
+  padding-top: clamp(72px, 12vh, 130px);
+}
+
+.demo-clientes--estatica .demo-clientes__momento--tiendas {
+  padding-bottom: clamp(72px, 12vh, 130px);
+}
+
+.demo-clientes--estatica .demo-clientes__casilla,
+.demo-clientes--estatica .demo-clientes__tienda {
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--d, 0) * 1.2s);
+}
+
+/* Las categorías (26/10/2026): fichas blancas con el ícono en azul, centradas como la pared. */
+.demo-clientes__rubros {
+  list-style: none;
+  margin: clamp(4px, 0.8vw, 10px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(8px, 1.2vw, 12px);
+  max-width: 760px;
+}
+
+.demo-clientes__rubro {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(11, 132, 248, 0.22);
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 22px -16px rgba(11, 132, 248, 0.6);
+  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+  font-weight: 600;
+  color: #1c2333;
+}
+
+.demo-clientes__rubro .bi {
+  color: var(--demo-color-azul);
+  font-size: 1.1em;
 }
 
 /* El marcador de enganche (ver el comentario del template). Alto cero y sin pintar nada:

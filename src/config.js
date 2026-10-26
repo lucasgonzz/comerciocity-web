@@ -9,20 +9,6 @@
 import { unir_url } from './analitica/agenda-demo'
 
 /**
- * Lee una bandera del entorno con criterio amplio: lo que no es un sí explícito es `false`.
- * Una variable ausente llega como `undefined` y una vacía como `''`: las dos apagan.
- *
- * @param {*} valor
- * @returns {boolean}
- */
-function bandera(valor) {
-  const texto = String(valor === undefined || valor === null ? '' : valor)
-    .trim()
-    .toLowerCase()
-  return texto === '1' || texto === 'true' || texto === 'si' || texto === 'sí' || texto === 'on'
-}
-
-/**
  * Id del píxel de Meta (solo dígitos, lo da Events Manager). VACÍO a propósito en el molde:
  * mientras no tenga valor, la web no carga `fbevents.js` ni define `fbq` -- cero pedidos a
  * Facebook y cero cookies. Lucas lo pega el día que la campaña arranca.
@@ -48,9 +34,19 @@ export const AGENDA_TURNOS_URL = unir_url(ADMIN_API_BASE, '/landing/agenda/turno
 /** POST: la reserva de la demo (contrato §3 del plan). */
 export const AGENDA_RESERVAS_URL = unir_url(ADMIN_API_BASE, '/landing/agenda/reservas')
 
+/* `MOSTRAR_PRECIO` (el interruptor `VITE_MOSTRAR_PRECIO` del bloque de precio) se retiró el
+   26/10/2026: Lucas decidió publicar el precio (era la decisión D2 del plan del 13/10/2026) y
+   la sección se renderiza siempre. */
+
 /**
- * Interruptor del bloque de precio (decisión D2 del plan del 13/10/2026: el informe del 5/10
- * recomienda publicarlo, pero lo decide Lucas). APAGADO por defecto: el bloque está
- * construido y no se renderiza hasta que la variable diga que sí.
+ * El scroll guiado (un gesto, una sección: scroll-snap obligatorio + avance-guiado.js) y las
+ * secciones pinneadas que se recorren con el scroll (la de clientes, el cierre).
+ *
+ * APAGADO desde el 26/10/2026 por pedido de Lucas: "quiero que quede con un scroll normal,
+ * que el usuario se pueda desplazar con normalidad dentro de la página". No se borró nada:
+ * el controlador, el snap y los pines siguen enteros en el código, y poner esto en `true`
+ * los vuelve a prender tal cual estaban (Home.vue, Recorrido.vue y SeccionClientes.vue
+ * leen esta constante). Es una constante y no una variable del `.env` porque es una
+ * decisión de diseño de la página, no de entorno.
  */
-export const MOSTRAR_PRECIO = bandera(import.meta.env.VITE_MOSTRAR_PRECIO)
+export const SCROLL_GUIADO = false

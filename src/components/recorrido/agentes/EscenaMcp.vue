@@ -212,9 +212,9 @@
                       <div v-if="cambios.combo" class="cc-fila cc-fila--nueva">
                         <span class="cc-fila__texto">
                           <strong>Previa Oktoberfest</strong>
-                          <span>Fernet 750 ml + 2 cola 1,5 L</span>
+                          <span>Fernet 750 ml + 2 cola 2,25 L</span>
                         </span>
-                        <span class="cc-fila__precio">$16.900</span>
+                        <span class="cc-fila__precio">$18.900</span>
                         <span class="cc-insignia">Nuevo</span>
                       </div>
                       <div class="cc-fila">
@@ -231,7 +231,7 @@
                       <div v-if="cambios.oferta" class="cc-fila cc-fila--nueva">
                         <span class="cc-fila__texto">
                           <strong>Cerveza lata 473 ml</strong>
-                          <span>10 % off desde 48 u.</span>
+                          <span>8 % off desde 24 u.</span>
                         </span>
                         <span class="cc-insignia">Nuevo</span>
                       </div>
@@ -278,10 +278,28 @@ import { formatear } from './guiones'
 import ISOTIPO from '../../../assets/marca/isotipo-comerciocity.svg'
 
 /** Escalonado de los renglones de una respuesta. */
-const MS_POR_BLOQUE = 140
-/** Ritmo del dictado (rápido: es la voz transcripta) y del tipeo (más lento: son dedos). */
-const MS_POR_PALABRA_DICTADO = 55
-const MS_POR_PALABRA_TECLADO = 95
+const MS_POR_BLOQUE = 90
+/** Ritmo del dictado (rápido: es la voz transcripta) y del tipeo (más lento: son dedos).
+ *  26/10/2026: de 55/95 a 35/60, con el resto de las esperas de ESPERA. */
+const MS_POR_PALABRA_DICTADO = 35
+const MS_POR_PALABRA_TECLADO = 60
+
+/**
+ * Las esperas de cada paso, en ms (26/10/2026, pedido de Lucas: cada escena entre 7 y 15 s;
+ * esta duraba ~54). Entre paréntesis, los valores anteriores.
+ */
+const ESPERA = {
+  escuchar: 600, // (1800)
+  tipear: 250, // (500) + las palabras
+  enviar: 300, // (500)
+  herramienta: 250, // (850)
+  resultado: 150, // (550)
+  confirmar: 1000, // (2900)
+  confirmado: 400, // (900)
+  girar: 900, // (1500)
+  sistema: 350, // (900 el aviso, 1100 cada cambio)
+  fin: 1200, // (5500)
+}
 /** Debajo de este ancho disponible la ventana se dibuja angosta, sin barra lateral. */
 const ANCHO_ANGOSTO = 520
 
@@ -294,6 +312,7 @@ const ANCHO_ANGOSTO = 520
 function expandir(pasos) {
   const micro = []
   pasos.forEach(function (p) {
+    const desde = micro.length
     switch (p.tipo) {
       case 'dictado':
         micro.push({ op: 'escuchar' })
@@ -314,6 +333,12 @@ function expandir(pasos) {
         break
       default:
         micro.push(Object.assign({ op: p.tipo }, p))
+    }
+    /* `ya_enviado` en el guion: la escena entra con ese paso ya hecho. */
+    if (p.ya_enviado) {
+      for (let i = desde; i < micro.length; i++) {
+        micro[i].previo = true
+      }
     }
   })
   /* Lo último que se ve (el sistema con los cambios) se queda un rato antes de pasar. */
@@ -363,7 +388,8 @@ export default {
 
   mounted() {
     const self = this
-    this.motor = crear_motor(expandir(this.chat.pasos), {
+    const micro = expandir(this.chat.pasos)
+    this.motor = crear_motor(micro, {
       aplicar: this.aplicar,
       al_progresar(fraccion) {
         self.$emit('progreso', fraccion)
@@ -375,7 +401,17 @@ export default {
 
     if (this.reducido) {
       this.motor.completar()
-    } else if (this.reproduciendo) {
+      return
+    }
+    /* Los pasos marcados `previo` (el pedido inicial) se aplican de una al montarse. */
+    let previos = 0
+    micro.forEach(function (paso, i) {
+      if (paso.previo) {
+        previos = i + 1
+      }
+    })
+    this.motor.adelantar(previos)
+    if (this.reproduciendo) {
       this.motor.reproducir()
     }
   },
@@ -442,7 +478,7 @@ export default {
             return 0
           }
           this.entrada = 'escuchando'
-          return 1800
+          return ESPERA.escuchar
 
         case 'tipear':
           if (instantaneo) {
@@ -451,13 +487,13 @@ export default {
           this.entrada = 'tipeando'
           this.texto_entrada = paso.texto
           this.ms_por_palabra = paso.ms_por_palabra
-          return this.palabras(paso.texto).length * paso.ms_por_palabra + 500
+          return this.palabras(paso.texto).length * paso.ms_por_palabra + ESPERA.tipear
 
         case 'enviar':
           this.entrada = 'reposo'
           this.texto_entrada = ''
           this.agregar({ tipo: 'prompt', texto: paso.texto })
-          return 500
+          return ESPERA.enviar
 
         case 'pensando':
           if (instantaneo) {
@@ -468,26 +504,27 @@ export default {
 
         case 'herramienta':
           this.agregar(Object.assign({ listo: false }, paso.linea, { tipo: 'herramienta' }))
-          return 850
+          return ESPERA.herramienta
 
         case 'resultado':
           this.ultima('herramienta').listo = true
-          return 550
+          return ESPERA.resultado
 
         case 'confirmar':
           this.agregar(Object.assign({ confirmado: false }, paso.linea, { tipo: 'confirmar' }))
-          return 2900
+          return ESPERA.confirmar
 
         case 'confirmado':
           this.ultima('confirmar').confirmado = true
-          return 900
+          return ESPERA.confirmado
 
         case 'respuesta': {
           this.agregar({ tipo: 'respuesta', bloques: paso.bloques })
           const largo = paso.bloques.reduce(function (total, b) {
             return total + (b.item || b.texto || b.titulo || '').length
           }, 0)
-          return paso.bloques.length * MS_POR_BLOQUE + Math.min(8000, 1100 + largo * 18)
+          /* (26/10/2026) Antes min(8000, 1100 + 18 por carácter). */
+          return paso.bloques.length * MS_POR_BLOQUE + Math.min(2800, 500 + largo * 5)
         }
 
         case 'girar':
@@ -495,14 +532,14 @@ export default {
             return 0
           }
           this.girada = true
-          return 1500
+          return ESPERA.girar
 
         case 'sistema':
           this.cambios[paso.cambio] = true
-          return paso.cambio === 'aviso' ? 900 : 1100
+          return ESPERA.sistema
 
         case 'fin':
-          return 5500
+          return ESPERA.fin
 
         default:
           return 0

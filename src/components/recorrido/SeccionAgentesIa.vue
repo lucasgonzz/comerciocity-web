@@ -123,8 +123,9 @@ import TelefonoChat from './agentes/TelefonoChat.vue'
 import EscenaMcp from './agentes/EscenaMcp.vue'
 import { DIAPOSITIVAS } from './agentes/guiones'
 
-/** Respiro entre el final de una escena y la siguiente: lo último que pasó se deja ver. */
-const ESPERA_ENTRE_DIAPOSITIVAS_MS = 2200
+/** Respiro entre el final de una escena y la siguiente: lo último que pasó se deja ver.
+ *  (2200 hasta el 26/10/2026: las escenas se aceleraron a 7-15 s cada una.) */
+const ESPERA_ENTRE_DIAPOSITIVAS_MS = 1400
 
 export default {
   name: 'SeccionAgentesIa',
