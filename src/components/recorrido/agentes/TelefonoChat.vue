@@ -1003,6 +1003,10 @@ export default {
   color: #1f2c34;
 }
 
+/* Cada palabra entra solo con opacidad. Hasta el 27/10/2026 también se desenfocaba
+   (filter: blur de 3px a 0) y en Safari de iPhone algunas palabras quedaban trabadas en un
+   cuadro intermedio, borrosas para siempre: un filter animado sobre un span en línea es
+   justo lo que WebKit no siempre vuelve a pintar. Nada de filter acá. */
 .cc-palabra {
   opacity: 0;
   animation: cc-palabra 0.22s ease-out forwards;
@@ -1011,11 +1015,9 @@ export default {
 @keyframes cc-palabra {
   from {
     opacity: 0;
-    filter: blur(3px);
   }
   to {
     opacity: 1;
-    filter: blur(0);
   }
 }
 

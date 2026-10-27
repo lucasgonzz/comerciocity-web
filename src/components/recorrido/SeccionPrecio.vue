@@ -87,7 +87,7 @@
       </div>
 
       <p class="demo-precio__nota demo-paso">
-        ¿Hacés más de 5.000 ventas por mes? Te armamos un plan a medida. E-commerce y Agentes se
+        ¿Hacés más de 7.000 ventas por mes? Te armamos un plan a medida. E-commerce y Agentes se
         suman a cualquier plan. La licencia inicial depende de los sistemas que elijas y te la
         cotizamos después de la demo. Cada usuario adicional, $15.000 por mes.
       </p>
@@ -118,6 +118,9 @@ import entrada_por_scroll from './entrada-por-scroll'
  * - LOS CORTES. Tres escalones: hasta 300 ventas (la franja de 250-300 de Dux, Xubio, Colppy
  *   y Alegra Pyme), hasta 1.500 (Dux Estándar, Contabilium Standard) y hasta 5.000 (Dux Pro,
  *   Contabilium Pro). Más de 5.000, a medida.
+ * - EL PRO, A 7.000 (27/10/2026, pedido de Lucas). Mismo precio que el Pro de Dux, pero con
+ *   2.000 ventas más de techo: el mismo plan rinde más que el del competidor. Más de 7.000,
+ *   a medida.
  * - EL PRECIO. 5 % menos que el competidor más barato que cubre esa franja, mes a mes y sin
  *   IVA (los de ellos son + IVA). En las tres es Dux: Inicial $36.000 (× 0,95 = $34.200),
  *   Estándar $75.300 (= $71.535 → $71.500) y Pro $111.200 (= $105.640 → $105.600). Se
@@ -150,7 +153,7 @@ const PLANES = [
   {
     clave: 'pro',
     nombre: 'Pro',
-    limite: 'Hasta 5.000 ventas por mes',
+    limite: 'Hasta 7.000 ventas por mes',
     mensual: 105600,
     anual_por_mes: 84480,
     para: 'Para el que vende mucho: distribuidoras, mayoristas, varias sucursales.',

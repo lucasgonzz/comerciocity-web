@@ -12,8 +12,15 @@
 
        Cada escena avisa cuando terminó su guion y el carrusel pasa a la siguiente; las
        pestañas muestran cuánto le falta a la actual. Todo se pausa mientras la escena no se
-       ve: un chat que se escribe solo fuera de pantalla es una escena que nadie vio. -->
+       ve: un chat que se escribe solo fuera de pantalla es una escena que nadie vio.
+
+       En teléfono y tablet vertical (pedido de Lucas del 27/10/2026) el rótulo y las pestañas
+       suben arriba de la escena: apilado, el que bajaba veía la animación sin saber de qué
+       agente era hasta pasarla. Se mudan con un Teleport a la cabecera, así el marcado es uno
+       solo y la pestaña sigue siendo la misma en los dos lados. -->
   <section ref="seccion" class="demo-agentes demo-seccion-flujo">
+    <div id="demo-agentes-cabecera" class="demo-agentes__cabecera"></div>
+
     <div ref="escena" class="demo-agentes__escena">
       <span class="demo-agentes__fondo demo-agentes__fondo--claro" :class="{ 'demo-agentes__fondo--visible': actual.fondo === 'claro' }"></span>
       <span class="demo-agentes__fondo demo-agentes__fondo--noche" :class="{ 'demo-agentes__fondo--visible': actual.fondo === 'noche' }"></span>
@@ -47,28 +54,30 @@
 
     <div class="demo-agentes__panel">
       <div ref="grupo" class="demo-agentes__texto" :style="estilo_grupo('texto')">
-        <span class="demo-agentes__rotulo demo-paso">Inteligencia artificial que trabaja en tu negocio</span>
+        <teleport defer to="#demo-agentes-cabecera" :disabled="!es_movil">
+          <span class="demo-agentes__rotulo demo-paso">Inteligencia artificial que trabaja en tu negocio</span>
 
-        <div class="demo-agentes__pestanas demo-paso" role="tablist" aria-label="Elegir ejemplo">
-          <button
-            v-for="(diapositiva, i) in diapositivas"
-            :id="'demo-agentes-pestana-' + diapositiva.clave"
-            :key="diapositiva.clave"
-            type="button"
-            class="demo-agentes__pestana"
-            :class="{ 'demo-agentes__pestana--activa': indice === i }"
-            role="tab"
-            :aria-selected="indice === i ? 'true' : 'false'"
-            aria-controls="demo-agentes-contenido"
-            @click="elegir(i)"
-          >
-            <i class="bi" :class="diapositiva.icono" aria-hidden="true"></i>
-            <span>{{ diapositiva.pestana }}</span>
-            <span class="demo-agentes__avance" aria-hidden="true">
-              <span :style="{ transform: 'scaleX(' + avance_de(i) + ')' }"></span>
-            </span>
-          </button>
-        </div>
+          <div class="demo-agentes__pestanas demo-paso" role="tablist" aria-label="Elegir ejemplo">
+            <button
+              v-for="(diapositiva, i) in diapositivas"
+              :id="'demo-agentes-pestana-' + diapositiva.clave"
+              :key="diapositiva.clave"
+              type="button"
+              class="demo-agentes__pestana"
+              :class="{ 'demo-agentes__pestana--activa': indice === i }"
+              role="tab"
+              :aria-selected="indice === i ? 'true' : 'false'"
+              aria-controls="demo-agentes-contenido"
+              @click="elegir(i)"
+            >
+              <i class="bi" :class="diapositiva.icono" aria-hidden="true"></i>
+              <span>{{ diapositiva.pestana }}</span>
+              <span class="demo-agentes__avance" aria-hidden="true">
+                <span :style="{ transform: 'scaleX(' + avance_de(i) + ')' }"></span>
+              </span>
+            </button>
+          </div>
+        </teleport>
 
         <div class="demo-paso">
           <transition name="demo-agentes-texto" mode="out-in">
@@ -127,6 +136,10 @@ import { DIAPOSITIVAS } from './agentes/guiones'
  *  (2200 hasta el 26/10/2026: las escenas se aceleraron a 7-15 s cada una.) */
 const ESPERA_ENTRE_DIAPOSITIVAS_MS = 1400
 
+/** Desde dónde la sección va apilada (el mismo corte que el @media del CSS): ahí las
+ *  pestañas suben a la cabecera, arriba de la escena. */
+const CONSULTA_APILADO = '(max-width: 991.98px)'
+
 export default {
   name: 'SeccionAgentesIa',
 
@@ -167,6 +180,12 @@ export default {
       avance_pendiente: false,
       timer_avance: null,
       observador_escena: null,
+      /** La sección va apilada (teléfono o tablet vertical): las pestañas van arriba. */
+      es_movil:
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia(CONSULTA_APILADO).matches,
+      consulta_apilado: null,
     }
   },
 
@@ -215,6 +234,11 @@ export default {
       this.escena_a_la_vista = true
     }
     document.addEventListener('visibilitychange', this.on_visibilidad_documento)
+
+    if (typeof window.matchMedia === 'function') {
+      this.consulta_apilado = window.matchMedia(CONSULTA_APILADO)
+      this.consulta_apilado.addEventListener('change', this.on_cambio_apilado)
+    }
   },
 
   beforeUnmount() {
@@ -224,6 +248,10 @@ export default {
       this.observador_escena = null
     }
     document.removeEventListener('visibilitychange', this.on_visibilidad_documento)
+    if (this.consulta_apilado) {
+      this.consulta_apilado.removeEventListener('change', this.on_cambio_apilado)
+      this.consulta_apilado = null
+    }
   },
 
   methods: {
@@ -307,6 +335,11 @@ export default {
     on_visibilidad_documento() {
       this.documento_visible = document.visibilityState !== 'hidden'
     },
+
+    /** Se cruzó el corte de apilado (girar la tablet, achicar la ventana). */
+    on_cambio_apilado(evento) {
+      this.es_movil = evento.matches
+    },
   },
 }
 </script>
@@ -321,6 +354,12 @@ export default {
   align-items: stretch;
   padding: 0;
   overflow: clip;
+}
+
+/* La cabecera de teléfono: recibe el rótulo y las pestañas por el Teleport. En escritorio
+   queda vacía y no se muestra. */
+.demo-agentes__cabecera {
+  display: none;
 }
 
 /* --- La escena (izquierda) -------------------------------------------------------------- */
@@ -624,11 +663,35 @@ export default {
     min-height: 0;
   }
 
+  /* Mismo azul noche que el panel: la cabecera y el texto de abajo enmarcan la escena. */
+  .demo-agentes__cabecera {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: clamp(36px, 6vh, 56px) clamp(20px, 5vw, 40px) 22px;
+    box-sizing: border-box;
+  }
+
+  .demo-agentes {
+    background:
+      radial-gradient(110% 80% at 85% 10%, rgba(11, 132, 248, 0.28), transparent 60%),
+      #0a1f2e;
+  }
+
+  .demo-agentes__cabecera .demo-agentes__pestanas {
+    margin-bottom: 0;
+  }
+
+  /* Más baja que antes: arriba ahora va la cabecera, y las dos tienen que entrar juntas
+     en la pantalla para que se lea de qué agente es el ejemplo. */
   .demo-agentes__escena {
     flex: none;
     width: 100%;
-    height: min(86svh, 760px);
-    min-height: 520px;
+    height: min(74svh, 680px);
+    min-height: 500px;
   }
 
   .demo-agentes__lienzo {
