@@ -15,9 +15,11 @@
        renglones de lo que incluye llevan su etiqueta ("si lo sumás"): sin ella la página
        prometería en público algo que el precio de arriba no incluye.
 
-       🔴 La regla de precios del manual: un equivalente mensual NUNCA va solo. Con "Pago anual"
-       elegido, cada cifra lleva al lado el total que se paga por adelantado; con "Mes a mes",
-       no hay equivalente que aclarar. -->
+       Cada plan muestra SOLO lo que cuesta por mes en el modo elegido (Lucas, 26/10/2026,
+       tercera vuelta: "sacá lo de con el abono anual tantos pesos por adelantado; que quede
+       simplemente lo que costaría por mes"). Es una excepción pedida por él a la regla del
+       manual de que un equivalente mensual va con el total anual al lado: la regla sigue
+       valiendo para el agente de leads y la propuesta. -->
   <section ref="seccion" class="demo-precio demo-seccion-flujo">
     <div ref="grupo" class="demo-precio__grupo" :style="estilo_grupo('grupo')">
       <h2 class="demo-titulo-seccion demo-paso">Lo que cuesta.</h2>
@@ -65,15 +67,6 @@
             <p class="demo-precio__cifra">
               <strong>{{ formatear(anual ? plan.anual_por_mes : plan.mensual) }}</strong>
               <span class="demo-precio__periodo">por mes</span>
-            </p>
-            <p class="demo-precio__aclaracion">
-              <template v-if="anual">
-                Con el abono anual: {{ formatear(plan.anual_por_mes * 12) }} por adelantado.
-                Mes a mes, {{ formatear(plan.mensual) }}.
-              </template>
-              <template v-else>
-                Pagando el año por adelantado, {{ formatear(plan.anual_por_mes) }} por mes.
-              </template>
             </p>
             <p class="demo-precio__para">{{ plan.para }}</p>
           </li>
@@ -416,16 +409,6 @@ export default {
   color: var(--demo-color-texto-suave);
 }
 
-/* Alto mínimo de dos renglones: al pasar de anual (dos frases) a mes a mes (una) las
-   tarjetas no saltan. */
-.demo-precio__aclaracion {
-  margin: 0;
-  min-height: 3em;
-  font-size: clamp(0.88rem, 1.2vw, 0.95rem);
-  line-height: 1.5;
-  color: #3f4a63;
-}
-
 .demo-precio__para {
   margin: auto 0 0;
   padding-top: 12px;
@@ -506,18 +489,18 @@ export default {
     border-left: 1px solid rgba(11, 132, 248, 0.18);
   }
 
-  /* Los cinco renglones de cada plan (rótulo, límite, cifra, aclaración, para quién) en las
-     mismas filas en los tres: con subgrid la línea punteada y el texto de abajo quedan a la
-     misma altura aunque una aclaración ocupe un renglón más. Un navegador sin subgrid cae
-     en un grid común: cada plan con sus filas, que es como se veía antes. */
+  /* Los cuatro renglones de cada plan (rótulo, límite, cifra, para quién) en las mismas
+     filas en los tres: con subgrid la línea punteada y el texto de abajo quedan a la misma
+     altura aunque un renglón ocupe más en un plan. Un navegador sin subgrid cae en un grid
+     común: cada plan con sus filas. */
   .demo-precio__planes {
-    grid-template-rows: repeat(5, auto);
+    grid-template-rows: repeat(4, auto);
   }
 
   .demo-precio__cabeza {
     display: grid;
     grid-template-rows: subgrid;
-    grid-row: span 5;
+    grid-row: span 4;
     row-gap: 10px;
   }
 

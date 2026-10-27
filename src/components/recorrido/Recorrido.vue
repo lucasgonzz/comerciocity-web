@@ -12,8 +12,9 @@
             logos y las tiendas. Con el fondo vivo de la apertura que se sacó.
          6. Las reseñas de Google.
          7. Los testimonios en video, por negocio.
-         8. El precio.
-         9. El desarrollo a medida.
+         8. El desarrollo a medida (antes del precio desde la tercera vuelta del 26/10/2026:
+            así la mensualidad se lee sabiendo que incluye los desarrollos).
+         9. El precio.
         10. El CTA: elegir día y hora de la demo (WhatsApp como segunda opción).
 
        Salieron ese día, por pedido explícito: la apertura "Tu negocio funciona porque vos te
@@ -46,9 +47,9 @@
 
     <seccion-testimonios :emitir_evento="emitir_evento" />
 
-    <seccion-precio :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
-
     <seccion-desarrollo-medida />
+
+    <seccion-precio :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
 
     <!-- El cierre: el CTA. Con el scroll guiado va dentro del fondo sticky que usaba el puente
          al formulario (`boton_avance` apagado: es la última sección). Con el scroll normal va
@@ -175,8 +176,8 @@ export default {
         ['.demo-clientes', 'clientes'],
         ['.demo-resenas', 'resenas'],
         ['.demo-testimonios', 'testimonios'],
-        ['.demo-precio', 'precio'],
         ['.demo-medida', 'desarrollo_medida'],
+        ['.demo-precio', 'precio'],
         ['.demo-cta', 'cta'],
       ]
 
