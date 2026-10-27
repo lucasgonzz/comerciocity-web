@@ -250,7 +250,7 @@ export default {
 .demo-scroll-dolor__cierre {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   min-height: 100vh;
   min-height: 100svh;
@@ -264,9 +264,15 @@ export default {
   pointer-events: none;
 }
 
+/* El CTA ocupa todo el alto de la sección (stretch) y reserva abajo el lugar del pie.
+   🔴 Sin esto el pie se encimaba con el botón de WhatsApp (Lucas, 26/10/2026): `.demo-cta`
+   pide min-height: 100%, que acá no resuelve (la sección solo tiene min-height), así que el
+   CTA medía lo que su contenido y el pie, absoluto al fondo del CTA, caía sobre los botones. */
 .demo-scroll-dolor__cierre-cta {
   position: relative;
   width: 100%;
   max-width: 1080px;
+  margin: 0 auto;
+  padding-bottom: 84px;
 }
 </style>

@@ -11,17 +11,31 @@
          familiar posible. La ventana imita la disposición de ChatGPT (barra lateral, columna
          de conversación, cuadro de texto redondeado con dictado) sin copiar su logo.
 
-         Las dos caras son dos monitores completos en una tarjeta 3D: la de adelante con
-         ChatGPT y la de atrás con el sistema, girada 180° de entrada.
+         Las dos caras son dos monitores completos en una tarjeta que gira: la de adelante con
+         ChatGPT y la de atrás con el sistema.
+
+         🔴 La tarjeta es 3D SOLO mientras gira (`giro === 'girando'`). Hasta el 26/10/2026 lo
+         era siempre (perspective + preserve-3d + caras con backface-visibility), y una capa 3D
+         el navegador la pinta como imagen a su tamaño base y después la estira con el scale()
+         de ajuste-a-medida.js: el monitor se veía borroso al lado del teléfono, que es plano.
+         Ahora, quieta, cada cara es un div común y se dibuja nítida a cualquier escala.
 
          Decorativa para un lector de pantalla: la sección describe la escena en texto al lado. -->
     <!-- (Este comentario va ADENTRO de la raíz a propósito: un comentario antes de la raíz
          vuelve al componente un fragmento, y la <transition mode="out-in"> de la sección
          se queda trabada en la salida sin montar la escena siguiente.) -->
-    <div class="cc-mcp__maqueta" :class="{ 'cc-mcp__maqueta--angosta': angosta }" :style="estilo_maqueta">
-      <div class="cc-mcp__tarjeta" :class="{ 'cc-mcp__tarjeta--girada': girada, 'cc-mcp__tarjeta--quieta': reducido }">
+    <div
+      class="cc-mcp__maqueta"
+      :class="{ 'cc-mcp__maqueta--angosta': angosta, 'cc-mcp__maqueta--3d': giro === 'girando' }"
+      :style="estilo_maqueta"
+    >
+      <div
+        class="cc-mcp__tarjeta"
+        :class="{ 'cc-mcp__tarjeta--girando': giro === 'girando', 'cc-mcp__tarjeta--quieta': reducido }"
+        @animationend="terminar_giro"
+      >
         <!-- ===================== Frente: Windows + ChatGPT ===================== -->
-        <div class="cc-mcp__cara cc-mcp__cara--frente">
+        <div v-show="giro !== 'dorso'" class="cc-mcp__cara cc-mcp__cara--frente">
           <div class="cc-monitor">
             <div class="cc-monitor__pantalla cc-windows">
               <div class="cc-gpt">
@@ -170,7 +184,7 @@
         </div>
 
         <!-- ===================== Dorso: el sistema con los cambios ===================== -->
-        <div class="cc-mcp__cara cc-mcp__cara--dorso">
+        <div v-show="giro !== 'frente'" class="cc-mcp__cara cc-mcp__cara--dorso">
           <div class="cc-monitor">
             <div class="cc-monitor__pantalla cc-sistema">
               <div class="cc-navegador">
@@ -288,6 +302,9 @@ const MS_POR_PALABRA_TECLADO = 60
  * Las esperas de cada paso, en ms (26/10/2026, pedido de Lucas: cada escena entre 7 y 15 s;
  * esta duraba ~54). Entre paréntesis, los valores anteriores.
  */
+/** Lo que dura la animación `cc-girar` (tiene que coincidir con el CSS). */
+const DURACION_GIRO_MS = 1350
+
 const ESPERA = {
   escuchar: 600, // (1800)
   tipear: 250, // (500) + las palabras
@@ -378,7 +395,10 @@ export default {
       entrada: 'reposo',
       texto_entrada: '',
       ms_por_palabra: MS_POR_PALABRA_DICTADO,
-      girada: false,
+      /** frente | girando | dorso: la tarjeta es 3D solo en 'girando' (ver la plantilla). */
+      giro: 'frente',
+      /** Respaldo por si `animationend` no llega (pestaña oculta, animación cortada). */
+      temporizador_giro: null,
       cambios: { aviso: false, combo: false, oferta: false, tarea: false },
       angosta: false,
       motor: null,
@@ -417,6 +437,7 @@ export default {
   },
 
   beforeUnmount() {
+    clearTimeout(this.temporizador_giro)
     if (this.motor) {
       this.motor.destruir()
       this.motor = null
@@ -438,6 +459,20 @@ export default {
 
   methods: {
     formatear,
+
+    /**
+     * Fin del giro: la tarjeta deja de ser 3D y queda el dorso como un div plano (nítido).
+     * Lo llaman el `animationend` de la tarjeta y, de respaldo, un temporizador.
+     *
+     * @returns {void}
+     */
+    terminar_giro() {
+      clearTimeout(this.temporizador_giro)
+      this.temporizador_giro = null
+      if (this.giro === 'girando') {
+        this.giro = 'dorso'
+      }
+    },
 
     /**
      * Medida de la maqueta (contrato de ajuste-a-medida.js): angosta y más alta en un
@@ -531,7 +566,9 @@ export default {
           if (instantaneo) {
             return 0
           }
-          this.girada = true
+          this.giro = 'girando'
+          clearTimeout(this.temporizador_giro)
+          this.temporizador_giro = setTimeout(this.terminar_giro, DURACION_GIRO_MS + 400)
           return ESPERA.girar
 
         case 'sistema':
@@ -579,18 +616,24 @@ export default {
   top: 50%;
   left: 50%;
   transform-origin: center center;
+}
+
+/* La perspectiva, solo mientras gira (ver el comentario de la plantilla). */
+.cc-mcp__maqueta--3d {
   perspective: 1800px;
 }
 
-/* La tarjeta que gira: sus dos caras ocupan el mismo lugar y cada una esconde su espalda. */
+/* La tarjeta: sus dos caras ocupan el mismo lugar. Quieta es plana y se ve una sola. */
 .cc-mcp__tarjeta {
   position: relative;
   width: 100%;
   height: 100%;
-  transform-style: preserve-3d;
 }
 
-.cc-mcp__tarjeta--girada {
+/* Girando: 3D, con las dos caras a la vista y cada una escondiendo su espalda. La duración
+   es DURACION_GIRO_MS del script. */
+.cc-mcp__tarjeta--girando {
+  transform-style: preserve-3d;
   animation: cc-girar 1.35s cubic-bezier(0.65, 0, 0.35, 1) forwards;
 }
 
@@ -618,11 +661,16 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.cc-mcp__tarjeta--girando .cc-mcp__cara {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-.cc-mcp__cara--dorso {
+/* El dorso arranca de espaldas; al terminar el giro la tarjeta vuelve a plana y el dorso
+   queda sin transform, que es exactamente donde lo deja el 180° de la animación. */
+.cc-mcp__tarjeta--girando .cc-mcp__cara--dorso {
   transform: rotateY(180deg);
 }
 

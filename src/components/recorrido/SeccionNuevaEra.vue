@@ -50,6 +50,13 @@
           <h3 class="demo-nueva-era__sistema-titulo">{{ sistema.titulo }}</h3>
           <p class="demo-nueva-era__sistema-texto">{{ sistema.texto }}</p>
 
+          <!-- El remate de la tarjeta (hoy solo el e-commerce): lo que Lucas pidió dejar
+               claro, en su propio renglón para que no se pierda en el párrafo. -->
+          <p v-if="sistema.destacado" class="demo-nueva-era__sistema-destacado">
+            <i class="bi bi-magic" aria-hidden="true"></i>
+            <span>{{ sistema.destacado }}</span>
+          </p>
+
           <ul v-if="sistema.agentes" class="demo-nueva-era__agentes">
             <li v-for="agente in sistema.agentes" :key="agente.nombre">
               <i class="bi" :class="agente.icono" aria-hidden="true"></i>
@@ -101,6 +108,12 @@ const SISTEMAS = [
     texto:
       'El portal por el que tus clientes interactúan con tu marca: ven tu catálogo con ' +
       'precios y stock al día y te compran de una forma mucho más práctica.',
+    /* Pedido de Lucas del 26/10/2026: que quede claro que la tienda no da trabajo. Es cierto
+       por cómo está hecha: lee los artículos, precios y stock de la misma base del sistema
+       de gestión, así que no hay nada que cargar ni sincronizar aparte. */
+    destacado:
+      'Funciona de forma totalmente automática: no tenés que administrarla ni ' +
+      'actualizarla. Lo que cambiás en el sistema de gestión aparece solo en tu tienda.',
   },
   {
     clave: 'agentes',
@@ -173,9 +186,11 @@ export default {
   text-align: center;
 }
 
+/* Entre la migración y los tres sistemas, una pausa franca. Desde el 26/10/2026 la sección
+   no intenta entrar en una pantalla (Lucas: "está todo muy amontonado; no hace falta que
+   entre todo en el viewport"), así que los márgenes van en px y no en vh. */
 .demo-nueva-era__grupo + .demo-nueva-era__grupo {
-  margin-top: clamp(48px, 8vh, 96px);
-  margin-top: clamp(48px, 8dvh, 96px);
+  margin-top: clamp(80px, 11vw, 150px);
 }
 
 .demo-nueva-era__grupo--ancho {
@@ -183,10 +198,10 @@ export default {
 }
 
 .demo-nueva-era__parrafo {
-  margin: clamp(16px, 2.4vw, 26px) auto 0;
+  margin: clamp(22px, 3vw, 34px) auto 0;
   max-width: 640px;
   font-size: clamp(1.05rem, 1.6vw, 1.25rem);
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--demo-color-texto-suave);
   text-wrap: pretty;
 }
@@ -199,19 +214,19 @@ export default {
 
 .demo-nueva-era__migrado {
   list-style: none;
-  margin: clamp(20px, 3vw, 30px) 0 0;
+  margin: clamp(32px, 4.5vw, 48px) 0 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .demo-nueva-era__migrado li {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 14px;
+  padding: 11px 18px;
   border-radius: 999px;
   border: 1px solid var(--demo-color-borde-superficie);
   background: var(--demo-color-superficie);
@@ -236,11 +251,11 @@ export default {
 
 .demo-nueva-era__sistemas {
   list-style: none;
-  margin: clamp(26px, 4vw, 42px) 0 0;
+  margin: clamp(40px, 5.5vw, 64px) 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(14px, 1.8vw, 20px);
+  gap: clamp(20px, 2.6vw, 32px);
   text-align: left;
 }
 
@@ -254,8 +269,8 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: clamp(20px, 2.4vw, 28px);
+  gap: 12px;
+  padding: clamp(26px, 3vw, 38px) clamp(22px, 2.6vw, 32px);
   border: 1px solid rgba(var(--tinte), 0.3);
   border-top: 4px solid var(--disco);
   border-radius: 18px;
@@ -298,7 +313,7 @@ export default {
   justify-content: center;
   width: 48px;
   height: 48px;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   border-radius: 14px;
   background: var(--disco);
   color: var(--icono);
@@ -326,17 +341,40 @@ export default {
 .demo-nueva-era__sistema-texto {
   margin: 0;
   font-size: clamp(0.97rem, 1.3vw, 1.04rem);
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--demo-color-texto-suave);
+}
+
+/* "Funciona de forma totalmente automática": un recuadro con el tinte de la tarjeta, al pie,
+   empujado abajo para que en la fila de tres quede alineado con el final de las otras. */
+.demo-nueva-era__sistema-destacado {
+  margin: auto 0 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(var(--tinte), 0.14);
+  font-size: clamp(0.94rem, 1.25vw, 1rem);
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--demo-color-texto);
+}
+
+.demo-nueva-era__sistema-destacado .bi {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #b07f00;
+  font-size: 1.1rem;
 }
 
 .demo-nueva-era__agentes {
   list-style: none;
-  margin: 4px 0 0;
+  margin: 6px 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .demo-nueva-era__agentes li {
