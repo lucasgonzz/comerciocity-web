@@ -12,7 +12,8 @@
  *     (Ferretotal) el 2 y 3/10/2026 desde la llamada de Tomás grabada con Fathom; los de Fernando
  *     (Truvari Bebidas) el 23/10/2026 desde sus dos llamadas, con su permiso; los de Ernesto y
  *     Alejandra (San Cayetano) y Federico (Fenix) se armaron el 13/10/2026 de las llamadas del
- *     28/9 y se publicaron el 23/10/2026, con el permiso de ambos. La tabla
+ *     28/9 y se publicaron el 23/10/2026, con el permiso de ambos; los de Fabián (Ferretería San
+ *     Blas) salieron de la llamada del 27/10/2026 y se publicaron el 28/10/2026. La tabla
  *     de origen está en `comercial/contenido_para_nutrir.md` y en
  *     `_video/testimonios/ferretotal/ESTADO.md` del repo de conocimiento.
  *   · Las entrevistas completas de Innovate y Pack Descartables (16:9, 8 y 10 minutos) son
@@ -135,6 +136,20 @@ export const testimonios = [
       ['01-el-70-por-ciento-de-las-ventas-por-la-tienda', 'El 70 % de las ventas, por la tienda', 31],
       ['02-fuimos-el-primer-cliente', 'Fuimos el primer cliente', 13],
       ['03-el-buscador-te-filtra-tres-cosas', 'El buscador te filtra tres cosas', 17],
+    ]),
+    entrevista: null,
+  },
+  {
+    id: 'san-blas',
+    negocio: 'Ferretería San Blas',
+    persona: 'Fabián',
+    rubro: 'Ferretería y corralón en Laguna Blanca',
+    cita: 'La hora que sea, ustedes siempre estuvieron.',
+    logo: 'ferreteria-san-blas',
+    clips: clips('test-san-blas', [
+      ['01-la-unica-ferreteria-con-todo-en-el-sistema', 'La única ferretería con todo en el sistema', 26],
+      ['02-la-hora-que-sea-siempre-estuvieron', 'La hora que sea, siempre estuvieron', 26],
+      ['03-el-que-mas-encajaba-era-comerciocity', 'El que más encajaba era ComercioCity', 40],
     ]),
     entrevista: null,
   },
