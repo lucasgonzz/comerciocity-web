@@ -57,6 +57,16 @@
             <span>{{ sistema.destacado }}</span>
           </p>
 
+          <!-- La conexión con Mercado Libre (pedido de Lucas del 29/10/2026): un renglón aparte,
+               con su propia marca, para que se lea como una integración y no como un párrafo más. -->
+          <p v-if="sistema.integracion" class="demo-nueva-era__sistema-integracion">
+            <i class="bi bi-link-45deg" aria-hidden="true"></i>
+            <span>
+              <strong>{{ sistema.integracion.nombre }}</strong>
+              {{ sistema.integracion.texto }}
+            </span>
+          </p>
+
           <ul v-if="sistema.agentes" class="demo-nueva-era__agentes">
             <li v-for="agente in sistema.agentes" :key="agente.nombre">
               <i class="bi" :class="agente.icono" aria-hidden="true"></i>
@@ -114,6 +124,13 @@ const SISTEMAS = [
     destacado:
       'Funciona de forma totalmente automática: no tenés que administrarla ni ' +
       'actualizarla. Lo que cambiás en el sistema de gestión aparece solo en tu tienda.',
+    /* Integración real (misión mercado-libre-integracion, 27-28/10/2026): publicaciones
+       salientes, pedidos entrantes que generan la venta y el stock que se descuenta una vez. */
+    integracion: {
+      nombre: 'Conectada con Mercado Libre.',
+      texto:
+        'Las ventas que hacés ahí entran solas a tu sistema y el stock queda al día.',
+    },
   },
   {
     clave: 'agentes',
@@ -366,6 +383,33 @@ export default {
   margin-top: 1px;
   color: #b07f00;
   font-size: 1.1rem;
+}
+
+/* Mercado Libre: la integración, con el tinte amarillo de la tarjeta de e-commerce en el
+   borde. Va después de la caja de "automática" y se lee como integración, no como párrafo. */
+.demo-nueva-era__sistema-integracion {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--tinte), 0.45);
+  background: var(--demo-color-superficie);
+  font-size: clamp(0.94rem, 1.25vw, 1rem);
+  line-height: 1.5;
+  color: var(--demo-color-texto-suave);
+}
+
+.demo-nueva-era__sistema-integracion strong {
+  color: var(--demo-color-texto);
+}
+
+.demo-nueva-era__sistema-integracion .bi {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #b07f00;
+  font-size: 1.15rem;
 }
 
 .demo-nueva-era__agentes {
