@@ -2,54 +2,44 @@
   <!-- El bloque de precio. Desde el 26/10/2026 se publica siempre: Lucas lo pidió ese día
        (era la decisión D2 del plan del 13/10/2026, que estaba detrás de `VITE_MOSTRAR_PRECIO`).
 
-       TRES PLANES POR CANTIDAD DE VENTAS (Lucas, 26/10/2026, segunda vuelta): "el resto de la
-       competencia divide los planes según la cantidad de operaciones; armá 3 planes, un 5 %
-       más baratos que el más barato de nuestros competidores, con nombres parecidos a los de
-       ellos". De dónde sale cada número está en PLANES, en el script.
+       CUATRO PLANES POR OPERACIONES (Lucas, 3/11/2026, programa «Prueba gratuita de 7 días»):
+       los planes copian los cortes de Contagram, que es el único competidor que cuenta
+       ventas + compras + gastos, un 5 % más baratos y mostrados YA CON EL 50 % de descuento de
+       los primeros tres meses. De dónde sale cada número está en PLANES, en el script.
 
-       Lo que se mantiene de la versión anterior (la tarjeta le gustó a Lucas): la cabeza con el
-       degradé azul y la cifra grande, y el cuerpo con lo que incluye la mensualidad. Ahora la
-       cabeza son tres, una por plan, y el cuerpo es común a los tres.
+       Lo que dice la sección, y por qué (decisiones de Lucas del 3/11/2026):
+         - Arriba de todo, «El sistema de gestión y la implementación son gratis»: Gestión dejó
+           de tener licencia (pago único). Tienda y Agentes la conservan, pero acá no se dice
+           cuánto: solo que «se suman a cualquier plan».
+         - La cifra grande es la PROMOCIONAL (la mitad del abono), con la leyenda «50 % de
+           descuento durante los primeros 3 meses». No se muestra cuánto queda después: Lucas
+           lo pidió así, y la cifra plena está en el manual de precios y en el contrato.
+         - «Precios finales. No se suma IVA.» y «Operaciones = ventas, compras y gastos.»: los
+           competidores publican + IVA; acá el número que se ve es el que se paga.
+         - Sin selector anual / mes a mes (se retiró el 3/11/2026 junto con el «20 % off»):
+           un solo precio por plan.
 
-       E-commerce y Agentes NO están en estos planes (son de gestión), así que esos dos
-       renglones de lo que incluye llevan su etiqueta ("si lo sumás"): sin ella la página
-       prometería en público algo que el precio de arriba no incluye.
-
-       Cada plan muestra SOLO lo que cuesta por mes en el modo elegido (Lucas, 26/10/2026,
-       tercera vuelta: "sacá lo de con el abono anual tantos pesos por adelantado; que quede
-       simplemente lo que costaría por mes"). Es una excepción pedida por él a la regla del
-       manual de que un equivalente mensual va con el total anual al lado: la regla sigue
-       valiendo para el agente de leads y la propuesta. -->
+       Lo que se mantiene de la versión anterior (la tarjeta le gustó a Lucas): la cabeza con
+       el degradé azul y la cifra grande, una por plan, y el cuerpo común con lo que incluye.
+       Tienda y Agentes NO están en estos planes, así que esos dos renglones de lo que incluye
+       llevan su etiqueta ("si lo sumás"): sin ella la página prometería en público algo que
+       el precio de arriba no incluye. -->
   <section ref="seccion" class="demo-precio demo-seccion-flujo">
     <div ref="grupo" class="demo-precio__grupo" :style="estilo_grupo('grupo')">
+      <p class="demo-precio__gratis demo-paso">
+        <i class="bi bi-gift" aria-hidden="true"></i>
+        <span>El sistema de gestión y la implementación son gratis.</span>
+      </p>
       <h2 class="demo-titulo-seccion demo-paso">Lo que cuesta.</h2>
       <p class="demo-bajada-seccion demo-precio__bajada demo-paso">
-        Elegís el plan según cuántas ventas hacés por mes. Todos traen el sistema completo, sin
-        módulos que se cobran aparte.
+        Pagás solo el abono mensual, según cuántas operaciones hace tu negocio por mes. Todos los
+        planes traen el sistema completo, sin módulos que se cobran aparte.
       </p>
 
-      <!-- Pago anual / mes a mes. Arranca en anual: es el precio más bajo, el que Lucas pidió
-           mostrar primero. -->
-      <div class="demo-precio__modo demo-paso" role="group" aria-label="Forma de pago">
-        <button
-          type="button"
-          class="demo-precio__modo-opcion"
-          :class="{ 'demo-precio__modo-opcion--activa': anual }"
-          :aria-pressed="anual ? 'true' : 'false'"
-          @click="elegir_modo(true)"
-        >
-          Pago anual <span class="demo-precio__modo-ahorro">20 % off</span>
-        </button>
-        <button
-          type="button"
-          class="demo-precio__modo-opcion"
-          :class="{ 'demo-precio__modo-opcion--activa': !anual }"
-          :aria-pressed="!anual ? 'true' : 'false'"
-          @click="elegir_modo(false)"
-        >
-          Mes a mes
-        </button>
-      </div>
+      <p class="demo-precio__promo demo-paso">
+        <i class="bi bi-stars" aria-hidden="true"></i>
+        <span>50 % de descuento durante los primeros 3 meses</span>
+      </p>
 
       <div class="demo-precio__tarjeta demo-paso">
         <ul class="demo-precio__planes">
@@ -65,9 +55,13 @@
               {{ plan.limite }}
             </p>
             <p class="demo-precio__cifra">
-              <strong>{{ formatear(anual ? plan.anual_por_mes : plan.mensual) }}</strong>
+              <strong>{{ formatear(plan.promocional) }}</strong>
               <span class="demo-precio__periodo">por mes</span>
             </p>
+            <ul class="demo-precio__detalle">
+              <li>{{ plan.usuarios }} {{ plan.usuarios === 1 ? 'usuario incluido' : 'usuarios incluidos' }}</li>
+              <li>Operación extra, {{ formatear(plan.excedente) }}</li>
+            </ul>
             <p class="demo-precio__para">{{ plan.para }}</p>
           </li>
         </ul>
@@ -87,9 +81,10 @@
       </div>
 
       <p class="demo-precio__nota demo-paso">
-        ¿Hacés más de 7.000 ventas por mes? Te armamos un plan a medida. E-commerce y Agentes se
-        suman a cualquier plan. La licencia inicial depende de los sistemas que elijas y te la
-        cotizamos después de la demo. Cada usuario adicional, $15.000 por mes.
+        <strong>Precios finales. No se suma IVA.</strong> Operaciones = ventas, compras y gastos.
+        Cada usuario adicional, {{ formatear(USUARIO_EXTRA) }} por mes. Tienda online y Agentes de
+        IA se suman a cualquier plan. ¿Hacés más de 3.000 operaciones por mes? Te armamos un plan
+        a medida.
       </p>
 
       <botones-demo
@@ -97,7 +92,6 @@
         desde="precio"
         :cta_url="cta_url"
         :emitir_evento="emitir_evento"
-        :abrir_agenda="abrir_agenda"
       />
     </div>
   </section>
@@ -108,65 +102,84 @@ import BotonesDemo from './BotonesDemo.vue'
 import entrada_por_scroll from './entrada-por-scroll'
 
 /**
- * Los tres planes (26/10/2026). Cómo se armaron:
+ * Los cuatro planes (3/11/2026). Cómo se armaron:
  *
- * - LA COMPETENCIA. Relevamiento del 5/10/2026 (informes/20261005-estrategia-de-marketing-y-
- *   embudo/competencia-precios.md del repo de conocimiento), con los precios de Dux, Xubio,
- *   Contabilium, Colppy y Alegra vueltos a leer en sus páginas el 26/10/2026: no cambiaron.
- *   Todos parten sus planes por comprobantes de venta por mes, y los cortes más comunes son
- *   los de Dux (250 / 1.500 / 5.000 / ilimitados) y Contabilium (1.500 / 5.000 / 10.000).
- * - LOS CORTES. Tres escalones: hasta 300 ventas (la franja de 250-300 de Dux, Xubio, Colppy
- *   y Alegra Pyme), hasta 1.500 (Dux Estándar, Contabilium Standard) y hasta 5.000 (Dux Pro,
- *   Contabilium Pro). Más de 5.000, a medida.
- * - EL PRO, A 7.000 (27/10/2026, pedido de Lucas). Mismo precio que el Pro de Dux, pero con
- *   2.000 ventas más de techo: el mismo plan rinde más que el del competidor. Más de 7.000,
- *   a medida.
- * - EL PRECIO. 5 % menos que el competidor más barato que cubre esa franja, mes a mes y sin
- *   IVA (los de ellos son + IVA). En las tres es Dux: Inicial $36.000 (× 0,95 = $34.200),
- *   Estándar $75.300 (= $71.535 → $71.500) y Pro $111.200 (= $105.640 → $105.600). Se
- *   redondea siempre para abajo, para que la diferencia nunca quede por debajo del 5 %.
- *   (Alegra Emprendedor, $27.999, es más barato que el Inicial, pero cubre 100 facturas y
- *   2 usuarios: no es la misma franja.)
- * - EL ANUAL. 20 % menos sobre doce mensualidades, como el abono anual de la política de
- *   precios del 26/10/2026 (manual_sistema/general/precios-y-contratacion.md).
- * - LOS NOMBRES. Inicial, Estándar y Pro: los de Dux para las mismas franjas, y los que más
- *   se repiten en el resto (Xubio Estándar, Contabilium Pro, Alegra Pro).
+ * - LA REFERENCIA. Contagram (contagram.com, leído el 3/11/2026): es el único competidor que
+ *   corta sus planes por OPERACIONES (ventas + compras + gastos) y no por comprobantes de
+ *   venta, y es lo que Lucas pidió copiar. Sus planes, sin IVA: Inicial $58.900 (0 a 100
+ *   operaciones, 1 usuario, excedente $800), Intermedio $89.900 (101 a 250, 2 usuarios,
+ *   $600), Plus $209.900 (251 a 500, 2 usuarios, $200), Empresa $276.900 (501 a 3.000,
+ *   3 usuarios, $80); usuario adicional $32.000. Dux y Contabilium se miraron el mismo día
+ *   para ubicarse (`00-precios-contagram-y-guion.md` §2b del programa): cortan por
+ *   comprobantes de venta y no son la referencia.
+ * - EL PRECIO. 5 % menos que el número que publica Contagram (su neto, sin IVA), y ese es el
+ *   precio FINAL nuestro: no se le suma IVA (esquema A, elegido por Lucas el 3/11/2026).
+ *   Inicial $58.900 × 0,95 = $55.955 → $55.900; Intermedio $85.405 → $85.400; Plus $199.405 →
+ *   $199.400; Empresa $263.055 → $263.000. Se redondea siempre para abajo, a la centena, para
+ *   que la diferencia nunca quede por debajo del 5 % (como se hizo el 26/10 con Dux).
+ *   Excedentes: $760 / $570 / $190 / $76. Usuario extra: $32.000 × 0,95 = $30.400.
+ * - LO QUE SE VE. La mitad: $27.950 / $42.700 / $99.700 / $131.500, porque los primeros tres
+ *   meses tienen el 50 % de descuento y Lucas pidió mostrar ya ese número, sin decir cuánto
+ *   queda después (`mensual` queda acá como referencia y es lo que dice el manual de precios).
+ * - LOS NOMBRES Y LOS CORTES. Los de Contagram: Inicial, Intermedio, Plus y Empresa; 0-100,
+ *   101-250, 251-500 y 501-3.000. Más de 3.000, a medida.
+ * - USUARIOS. 1 / 2 / 2 / 3 incluidos, como Contagram.
  */
 const PLANES = [
   {
     clave: 'inicial',
     nombre: 'Inicial',
-    limite: 'Hasta 300 ventas por mes',
-    mensual: 34200,
-    anual_por_mes: 27360,
+    limite: 'Hasta 100 operaciones por mes',
+    mensual: 55900,
+    promocional: 27950,
+    usuarios: 1,
+    excedente: 760,
     para: 'Para el comercio que arranca o atiende con un solo mostrador.',
   },
   {
-    clave: 'estandar',
-    nombre: 'Estándar',
-    limite: 'Hasta 1.500 ventas por mes',
-    mensual: 71500,
-    anual_por_mes: 57200,
-    para: 'Para el negocio con movimiento todos los días y varios vendedores.',
+    clave: 'intermedio',
+    nombre: 'Intermedio',
+    limite: 'De 101 a 250 operaciones por mes',
+    mensual: 85400,
+    promocional: 42700,
+    usuarios: 2,
+    excedente: 570,
+    para: 'Para el negocio con movimiento todos los días y un vendedor más.',
     destacado: true,
   },
   {
-    clave: 'pro',
-    nombre: 'Pro',
-    limite: 'Hasta 7.000 ventas por mes',
-    mensual: 105600,
-    anual_por_mes: 84480,
-    para: 'Para el que vende mucho: distribuidoras, mayoristas, varias sucursales.',
+    clave: 'plus',
+    nombre: 'Plus',
+    limite: 'De 251 a 500 operaciones por mes',
+    mensual: 199400,
+    promocional: 99700,
+    usuarios: 2,
+    excedente: 190,
+    para: 'Para el que vende mucho: varios vendedores, compras todas las semanas.',
+  },
+  {
+    clave: 'empresa',
+    nombre: 'Empresa',
+    limite: 'De 501 a 3.000 operaciones por mes',
+    mensual: 263000,
+    promocional: 131500,
+    usuarios: 3,
+    excedente: 76,
+    para: 'Para distribuidoras, mayoristas y negocios con varias sucursales.',
   },
 ]
 
-/** El punto de miles de Argentina: 27.360. */
+/** Cada usuario adicional, por mes, en cualquier plan (Contagram $32.000 × 0,95 → $30.400). */
+const USUARIO_EXTRA = 30400
+
+/** El punto de miles de Argentina: 27.950. */
 const FORMATO_PESOS = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
 
-/** Lo que incluye la mensualidad, con las palabras de Lucas (26/10/2026). */
+/** Lo que incluye la mensualidad, con las palabras de Lucas (26/10/2026 y 3/11/2026). */
 const INCLUYE = [
   { icono: 'bi-laptop', texto: 'Acceso al sistema desde cualquier dispositivo.' },
-  { icono: 'bi-bag-check', texto: 'El e-commerce de tu negocio funcionando 24/7.', etiqueta: 'si sumás E-commerce' },
+  { icono: 'bi-people', texto: 'Implementación y migración de tus datos, sin costo.' },
+  { icono: 'bi-bag-check', texto: 'La tienda online de tu negocio funcionando 24/7.', etiqueta: 'si sumás Tienda' },
   { icono: 'bi-stars', texto: 'El sistema de agentes, con los tokens para usarlo.', etiqueta: 'si sumás Agentes' },
   { icono: 'bi-whatsapp', texto: 'Soporte por WhatsApp de por vida.' },
   { icono: 'bi-sliders', texto: 'Desarrollo de funcionalidades a medida.' },
@@ -191,17 +204,11 @@ export default {
       type: Function,
       default: function () {},
     },
-    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
-    abrir_agenda: {
-      type: Function,
-      default: function () {},
-    },
   },
 
   data() {
     return {
-      /** true: precios con el abono anual; false: mes a mes. */
-      anual: true,
+      USUARIO_EXTRA,
     }
   },
 
@@ -220,24 +227,10 @@ export default {
   methods: {
     /**
      * @param {number} monto
-     * @returns {string} "$27.360"
+     * @returns {string} "$27.950"
      */
     formatear(monto) {
       return '$' + FORMATO_PESOS.format(monto)
-    },
-
-    /**
-     * Cambia entre anual y mes a mes, y lo deja medido (sirve para saber cuál miran).
-     *
-     * @param {boolean} anual
-     * @returns {void}
-     */
-    elegir_modo(anual) {
-      if (this.anual === anual) {
-        return
-      }
-      this.anual = anual
-      this.emitir_evento('precio_modo_elegido', { modo: anual ? 'anual' : 'mensual' })
     },
 
     /** Los grupos cuya entrada sigue al scroll (contrato del mixin). */
@@ -252,7 +245,7 @@ export default {
 .demo-precio__grupo {
   --p: 1;
   width: 100%;
-  max-width: 1120px;
+  max-width: 1180px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -260,67 +253,52 @@ export default {
   text-align: center;
 }
 
-.demo-precio__bajada {
-  max-width: 580px;
-}
-
-/* El interruptor anual / mes a mes: una píldora con dos opciones. */
-.demo-precio__modo {
-  margin-top: clamp(24px, 3.5vw, 36px);
+/* «El sistema de gestión y la implementación son gratis»: arriba de todo, como una píldora
+   de marca. Es lo primero que tiene que leerse del bloque. */
+.demo-precio__gratis {
+  margin: 0 0 clamp(14px, 2vw, 22px);
   display: inline-flex;
-  padding: 4px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
   border-radius: 999px;
-  border: 1px solid rgba(11, 132, 248, 0.25);
-  background: var(--demo-color-superficie);
-  box-shadow: 0 8px 20px -14px rgba(11, 132, 248, 0.5);
+  background: var(--demo-gradient-marca);
+  color: #fff;
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  font-weight: 700;
+  line-height: 1.3;
+  box-shadow: 0 10px 28px rgba(11, 132, 248, 0.22);
 }
 
-.demo-precio__modo-opcion {
+.demo-precio__gratis .bi {
+  font-size: 1.2em;
+}
+
+.demo-precio__bajada {
+  max-width: 600px;
+}
+
+/* El 50 % de los primeros tres meses: una píldora verde, al lado de los precios. */
+.demo-precio__promo {
+  margin: clamp(22px, 3vw, 32px) 0 0;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 9px 18px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--demo-color-texto-suave);
-  cursor: pointer;
-  transition: background 160ms ease, color 160ms ease;
-}
-
-.demo-precio__modo-opcion--activa {
-  background: linear-gradient(135deg, #0b84f8, #3a31fc);
-  color: #fff;
-}
-
-.demo-precio__modo-opcion:focus-visible {
-  outline: 2px solid var(--demo-color-azul);
-  outline-offset: 2px;
-}
-
-.demo-precio__modo-ahorro {
-  padding: 1px 8px;
+  padding: 8px 16px;
   border-radius: 999px;
   background: rgba(22, 163, 74, 0.14);
-  font-size: 0.75rem;
-  font-weight: 700;
   color: #15803d;
+  font-size: clamp(0.92rem, 1.3vw, 1rem);
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-.demo-precio__modo-opcion--activa .demo-precio__modo-ahorro {
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
-}
-
-/* Una sola tarjeta, como la de antes: arriba las cabezas de los tres planes (el degradé
-   azul y la cifra grande) y abajo, común a los tres, lo que incluye. El borde y la sombra
+/* Una sola tarjeta, como la de antes: arriba las cabezas de los cuatro planes (el degradé
+   azul y la cifra grande) y abajo, común a los cuatro, lo que incluye. El borde y la sombra
    azules son los de la marca. */
 .demo-precio__tarjeta {
   width: 100%;
-  margin-top: clamp(22px, 3vw, 32px);
+  margin-top: clamp(16px, 2.4vw, 24px);
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(11, 132, 248, 0.35);
@@ -341,7 +319,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: clamp(24px, 3vw, 34px);
+  padding: clamp(22px, 2.6vw, 30px);
   background:
     radial-gradient(120% 90% at 0% 0%, rgba(11, 132, 248, 0.22), transparent 60%),
     radial-gradient(100% 80% at 100% 100%, rgba(58, 49, 252, 0.14), transparent 60%),
@@ -352,7 +330,7 @@ export default {
   border-top: 1px solid rgba(11, 132, 248, 0.18);
 }
 
-/* El del medio, con el degradé de la tarjeta anterior (el más cargado): es el que tiene
+/* El Intermedio, con el degradé de la tarjeta anterior (el más cargado): es el que tiene
    que ganar la mirada. */
 .demo-precio__cabeza--destacada {
   background:
@@ -377,14 +355,17 @@ export default {
 .demo-precio__limite {
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  font-size: clamp(1rem, 1.4vw, 1.08rem);
+  font-size: clamp(0.98rem, 1.3vw, 1.04rem);
   font-weight: 700;
+  line-height: 1.3;
   color: var(--demo-color-texto);
 }
 
 .demo-precio__limite .bi {
+  flex: 0 0 auto;
+  margin-top: 2px;
   color: var(--demo-color-azul);
 }
 
@@ -399,7 +380,7 @@ export default {
 }
 
 .demo-precio__cifra strong {
-  font-size: clamp(2.3rem, 4.4vw, 3rem);
+  font-size: clamp(2.2rem, 3.6vw, 2.7rem);
   font-weight: 800;
   letter-spacing: -0.03em;
   color: #1c2333;
@@ -407,16 +388,36 @@ export default {
 }
 
 .demo-precio__periodo {
-  font-size: clamp(1rem, 1.5vw, 1.1rem);
+  font-size: clamp(0.98rem, 1.4vw, 1.05rem);
   font-weight: 500;
   color: var(--demo-color-texto-suave);
+}
+
+/* Los dos datos del plan: usuarios incluidos y operación extra. */
+.demo-precio__detalle {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: clamp(0.88rem, 1.2vw, 0.94rem);
+  line-height: 1.4;
+  color: var(--demo-color-texto);
+}
+
+.demo-precio__detalle li::before {
+  content: '·';
+  margin-right: 6px;
+  color: var(--demo-color-azul);
+  font-weight: 700;
 }
 
 .demo-precio__para {
   margin: auto 0 0;
   padding-top: 12px;
   border-top: 1px dashed rgba(11, 132, 248, 0.25);
-  font-size: clamp(0.9rem, 1.2vw, 0.96rem);
+  font-size: clamp(0.88rem, 1.2vw, 0.94rem);
   line-height: 1.5;
   color: var(--demo-color-texto-suave);
 }
@@ -453,7 +454,7 @@ export default {
   font-size: 1.1rem;
 }
 
-/* "si sumás E-commerce": un dato, no un adorno. Chica, en el renglón, sin competir. */
+/* "si sumás Tienda": un dato, no un adorno. Chica, en el renglón, sin competir. */
 .demo-precio__etiqueta {
   display: inline-block;
   margin-left: 4px;
@@ -468,43 +469,63 @@ export default {
 
 .demo-precio__nota {
   margin: clamp(20px, 3vw, 28px) 0 clamp(18px, 2.4vw, 26px);
-  max-width: 640px;
+  max-width: 680px;
   font-size: clamp(0.88rem, 1.2vw, 0.95rem);
   line-height: 1.55;
   color: var(--demo-color-texto-suave);
 }
 
-/* Tablet: lo que incluye en dos columnas. */
+.demo-precio__nota strong {
+  color: var(--demo-color-texto);
+}
+
+/* Tablet: los planes de a dos, y lo que incluye en dos columnas. */
 @media (min-width: 640px) {
+  .demo-precio__planes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .demo-precio__cabeza + .demo-precio__cabeza {
+    border-top: 0;
+  }
+
+  .demo-precio__cabeza:nth-child(even) {
+    border-left: 1px solid rgba(11, 132, 248, 0.18);
+  }
+
+  .demo-precio__cabeza:nth-child(n + 3) {
+    border-top: 1px solid rgba(11, 132, 248, 0.18);
+  }
+
   .demo-precio__lista {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Escritorio: los tres planes en una fila, separados por una línea vertical. */
-@media (min-width: 900px) {
+/* Escritorio: los cuatro planes en una fila, separados por una línea vertical. */
+@media (min-width: 1100px) {
   .demo-precio__planes {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .demo-precio__cabeza + .demo-precio__cabeza {
-    border-top: 0;
-    border-left: 1px solid rgba(11, 132, 248, 0.18);
-  }
-
-  /* Los cuatro renglones de cada plan (rótulo, límite, cifra, para quién) en las mismas
-     filas en los tres: con subgrid la línea punteada y el texto de abajo quedan a la misma
-     altura aunque un renglón ocupe más en un plan. Un navegador sin subgrid cae en un grid
-     común: cada plan con sus filas. */
-  .demo-precio__planes {
-    grid-template-rows: repeat(4, auto);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    /* Los cinco renglones de cada plan (rótulo, límite, cifra, detalle, para quién) en las
+       mismas filas en los cuatro: con subgrid la línea punteada y el texto de abajo quedan a
+       la misma altura aunque un renglón ocupe más en un plan. Un navegador sin subgrid cae en
+       un grid común: cada plan con sus filas. */
+    grid-template-rows: repeat(5, auto);
   }
 
   .demo-precio__cabeza {
     display: grid;
     grid-template-rows: subgrid;
-    grid-row: span 4;
+    grid-row: span 5;
     row-gap: 10px;
+  }
+
+  .demo-precio__cabeza:nth-child(n + 3) {
+    border-top: 0;
+  }
+
+  .demo-precio__cabeza + .demo-precio__cabeza {
+    border-left: 1px solid rgba(11, 132, 248, 0.18);
   }
 
   .demo-precio__para {
@@ -513,12 +534,6 @@ export default {
 
   .demo-precio__lista {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .demo-precio__modo-opcion {
-    transition: none;
   }
 }
 </style>
