@@ -18,13 +18,14 @@
         v-if="listo"
         :cta_url="CTA_URL"
         :emitir_evento="emitir_evento"
-        :abrir_agenda="abrir_agenda"
       />
     </div>
   </main>
 
-  <!-- La agenda de la demo: el botón principal de cada CTA la abre. Vive afuera del
-       scroller (se teletransporta al <body>) para que sus gestos no muevan la página. -->
+  <!-- La agenda de la demo por turno. Desde el 3/11/2026 (programa «Prueba gratuita de 7 días»)
+       ningún botón de la página la abre: los CTA llevan a /prueba. Se abre sola en la ruta
+       /demo (meta.agenda), para quien tenga ese link, y al cerrarla se vuelve a /. Vive afuera
+       del scroller (se teletransporta al <body>) para que sus gestos no muevan la página. -->
   <agenda-demo-modal
     :abierto="agenda_abierta"
     :seccion="agenda_seccion"
@@ -44,10 +45,11 @@ import { WHATSAPP_REFERENCIAS_URL, SCROLL_GUIADO } from '@/config'
 import '@/assets/scss/experiencia.scss'
 
 /**
- * La SEGUNDA opción de cada CTA desde el 22/10/2026 (misión `demo-autogestionada-landing`):
- * la principal es «Elegí día y hora de tu demo», que abre la agenda (AgendaDemoModal.vue) y
- * reserva sin pasar por WhatsApp. Este enlace queda como «¿Tenés dudas? Escribinos por
- * WhatsApp», con el mismo número, la misma frase y la misma referencia [CC:…].
+ * La SEGUNDA opción de cada CTA: la principal es «Empezá tu prueba gratis», que lleva a
+ * /prueba (programa «Prueba gratuita de 7 días», 3/11/2026; del 22/10 al 3/11 era «Elegí día y
+ * hora de tu demo», que abría la agenda de AgendaDemoModal.vue, hoy en /demo). Este enlace
+ * queda como «¿Tenés dudas? Escribinos por WhatsApp», con el mismo número, la misma frase y la
+ * misma referencia [CC:…].
  *
  * El CTA de WhatsApp: agendar la demo, por WhatsApp, al número del canal de leads
  * (+54 3444 544199, el mismo que usaba esta web). El texto no saluda a nadie por su nombre
@@ -122,6 +124,15 @@ export default {
       this.avance = crear_avance_guiado(scroller)
     }
     this.listo = true
+    this.sincronizar_agenda_con_ruta()
+  },
+
+  watch: {
+    /* La misma Home sirve a `/` y a `/demo`: al pasar de una a otra sin recargar, el modal
+       sigue a la ruta. */
+    '$route.meta.agenda'() {
+      this.sincronizar_agenda_con_ruta()
+    },
   },
 
   beforeUnmount() {
@@ -154,12 +165,29 @@ export default {
     },
 
     /**
-     * Abre la agenda. La llaman los botones «Elegí día y hora de tu demo» de cada sección.
+     * Abre o cierra la agenda según la ruta: en /demo abierta, en cualquier otra cerrada.
+     *
+     * @returns {void}
+     */
+    sincronizar_agenda_con_ruta() {
+      const en_demo = !!(this.$route && this.$route.meta && this.$route.meta.agenda)
+      if (en_demo && !this.agenda_abierta) {
+        this.abrir_agenda('ruta_demo')
+      } else if (!en_demo && this.agenda_abierta) {
+        this.agenda_abierta = false
+        this.liberar_fondo()
+        this.agenda_origen = null
+      }
+    },
+
+    /**
+     * Abre la agenda. Desde el 3/11/2026 la abre solo la ruta /demo (antes, los botones
+     * «Elegí día y hora de tu demo» de cada sección).
      *
      * El botón se toma del evento y no de `document.activeElement`: Safari no enfoca un
      * <button> al hacerle clic, y el foco tiene que volver a él al cerrar.
      *
-     * @param {string} seccion hero, agentes_ia, precio, cierre.
+     * @param {string} seccion hero, agentes_ia, precio, cierre, ruta_demo.
      * @param {Event} [evento] El clic.
      * @returns {void}
      */
@@ -185,6 +213,11 @@ export default {
           origen.focus({ preventScroll: true })
         }
       })
+      /* Cerrarla desde /demo es volver a la página (sin dejar /demo en el historial: el
+         botón «atrás» del navegador la volvería a abrir). */
+      if (this.$route && this.$route.meta && this.$route.meta.agenda) {
+        this.$router.replace({ path: '/', query: this.$route.query })
+      }
     },
 
     /**

@@ -15,7 +15,8 @@
          8. El desarrollo a medida (antes del precio desde la tercera vuelta del 26/10/2026:
             así la mensualidad se lee sabiendo que incluye los desarrollos).
          9. El precio.
-        10. El CTA: elegir día y hora de la demo (WhatsApp como segunda opción).
+        10. El CTA: empezar la prueba gratis de 7 días (WhatsApp como segunda opción). Hasta el
+            3/11/2026 era elegir día y hora de la demo por turno; la agenda sigue en /demo.
 
        Salieron ese día, por pedido explícito: la apertura "Tu negocio funciona porque vos te
        acordás. / Y eso tiene un límite.", "No es un sistema de facturación. Es otra cosa."
@@ -31,13 +32,13 @@
        `demo-scroll-dolor` se conserva porque es el scope de las variables de color del tema
        en experiencia.scss y de los selectores de los componentes portados. -->
   <section ref="raiz" class="demo-scroll-dolor" :class="{ 'demo-scroll-dolor--claro': tema === 'claro' }">
-    <hero-video :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
+    <hero-video :cta_url="cta_url" :emitir_evento="emitir_evento" />
 
     <seccion-nueva-era />
 
     <seccion-ia-nativa />
 
-    <seccion-agentes-ia :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
+    <seccion-agentes-ia :cta_url="cta_url" :emitir_evento="emitir_evento" />
 
     <!-- Suelta en el scroll, NO dentro de un fondo-seccion-sticky: trae su propio pin (que con
          el scroll normal no se usa: la sección va en el flujo). -->
@@ -49,7 +50,7 @@
 
     <seccion-desarrollo-medida />
 
-    <seccion-precio :cta_url="cta_url" :emitir_evento="emitir_evento" :abrir_agenda="abrir_agenda" />
+    <seccion-precio :cta_url="cta_url" :emitir_evento="emitir_evento" />
 
     <!-- El cierre: el CTA. Con el scroll guiado va dentro del fondo sticky que usaba el puente
          al formulario (`boton_avance` apagado: es la última sección). Con el scroll normal va
@@ -61,7 +62,6 @@
         :cta_url="cta_url"
         :progreso="progreso"
         :emitir_evento="emitir_evento"
-        :abrir_agenda="abrir_agenda"
       />
     </fondo-seccion-sticky>
     <section v-else class="demo-scroll-dolor__cierre demo-fondo-seccion--puente">
@@ -71,7 +71,6 @@
         :cta_url="cta_url"
         :progreso="1"
         :emitir_evento="emitir_evento"
-        :abrir_agenda="abrir_agenda"
       />
     </section>
   </section>
@@ -124,14 +123,6 @@ export default {
      * Firma: emitir_evento(nombre: string, payload: object) -> void.
      */
     emitir_evento: {
-      type: Function,
-      default: function () {},
-    },
-    /**
-     * Abre la agenda de la demo (el botón principal de cada CTA). Inyectado por Home.vue.
-     * Firma: abrir_agenda(seccion: string, evento?: Event) -> void.
-     */
-    abrir_agenda: {
       type: Function,
       default: function () {},
     },

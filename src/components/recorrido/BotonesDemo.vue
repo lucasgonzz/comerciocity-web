@@ -1,8 +1,11 @@
 <template>
-  <!-- El par de botones de cada CTA de la página (misión `demo-autogestionada-landing`):
+  <!-- El par de botones de cada CTA de la página:
 
-         1. «Elegí día y hora de tu demo»: abre el modal de la agenda. Es un <button> y no un
-            <a>: no navega, abre un diálogo (aria-haspopup).
+         1. «Empezá tu prueba gratis»: lleva a /prueba (programa «Prueba gratuita de 7 días»,
+            3/11/2026). Es un enlace de verdad (<router-link> renderiza un <a href="/prueba">):
+            se abre con el teclado, con «abrir en pestaña nueva» y con el gesto largo del
+            teléfono. Hasta el 3/11/2026 era «Elegí día y hora de tu demo» y abría el modal de la
+            agenda (misión `demo-autogestionada-landing`); la agenda sigue viva en /demo.
          2. «¿Tenés dudas? Escribinos por WhatsApp»: el MISMO enlace de siempre, con la
             referencia [CC:…] que arma Home.vue, y el MISMO evento (`cta_demo_tocado`, que el
             píxel traduce a Contact + CtaWhatsApp).
@@ -14,15 +17,14 @@
     class="demo-botones"
     :class="['demo-botones--' + variante, 'demo-botones--' + tono, 'demo-botones--' + alineacion]"
   >
-    <button
-      type="button"
+    <router-link
+      to="/prueba"
       class="demo-boton-marca demo-botones__principal"
-      aria-haspopup="dialog"
-      @click="on_agenda"
+      @click="on_prueba"
     >
-      <i class="bi bi-calendar-check" aria-hidden="true"></i>
-      <span>Elegí día y hora de tu demo</span>
-    </button>
+      <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
+      <span>Empezá tu prueba gratis</span>
+    </router-link>
 
     <!-- Un <a> de verdad: se abre con el teclado, con "abrir en pestaña nueva" y con el gesto
          largo del teléfono. -->
@@ -49,12 +51,12 @@ export default {
       type: String,
       required: true,
     },
-    /** Sección desde la que se toca: viaja en `cta_demo_tocado` y en `agenda_abierta`. */
+    /** Sección desde la que se toca: viaja en `cta_demo_tocado` y en `prueba_cta_tocado`. */
     desde: {
       type: String,
       required: true,
     },
-    /** Datos extra del evento de WhatsApp (p.ej. la diapositiva de los agentes). */
+    /** Datos extra del evento (p.ej. la diapositiva de los agentes). */
     datos_evento: {
       type: Object,
       default: function () {
@@ -80,20 +82,12 @@ export default {
       type: Function,
       default: function () {},
     },
-    /** Abre el modal de la agenda: abrir_agenda(seccion, evento_del_clic). Lo da Home.vue. */
-    abrir_agenda: {
-      type: Function,
-      default: function () {},
-    },
   },
 
   methods: {
-    /**
-     * @param {MouseEvent} evento
-     * @returns {void}
-     */
-    on_agenda(evento) {
-      this.abrir_agenda(this.desde, evento)
+    /** @returns {void} */
+    on_prueba() {
+      this.emitir_evento('prueba_cta_tocado', Object.assign({ desde: this.desde }, this.datos_evento))
     },
 
     /** @returns {void} */

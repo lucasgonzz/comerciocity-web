@@ -1,32 +1,32 @@
 <template>
-  <!-- El cierre de la página: elegir día y hora de la demo (o escribir por WhatsApp). `data-bloque-id="cta"` es lo que Recorrido
+  <!-- El cierre de la página: empezar la prueba gratis (o escribir por WhatsApp). `data-bloque-id="cta"` es lo que Recorrido
        observa para reportar que el visitante llegó al final. -->
   <section class="demo-cta" data-bloque-id="cta">
     <h2 class="demo-cta__titulo" :style="estilo_entrada(0)">
       ¿Querés verlo funcionando con tu negocio?
     </h2>
-    <!-- Cómo es la demo, en los mismos términos que la ofrece el agente de WhatsApp. Hasta el
-         13/10/2026 acá decía "la recorrés con uno de nosotros", y el agente la ofrecía como
-         una demo que se recorre solo: esa expectativa cruzada es la que más leads perdió
-         (informe del 5/10, §9). "dos horas" con letras: el detector de horas del agente
-         retiene el mensaje si ve "2 hs". -->
+    <!-- Cómo es la prueba, con las palabras del guion de la campaña (bloque B15, programa
+         «Prueba gratuita de 7 días», 3/11/2026). Hasta el 3/11/2026 acá se explicaba la demo
+         por turno ("la tenés reservada dos horas"); esa demo sigue viva en /demo, fuera del
+         flujo principal. "siete" con letras, como en el guion. -->
     <p class="demo-cta__bajada" :style="estilo_entrada(1)">
-      Agendá tu demo. Te la preparamos con la configuración de tu negocio y la recorrés vos, a
-      tu ritmo, en menos de una hora. La tenés reservada dos horas, sin usuario ni contraseña.
+      La prueba es gratis y dura siete días. Te registrás con tu nombre, tu teléfono, tu correo y
+      el nombre de tu negocio, y entrás en el momento al sistema completo: con la tienda online y
+      los agentes de inteligencia artificial funcionando. Sin turno y sin tarjeta.
     </p>
 
     <div class="demo-cta__accion" :style="estilo_entrada(2)">
-      <!-- Desde el 22/10/2026 el principal reserva el turno acá mismo (la agenda) y WhatsApp
-           queda como botón secundario, con el mismo enlace y el mismo evento de siempre. -->
+      <!-- El principal lleva a /prueba y WhatsApp queda como botón secundario, con el mismo
+           enlace y el mismo evento de siempre. -->
       <botones-demo
         variante="cierre"
         desde="cierre"
         :cta_url="cta_url"
         :emitir_evento="emitir_evento"
-        :abrir_agenda="abrir_agenda"
       />
       <p class="demo-cta__nota">
-        Elegís el turno, te llega el acceso por correo y entrás a tu página.
+        Desde el primer día te escribe Martín por WhatsApp: le mandás tu Excel o el PDF de tu
+        proveedor y te lo cargamos nosotros.
       </p>
     </div>
 
@@ -94,11 +94,6 @@ export default {
       default: 0,
     },
     emitir_evento: {
-      type: Function,
-      default: function () {},
-    },
-    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
-    abrir_agenda: {
       type: Function,
       default: function () {},
     },

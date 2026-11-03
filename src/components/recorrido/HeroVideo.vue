@@ -48,8 +48,9 @@
       decoding="async"
     />
 
-    <!-- Barra superior: la marca y el CTA de la página. Desde el 22/10/2026 son dos: elegir
-         día y hora de la demo (abre la agenda) y, debajo, WhatsApp para el que tiene dudas. -->
+    <!-- Barra superior: la marca y el CTA de la página. Son dos: empezar la prueba gratis
+         (lleva a /prueba; desde el 3/11/2026, antes abría la agenda de la demo) y, debajo,
+         WhatsApp para el que tiene dudas. -->
     <header class="demo-hero-video__barra">
       <!-- "Para quién es", en la primera línea de la página (informe del 5/10/2026, §9.1):
            lo primero que hay que resolverle al que entra es si esto es para su rubro, y es lo
@@ -73,15 +74,14 @@
            texto visible (WCAG 2.5.3, quien maneja por voz dice lo que ve; el span oculto con
            display:none no cuenta). -->
       <div class="demo-hero-video__acciones">
-        <button
-          type="button"
+        <router-link
+          to="/prueba"
           class="demo-hero-video__cta"
-          aria-haspopup="dialog"
-          @click="abrir_agenda('hero', $event)"
+          @click="emitir_evento('prueba_cta_tocado', { desde: 'hero' })"
         >
-          <i class="bi bi-calendar-check" aria-hidden="true"></i>
-          <span>Elegí día y hora de tu demo</span>
-        </button>
+          <i class="bi bi-rocket-takeoff" aria-hidden="true"></i>
+          <span>Empezá tu prueba gratis</span>
+        </router-link>
         <a
           class="demo-hero-video__whatsapp"
           :href="cta_url"
@@ -197,11 +197,6 @@ export default {
     },
     /** Tracking centralizado: emitir_evento(nombre, payload). */
     emitir_evento: {
-      type: Function,
-      default: function () {},
-    },
-    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
-    abrir_agenda: {
       type: Function,
       default: function () {},
     },
@@ -690,7 +685,7 @@ export default {
     display: inline;
   }
 
-  /* Dos renglones como mucho, alineado a la izquierda: «Elegí día y hora / de tu demo». */
+  /* Dos renglones como mucho, alineado a la izquierda: «Empezá tu / prueba gratis». */
   .demo-hero-video__cta {
     max-width: 176px;
     min-height: 44px;

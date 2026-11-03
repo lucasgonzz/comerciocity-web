@@ -118,7 +118,6 @@
           :datos_evento="{ diapositiva: actual.clave }"
           :cta_url="cta_url"
           :emitir_evento="emitir_evento"
-          :abrir_agenda="abrir_agenda"
         />
       </div>
     </div>
@@ -157,11 +156,6 @@ export default {
       required: true,
     },
     emitir_evento: {
-      type: Function,
-      default: function () {},
-    },
-    /** Abre la agenda de la demo: abrir_agenda(seccion, evento). Lo da Home.vue. */
-    abrir_agenda: {
       type: Function,
       default: function () {},
     },
