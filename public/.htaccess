@@ -10,6 +10,10 @@
   RewriteEngine On
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
+  # /demo y /prueba son rutas de la SPA, pero en este hosting existen carpetas con esos nombres (los sistemas de
+  # demo y de prueba anteriores, con api/ y spa/): sin esta regla Apache sirve la carpeta (403) y no la landing.
+  # Solo las rutas exactas; /prueba/<uuid> no es una carpeta y ya cae en la SPA por la regla de abajo.
+  RewriteRule ^(demo|prueba)/?$ /index.html [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ /index.html [L]
