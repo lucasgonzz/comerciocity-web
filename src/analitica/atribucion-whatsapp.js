@@ -8,7 +8,7 @@ const TEXTOS = ['campaign_name', 'adset_name', 'ad_name', 'utm_source', 'utm_med
 const CAMPOS = IDS.concat(TEXTOS)
 let atribucion_visita
 
-function limpiar(datos) {
+export function limpiar_atribucion(datos) {
   const resultado = {}
   CAMPOS.forEach(function (campo) {
     const valor = datos[campo]
@@ -30,11 +30,11 @@ export function resolver_atribucion({ search = '', storage, ahora = Date.now() }
       if (previo && previo.version === 2 && Number.isFinite(previo.created_at) &&
         previo.created_at <= ahora && ahora - previo.created_at < TTL_ATRIBUCION &&
         previo.datos && typeof previo.datos === 'object' && !Array.isArray(previo.datos)) {
-        return limpiar(previo.datos)
+        return limpiar_atribucion(previo.datos)
       }
     } catch (_) { /* El almacenamiento bloqueado o corrupto no impide abrir WhatsApp. */ }
   }
-  snapshot = { version: 2, created_at: ahora, datos: limpiar(Object.fromEntries(query)) }
+  snapshot = { version: 2, created_at: ahora, datos: limpiar_atribucion(Object.fromEntries(query)) }
   try { storage.setItem(CLAVE_ATRIBUCION, JSON.stringify(snapshot)) } catch (_) { /* Sigue en memoria. */ }
   return snapshot.datos
 }
@@ -71,7 +71,7 @@ export async function solicitar_referencia({ endpoint, datos, fetcher = globalTh
       return fetcher(endpoint, {
         method: 'POST', mode: 'cors', credentials: 'omit', referrerPolicy: 'no-referrer',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify(limpiar(datos || {})), signal: controlador ? controlador.signal : undefined,
+        body: JSON.stringify(limpiar_atribucion(datos || {})), signal: controlador ? controlador.signal : undefined,
       })
     }).then(async function (respuesta) {
       if (respuesta.status !== 201) return null

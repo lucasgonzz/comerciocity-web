@@ -14,7 +14,7 @@
  *   | `scroll_bloque_visible` (50 % visto)  | `ViewContent` con `content_name` = sección  |
  *   | `cta_demo_tocado` (cualquier CTA)     | `Contact` + `CtaWhatsApp` (propio), con la sección |
  *   | `prueba_cta_tocado` (botón principal) | `CtaPrueba` (propio), con la sección        |
- *   | `prueba_alta` (201 del alta)          | `Lead` / `StartTrial` con `eventID`         |
+ *   | `prueba_alta` (201 del alta)          | `Lead` con `eventID` confirmado por el admin |
  *   | `agenda_abierta` (abre el selector)   | `CtaAgenda` (propio), con la sección        |
  *   | `demo_reservada` (201 de la reserva)  | `Lead` / `Schedule` con el `eventID` del admin |
  *
@@ -25,10 +25,9 @@
  * Desde el 3/11/2026 (programa «Prueba gratuita de 7 días») el botón principal de cada CTA es
  * «Empezá tu prueba gratis», que lleva a `/prueba`: `CtaPrueba` (propio) mide desde qué sección
  * se tocó, y la conversión que optimiza la campaña pasa a ser **`StartTrial`** (evento estándar
- * de Meta), que sale junto con `Lead` cuando el admin confirma el alta (201). Los dos llevan
- * `eventID`: los que manda el admin en `meta_eventos`, o, si no los manda, `prueba:<uuid>:Lead` y
- * `prueba:<uuid>:StartTrial` (ver `analitica/prueba.js`), que son los que el admin usa en la API
- * de Conversiones para que Meta deduplique.
+ * de Meta). El alta (201) solo dispara `Lead`, con el `eventID` que confirma el admin para
+ * deduplicar con la API de Conversiones. `StartTrial` lo registra el admin por CAPI recién
+ * con el primer ingreso real al sistema. Ni crear la cuenta ni terminar el armado lo prueban.
  *
  * `CtaAgenda` es el gemelo de `CtaWhatsApp` para el botón «Elegí día y hora de tu demo» (abre
  * el modal de la agenda, que desde el 3/11/2026 vive en `/demo`, fuera del flujo principal).
@@ -177,9 +176,10 @@ export function registrar_evento(nombre, payload) {
   }
 
   if (nombre === 'prueba_alta') {
-    /* La lista ya viene filtrada por prueba.js (solo Lead/StartTrial con id válido). */
+    /* Defensa también en la salida: un admin anterior puede incluir StartTrial en el 201. */
     ;(Array.isArray(datos.meta_eventos) ? datos.meta_eventos : []).forEach(function (evento) {
-      if (!evento || !evento.nombre || !evento.event_id) {
+      if (!evento || evento.nombre !== 'Lead' || typeof evento.event_id !== 'string' ||
+          !/^[A-Za-z0-9_\-.:]{1,120}$/.test(evento.event_id)) {
         return
       }
       window.fbq('track', evento.nombre, Object.assign({ content_name: 'prueba' }, atribucion), {

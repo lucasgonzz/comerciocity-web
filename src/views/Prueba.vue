@@ -838,7 +838,7 @@ export default {
      */
     resolver(r) {
       if (r.tipo === 'creada') {
-        /* Antes de cualquier otra cosa: el píxel (Lead + StartTrial con sus ids). */
+        /* Solo Lead con el ID de la CAPI. StartTrial espera el primer ingreso real al sistema. */
         this.emitir_evento('prueba_alta', { meta_eventos: r.meta_eventos, rubro: this.datos.rubro || '' })
         /* La contraseña no se guarda en ningún lado de esta página. */
         this.datos.password = ''

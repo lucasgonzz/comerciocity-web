@@ -6,6 +6,7 @@ import {
   crear_mock, uuid_valido,
 } from '../src/analitica/prueba.js'
 import { pedir_json } from '../src/analitica/agenda-demo.js'
+import { resolver_atribucion } from '../src/analitica/atribucion-whatsapp.js'
 
 const DATOS = {
   nombre: '  Ana   Pérez ',
@@ -47,7 +48,7 @@ test('cada campo obligatorio tiene su error, y la contraseña solo pide 8 caract
 test('el body lleva exactamente las claves de C6, el teléfono con +549 y la contraseña intacta', () => {
   const body = armar_body_alta(Object.assign({}, DATOS, {
     password: ' clave con espacios ',
-    atribucion: { utm_source: 'ig', utm_campaign: 'prueba', fbclid: 'abc', campaign_id: '1' },
+    atribucion: { utm_source: 'ig', utm_campaign: 'prueba', fbclid: 'abc', campaign_id: '1', adset_id: '2', ad_id: '3' },
     fbp: 'fb.1.1700000000.123', fbc: 'cookie rara', event_source_url: 'https://comerciocity.com/prueba',
     sitio_web: '', abierto_hace_ms: 4100.6,
   }))
@@ -60,6 +61,7 @@ test('el body lleva exactamente las claves de C6, el teléfono con +549 y la con
     sitio_web: '',
     abierto_hace_ms: 4101,
     rubro: 'ferreteria',
+    atribucion: { campaign_id: '1', adset_id: '2', ad_id: '3', utm_source: 'ig', utm_campaign: 'prueba', fbclid: 'abc' },
     utm_source: 'ig',
     utm_campaign: 'prueba',
     fbp: 'fb.1.1700000000.123',
@@ -71,17 +73,65 @@ test('el body lleva exactamente las claves de C6, el teléfono con +549 y la con
   assert.equal(sin.telefono, 'abc')
 })
 
-test('el 201 da la uuid y los eventos del píxel: los del admin si vienen, si no los derivados', () => {
+test('el 201 da la uuid y solo el Lead confirmado por el admin, sin inventar IDs', () => {
   const r = interpretar_alta(201, { uuid: 'a1b2c3d4-e5', meta_eventos: [{ nombre: 'Lead', event_id: 'x1' }, { nombre: 'Otro', event_id: 'x2' }] })
   assert.equal(r.tipo, 'creada')
   assert.equal(r.uuid, 'a1b2c3d4-e5')
   assert.deepEqual(r.meta_eventos, [{ nombre: 'Lead', event_id: 'x1' }])
-  assert.deepEqual(eventos_meta_del_alta('a1b2c3d4-e5', null), [
-    { nombre: 'Lead', event_id: 'prueba:a1b2c3d4-e5:Lead' },
-    { nombre: 'StartTrial', event_id: 'prueba:a1b2c3d4-e5:StartTrial' },
-  ])
+  assert.deepEqual(eventos_meta_del_alta('a1b2c3d4-e5', null), [])
+  assert.deepEqual(eventos_meta_del_alta('a1b2c3d4-e5', []), [])
   assert.equal(interpretar_alta(201, {}).tipo, 'error')
   assert.equal(uuid_valido('corto'), false)
+})
+
+test('un backend anterior no puede adelantar StartTrial y el Lead no se duplica', () => {
+  const r = interpretar_alta(201, { uuid: 'a1b2c3d4-e5', meta_eventos: [
+    { nombre: 'Lead', event_id: 'cc-lead-123-web-lead' },
+    { nombre: 'StartTrial', event_id: 'cc-lead-123-web-starttrial' },
+    { nombre: 'Lead', event_id: 'cc-lead-123-web-lead' },
+    { nombre: 'Purchase', event_id: 'cc-lead-123-web-purchase' },
+  ] })
+  assert.deepEqual(r.meta_eventos, [{ nombre: 'Lead', event_id: 'cc-lead-123-web-lead' }])
+  assert.deepEqual(eventos_meta_del_alta('a1b2c3d4-e5', [{ nombre: 'Lead', event_id: 'id con espacios' }]), [])
+  assert.deepEqual(eventos_meta_del_alta('corto', [{ nombre: 'Lead', event_id: 'valido' }]), [])
+  for (const status of [409, 422, 429, 500, 503]) {
+    assert.equal(interpretar_alta(status, { uuid: 'a1b2c3d4-e5', meta_eventos: r.meta_eventos }).meta_eventos, undefined)
+  }
+})
+
+test('la atribución conserva IDs y nombres y descarta claves ajenas o inválidas sin filtrar datos personales', () => {
+  const atribucion = {
+    campaign_id: '123', adset_id: '456', ad_id: '789',
+    campaign_name: 'Imperio', adset_name: 'Argentina', ad_name: 'Presupuestos A',
+    utm_source: 'facebook', utm_medium: 'paid_social', utm_campaign: 'imperio',
+    utm_content: 'presupuestos_a', utm_term: 'amplio', fbclid: 'clic_valido',
+  }
+  const body = armar_body_alta({ ...DATOS, atribucion: { ...atribucion,
+    email: 'no-va@ejemplo.test', password: 'no-va', lead_id: '999', utm_otro: 'no-va',
+  } })
+  assert.deepEqual(body.atribucion, atribucion)
+  assert.equal(body.utm_otro, undefined)
+  assert.equal(body.utm_campaign, atribucion.utm_campaign)
+  const invalida = armar_body_alta({ ...DATOS, atribucion: {
+    campaign_id: '{{campaign.id}}', adset_id: 'no-numerico', ad_id: '1'.repeat(31),
+    utm_source: 'texto\ninyectado', fbclid: 'x'.repeat(256),
+  } })
+  assert.equal(invalida.atribucion, undefined)
+  assert.equal(invalida.utm_source, undefined)
+  assert.equal(armar_body_alta(DATOS).atribucion, undefined)
+})
+
+test('la llegada desde un anuncio conserva sus IDs al navegar sin query hasta el alta', () => {
+  const guardado = new Map()
+  const storage = { getItem: clave => guardado.get(clave), setItem: (clave, valor) => guardado.set(clave, valor) }
+  const search = '?campaign_id=123&adset_id=456&ad_id=789&fbclid=click_original&utm_source=instagram&utm_campaign=imperio'
+  const llegada = resolver_atribucion({ search, storage, ahora: 1000 })
+  const siguiente = resolver_atribucion({ search: '', storage, ahora: 2000 })
+  const body = armar_body_alta({ ...DATOS, atribucion: siguiente })
+  assert.deepEqual(body.atribucion, llegada)
+  assert.equal(body.atribucion.ad_id, '789')
+  assert.equal(body.atribucion.fbclid, 'click_original')
+  assert.equal(body.utm_campaign, 'imperio')
 })
 
 test('el 422 va por campo (errores o errors), el 409 por code o codigo, y el resto por tipo', () => {

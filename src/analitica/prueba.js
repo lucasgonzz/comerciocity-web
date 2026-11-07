@@ -10,7 +10,7 @@
  * El contrato C6, en corto:
  *
  *   POST {admin}/landing/prueba/alta
- *     body  { nombre, telefono, email, empresa, password, rubro?, utm_*?, fbp?, fbc?,
+ *     body  { nombre, telefono, email, empresa, password, rubro?, atribucion?, utm_*?, fbp?, fbc?,
  *             event_source_url?, sitio_web (honeypot, vacío), abierto_hace_ms }
  *     201   { uuid, meta_eventos?: [{ nombre, event_id }] }
  *     409   { code: ya_es_cliente | ya_tiene_prueba | telefono_invalido, mensaje? }
@@ -27,6 +27,7 @@
 
 /* Con extensión: `node --test` (sin Vite) no la resuelve solo. */
 import { normalizar_whatsapp, correo_valido } from './agenda-demo.js'
+import { limpiar_atribucion } from './atribucion-whatsapp.js'
 
 /** Topes de espera: el alta crea el lead y la instancia (lento); el estado es una lectura. */
 export const TIEMPO_ALTA_MS = 20000
@@ -45,8 +46,8 @@ export const FALLOS_SEGUIDOS_PARA_AVISAR = 20
 /** La única regla de la contraseña (Lucas, 3/11/2026): al menos 8 caracteres. Nada más. */
 export const PASSWORD_MINIMO = 8
 
-/** Eventos del píxel que el alta puede disparar. Cualquier otro se ignora. */
-export const EVENTOS_META_DEL_ALTA = ['Lead', 'StartTrial']
+/** El alta no prueba que el negocio haya entrado. StartTrial se registra en el primer ingreso real. */
+export const EVENTOS_META_DEL_ALTA = ['Lead']
 
 /**
  * Los 14 rubros de `demo_industrias.json` de empresa-api (`origin/develop`, 3/11/2026), con el
@@ -181,8 +182,8 @@ export function validar_alta(datos) {
 
 /**
  * El body del POST del alta con las claves del contrato C6. Lo opcional vacío no viaja. Los
- * parámetros de campaña van como `utm_*` sueltos (así los pide el contrato), solo los que la
- * visita trajo de verdad.
+ * parámetros de campaña viajan en `atribucion` con la misma lista blanca que la visita. Se
+ * conservan los `utm_*` sueltos para los consumidores anteriores del contrato.
  *
  * @param {object} datos
  * @param {string} datos.nombre
@@ -217,10 +218,14 @@ export function armar_body_alta(datos) {
     body.rubro = d.rubro
   }
 
-  Object.keys(d.atribucion || {}).forEach(function (clave) {
-    const valor = d.atribucion[clave]
-    if (clave.indexOf('utm_') === 0 && typeof valor === 'string' && valor) {
-      body[clave] = valor
+  /* Filtrar solo utm_* perdía los IDs del anuncio y fbclid antes de llegar al admin. */
+  const atribucion = limpiar_atribucion(d.atribucion || {})
+  if (Object.keys(atribucion).length) {
+    body.atribucion = atribucion
+  }
+  Object.keys(atribucion).forEach(function (clave) {
+    if (clave.indexOf('utm_') === 0) {
+      body[clave] = atribucion[clave]
     }
   })
 
@@ -258,29 +263,28 @@ const CAMPO_DEL_FORMULARIO = {
 }
 
 /**
- * Los eventos del píxel con los que se dispara el alta. Si el admin manda `meta_eventos` con
- * ids válidos, esos; si no, `Lead` y `StartTrial` con un id derivado del uuid (`prueba:<uuid>:Lead`),
- * que es el que el admin tiene que usar en la API de Conversiones para que Meta deduplique.
+ * El alta solo confirma Lead. StartTrial pertenece al hito de primer ingreso, no al 201 ni
+ * al sistema listo. Sin un ID confirmado por el admin no se inventa otro: no deduplicaría
+ * con la CAPI, cuyo ID se deriva del lead y no del uuid de seguimiento de la prueba.
  *
  * @param {string} uuid
  * @param {*} meta_eventos Lo que vino en el 201.
  * @returns {Array<{nombre: string, event_id: string}>}
  */
 export function eventos_meta_del_alta(uuid, meta_eventos) {
-  const del_admin = (Array.isArray(meta_eventos) ? meta_eventos : []).filter(function (e) {
-    return e && EVENTOS_META_DEL_ALTA.indexOf(e.nombre) !== -1 &&
-      typeof e.event_id === 'string' && RE_EVENT_ID.test(e.event_id)
-  }).map(function (e) {
-    return { nombre: e.nombre, event_id: e.event_id }
-  })
-  if (del_admin.length) {
-    return del_admin
-  }
   if (!uuid_valido(uuid)) {
     return []
   }
-  return EVENTOS_META_DEL_ALTA.map(function (nombre) {
-    return { nombre: nombre, event_id: 'prueba:' + uuid + ':' + nombre }
+  const vistos = new Set()
+  return (Array.isArray(meta_eventos) ? meta_eventos : []).filter(function (e) {
+    return e && EVENTOS_META_DEL_ALTA.indexOf(e.nombre) !== -1 &&
+      typeof e.event_id === 'string' && RE_EVENT_ID.test(e.event_id)
+  }).filter(function (e) {
+    if (vistos.has(e.nombre)) return false
+    vistos.add(e.nombre)
+    return true
+  }).map(function (e) {
+    return { nombre: e.nombre, event_id: e.event_id }
   })
 }
 

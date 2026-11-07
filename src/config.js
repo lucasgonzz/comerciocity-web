@@ -13,7 +13,9 @@ import { unir_url } from './analitica/agenda-demo'
  * mientras no tenga valor, la web no carga `fbevents.js` ni define `fbq` -- cero pedidos a
  * Facebook y cero cookies. Lucas lo pega el día que la campaña arranca.
  */
-export const META_PIXEL_ID = String(import.meta.env.VITE_META_PIXEL_ID || '').trim()
+/* El simulador no puede contaminar la medición aunque el .env tenga el píxel productivo. */
+export const META_PIXEL_ID = String(import.meta.env.VITE_PRUEBA_MOCK || '').trim() === '1'
+  ? '' : String(import.meta.env.VITE_META_PIXEL_ID || '').trim()
 
 /** Endpoint público: no lleva credenciales. Si falla, el enlace normal sigue disponible. */
 export const WHATSAPP_REFERENCIAS_URL = String(import.meta.env.VITE_WHATSAPP_REFERENCIAS_URL ||
