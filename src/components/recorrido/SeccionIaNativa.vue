@@ -26,6 +26,8 @@
         </strong>
       </p>
 
+      <videos-landing />
+
       <ul class="demo-ia__pilares">
         <li v-for="pilar in pilares" :key="pilar.titulo" class="demo-ia__pilar demo-paso">
           <span class="demo-ia__pilar-disco" aria-hidden="true">
@@ -41,6 +43,7 @@
 
 <script>
 import entrada_por_scroll from './entrada-por-scroll'
+import VideosLanding from './VideosLanding.vue'
 
 /**
  * Las tres ideas que pidió Lucas: cómo está integrada, que es la base de lo que viene, y la
@@ -72,6 +75,8 @@ const PILARES = [
 
 export default {
   name: 'SeccionIaNativa',
+
+  components: { VideosLanding },
 
   mixins: [entrada_por_scroll],
 
