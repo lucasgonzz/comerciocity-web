@@ -18,3 +18,8 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ /index.html [L]
 </IfModule>
+
+# Las pistas de subtitulos necesitan el tipo WebVTT correcto.
+<FilesMatch "\.vtt$">
+  ForceType text/vtt
+</FilesMatch>
