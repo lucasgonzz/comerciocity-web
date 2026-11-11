@@ -26,8 +26,8 @@
 import VideoVoluntario from './VideoVoluntario.vue'
 import manifiesto from '../../videos/landing-manifest.json'
 import { seleccionar_video } from '../../videos/disponibilidad.js'
-import subtitulos_tarea from '../../assets/videos/01-una-tarea-menos-v6.es.vtt?url&no-inline'
-import subtitulos_historia from '../../assets/videos/02-historia-de-comerciocity-v4.es.vtt?url&no-inline'
+import subtitulos_tarea from '../../assets/videos/01-una-tarea-menos-claude-v1.es.vtt?url&no-inline'
+import subtitulos_historia from '../../assets/videos/02-historia-de-comerciocity-claude-v1.es.vtt?url&no-inline'
 
 export default {
   name: 'VideosLanding',

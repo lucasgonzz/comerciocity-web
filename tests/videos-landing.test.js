@@ -8,7 +8,7 @@ import { pausar_otros } from '../src/videos/reproduccion.js'
 
 const manifiesto = JSON.parse(await readFile(new URL('../src/videos/landing-manifest.json', import.meta.url), 'utf8'))
 const tarea = manifiesto.videos.tarea
-const url = `https://videos.comerciocity.store/landing-prueba/20261107/01-una-tarea-menos-v6-${tarea.sha256.slice(0, 16)}.mp4`
+const url = `https://videos.comerciocity.store/landing-prueba/20261111/01-una-tarea-menos-claude-v1-${tarea.sha256.slice(0, 16)}.mp4`
 const publicado = { ...tarea, url, published: true, verified: true }
 
 test('publicación pendiente no crea reproductores ni enlaces rotos', () => {
@@ -115,8 +115,8 @@ test('reintentar pausa la instancia anterior, espera el desmontaje y vuelve a re
 
 test('tracks locales coinciden exactamente con los VTT aprobados', async () => {
   for (const [nombre, hash] of [
-    ['01-una-tarea-menos-v6.es.vtt', '24c44cd075d7495167111264357a23a6892e24e3e15cb1093bc87a389cf7e2f4'],
-    ['02-historia-de-comerciocity-v4.es.vtt', 'eb696a0c1a663e220a55702ec35b92f3d54c9bb109b673f0611002c8ace60ee1'],
+    ['01-una-tarea-menos-claude-v1.es.vtt', '918fbbdf3d691045eebeef89f4a412b99a6c31ce7dd658629892c7b4c7fb8a9d'],
+    ['02-historia-de-comerciocity-claude-v1.es.vtt', '3bcc0b136e0fdd0d044ff13157912016aba83ee9a45026a4c601e6773a1ddfcc'],
   ]) {
     const contenido = await readFile(new URL('../src/assets/videos/' + nombre, import.meta.url))
     assert.equal(createHash('sha256').update(contenido).digest('hex'), hash)

@@ -1,25 +1,25 @@
 {
-  "release": "20261107",
+  "release": "20261111",
   "videos": {
     "tarea": {
-      "filename": "01-una-tarea-menos-v6.mp4",
-      "sha256": "84a4c62e052f190d3e9ae2ffcf91df58335ff3c6d11779242ab191f1b45e7d5e",
+      "filename": "01-una-tarea-menos-claude-v1.mp4",
+      "sha256": "536f73ec3efbb3cbf397b749da2f41150c6a173d53dc118bfea53fa0898a43a8",
       "title": "Una tarea menos en tu negocio",
       "duration": "0:56",
       "published": true,
       "verified": true,
-      "url": "https://videos.comerciocity.store/landing-prueba/20261107/01-una-tarea-menos-v6-84a4c62e052f190d.mp4",
-      "verified_at": "2026-11-07T19:56:17.106169+00:00"
+      "url": "https://videos.comerciocity.store/landing-prueba/20261111/01-una-tarea-menos-claude-v1-536f73ec3efbb3cb.mp4",
+      "verified_at": "2026-11-11T14:24:33.288183+00:00"
     },
     "historia": {
-      "filename": "02-historia-de-comerciocity-v4.mp4",
-      "sha256": "6125fbc01b26edcb6f5e11df66de6be008f8b510bad424213a3c478c7e009c84",
+      "filename": "02-historia-de-comerciocity-claude-v1.mp4",
+      "sha256": "1248519e4938ae2d88b959975a0307a4909f233c50dbded54c2e113694208e01",
       "title": "Historia de ComercioCity",
       "duration": "3:04",
       "published": true,
       "verified": true,
-      "url": "https://videos.comerciocity.store/landing-prueba/20261107/02-historia-de-comerciocity-v4-6125fbc01b26edcb.mp4",
-      "verified_at": "2026-11-07T19:56:31.624698+00:00"
+      "url": "https://videos.comerciocity.store/landing-prueba/20261111/02-historia-de-comerciocity-claude-v1-1248519e4938ae2d.mp4",
+      "verified_at": "2026-11-11T14:24:33.288183+00:00"
     }
   }
 }
