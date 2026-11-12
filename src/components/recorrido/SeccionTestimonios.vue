@@ -1,43 +1,69 @@
 <template>
-  <!-- Los testimonios en video, por negocio (4/10/2026). Primero los negocios que grabaron
-       uno; al tocar uno aparecen todos sus clips. La lista crece sola desde testimonios.js a
-       medida que Tomás hace más videollamadas y salen más cortes. -->
+  <!-- Una tarjeta por negocio, con su video destacado y acceso al catálogo completo. -->
   <section ref="seccion" class="demo-testimonios demo-seccion-flujo">
     <div ref="grupo" class="demo-testimonios__grupo" :style="estilo_grupo('grupo')">
       <p class="demo-rotulo demo-paso">Testimonios</p>
       <h2 class="demo-titulo-seccion demo-paso">Lo cuentan ellos.</h2>
       <p class="demo-bajada-seccion demo-testimonios__bajada demo-paso">
-        Dueños de negocios reales, en sus palabras. Tocá un negocio para ver sus videos.
+        Dueños de negocios reales, en sus palabras. Dale play y escuchá lo que cuentan.
       </p>
 
       <ul class="demo-testimonios__negocios">
         <li v-for="negocio in negocios" :key="negocio.id" class="demo-paso">
-          <button
-            type="button"
+          <article
             class="demo-testimonios__negocio"
             :class="{ 'demo-testimonios__negocio--activo': activo === negocio.id }"
-            :aria-expanded="activo === negocio.id ? 'true' : 'false'"
-            :aria-controls="'demo-testimonios-panel'"
-            @click="alternar(negocio.id)"
+            :aria-labelledby="'testimonio-negocio-' + negocio.id"
           >
-            <span class="demo-testimonios__logo-caja">
-              <img :src="negocio.logo_url" :alt="negocio.negocio" class="demo-testimonios__logo" loading="lazy" decoding="async" />
-            </span>
-            <span class="demo-testimonios__negocio-datos">
-              <span class="demo-testimonios__negocio-nombre">{{ negocio.negocio }}</span>
-              <span class="demo-testimonios__negocio-rubro">{{ negocio.persona }} · {{ negocio.rubro }}</span>
-              <span class="demo-testimonios__cita">“{{ negocio.cita }}”</span>
-              <span class="demo-testimonios__cantidad">
-                <i class="bi bi-play-circle" aria-hidden="true"></i>
-                {{ etiqueta_cantidad(negocio) }}
+            <div class="demo-testimonios__identidad">
+              <span class="demo-testimonios__logo-caja">
+                <img :src="negocio.logo_url" :alt="negocio.negocio" class="demo-testimonios__logo" loading="lazy" decoding="async" />
               </span>
-            </span>
-            <i
-              class="bi demo-testimonios__chevron"
-              :class="activo === negocio.id ? 'bi-chevron-up' : 'bi-chevron-down'"
-              aria-hidden="true"
-            ></i>
-          </button>
+              <div class="demo-testimonios__negocio-datos">
+                <h3 :id="'testimonio-negocio-' + negocio.id" class="demo-testimonios__negocio-nombre">{{ negocio.negocio }}</h3>
+                <p class="demo-testimonios__negocio-rubro">{{ negocio.persona }} · {{ negocio.rubro }}</p>
+              </div>
+            </div>
+            <div v-if="negocio.destacado" class="demo-testimonios__destacado">
+              <video
+                v-if="reproduciendo === 'destacado-' + negocio.id"
+                class="demo-testimonios__destacado-video"
+                :src="negocio.destacado.url + '#t=0.001'"
+                :poster="negocio.destacado.poster"
+                :aria-label="'Testimonio de ' + negocio.persona + ': ' + negocio.destacado.titulo"
+                controls
+                autoplay
+                playsinline
+                preload="none"
+                @play="al_reproducir($event, negocio.destacado.id)"
+              ></video>
+              <button
+                v-else
+                type="button"
+                class="demo-testimonios__miniatura demo-testimonios__destacado-miniatura"
+                :aria-label="'Reproducir testimonio de ' + negocio.negocio + ': ' + negocio.destacado.titulo"
+                @click="reproducir('destacado-' + negocio.id)"
+              >
+                <img :src="negocio.destacado.poster" alt="" class="demo-testimonios__poster" loading="lazy" decoding="async" />
+                <span class="demo-testimonios__play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
+                <span class="demo-testimonios__duracion" aria-hidden="true">{{ duracion(negocio.destacado.segundos) }}</span>
+              </button>
+              <p class="demo-testimonios__destacado-titulo">{{ negocio.destacado.titulo }}</p>
+            </div>
+            <button
+              v-if="negocio.clips.length + (negocio.entrevista ? 1 : 0) > 1"
+              :id="'testimonios-ver-' + negocio.id"
+              type="button"
+              class="demo-testimonios__ver-videos"
+              :aria-label="'Ver todos los videos de ' + negocio.negocio"
+              :aria-expanded="activo === negocio.id ? 'true' : 'false'"
+              :aria-controls="activo === negocio.id ? 'demo-testimonios-panel' : undefined"
+              @click="alternar(negocio.id)"
+            >
+              <span>{{ activo === negocio.id ? 'Cerrar videos' : 'Ver todos los videos' }} · {{ etiqueta_cantidad(negocio) }}</span>
+              <i class="bi" :class="activo === negocio.id ? 'bi-chevron-up' : 'bi-chevron-down'" aria-hidden="true"></i>
+            </button>
+          </article>
         </li>
       </ul>
     </div>
@@ -49,9 +75,12 @@
       id="demo-testimonios-panel"
       ref="panel"
       class="demo-testimonios__panel"
+      tabindex="-1"
+      role="region"
+      aria-labelledby="demo-testimonios-panel-titulo"
     >
       <div class="demo-testimonios__panel-cabecera">
-        <p class="demo-testimonios__panel-titulo">
+        <p id="demo-testimonios-panel-titulo" class="demo-testimonios__panel-titulo">
           {{ negocio_activo.persona }}, de {{ negocio_activo.negocio }}
         </p>
         <button type="button" class="demo-testimonios__cerrar" aria-label="Cerrar los videos" @click="cerrar">
@@ -65,7 +94,7 @@
                entre 5 y 24 MB y no se bajan hasta que alguien los quiere ver. Al tocar, el
                <video> reemplaza a la miniatura y arranca; uno solo a la vez. -->
           <video
-            v-if="reproduciendo === clip.id"
+            v-if="reproduciendo === 'clip-' + clip.id"
             class="demo-testimonios__video"
             :src="clip.url + '#t=0.001'"
             :poster="clip.poster"
@@ -74,14 +103,14 @@
             autoplay
             playsinline
             preload="metadata"
-            @ended="reproduciendo = null"
+            @play="al_reproducir($event, clip.id)"
           ></video>
           <button
             v-else
             type="button"
             class="demo-testimonios__miniatura"
             :aria-label="'Reproducir: ' + clip.titulo"
-            @click="reproducir(clip.id)"
+            @click="reproducir('clip-' + clip.id)"
           >
             <img :src="clip.poster" alt="" class="demo-testimonios__poster" loading="lazy" decoding="async" />
             <span class="demo-testimonios__play" aria-hidden="true"><i class="bi bi-play-fill"></i></span>
@@ -104,6 +133,8 @@
           controls
           playsinline
           preload="none"
+          :poster="negocio_activo.entrevista.poster"
+          @play="al_reproducir($event, negocio_activo.entrevista.id)"
         ></video>
       </div>
     </div>
@@ -114,6 +145,7 @@
 import entrada_por_scroll from './entrada-por-scroll'
 import { testimonios, duracion } from './testimonios'
 import { logo_cliente } from './clientes'
+import { pausar_otros } from '../../videos/reproduccion'
 
 export default {
   name: 'SeccionTestimonios',
@@ -133,6 +165,7 @@ export default {
       activo: null,
       /** id del clip que se está reproduciendo, o null. */
       reproduciendo: null,
+      evento_emitido: null,
     }
   },
 
@@ -140,7 +173,8 @@ export default {
     /** @returns {Array} */
     negocios() {
       return testimonios.map(function (t) {
-        return Object.assign({}, t, { logo_url: logo_cliente(t.logo) })
+        const destacado = t.clips.find(function (clip) { return clip.id === t.destacado_id }) || t.entrevista || t.clips[0]
+        return Object.assign({}, t, { logo_url: logo_cliente(t.logo), destacado })
       })
     },
 
@@ -151,6 +185,10 @@ export default {
         return n.id === self.activo
       }) || null
     },
+  },
+
+  beforeUnmount() {
+    this.pausar_videos()
   },
 
   methods: {
@@ -177,6 +215,7 @@ export default {
      * @returns {void}
      */
     alternar(id) {
+      this.pausar_videos()
       this.reproduciendo = null
       if (this.activo === id) {
         this.activo = null
@@ -191,15 +230,22 @@ export default {
       this.$nextTick(function () {
         const panel = self.$refs.panel
         if (panel && typeof panel.scrollIntoView === 'function') {
-          panel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          panel.focus({ preventScroll: true })
+          panel.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })
         }
       })
     },
 
     /** @returns {void} */
     cerrar() {
+      const id = this.activo
+      this.pausar_videos()
       this.reproduciendo = null
       this.activo = null
+      this.$nextTick(() => {
+        const boton = this.$refs.seccion.querySelector('#testimonios-ver-' + id)
+        if (boton) boton.focus()
+      })
     },
 
     /**
@@ -207,8 +253,26 @@ export default {
      * @returns {void}
      */
     reproducir(id) {
+      this.pausar_videos()
+      this.evento_emitido = null
       this.reproduciendo = id
-      this.emitir_evento('testimonio_reproducido', { clip: id })
+    },
+
+    /** Todas las reproducciones, incluidas las entrevistas, comparten el mismo control. */
+    al_reproducir(evento, id) {
+      pausar_otros(evento.target, evento.target.ownerDocument)
+      if (this.evento_emitido !== id) {
+        this.emitir_evento('testimonio_reproducido', { clip: id })
+        this.evento_emitido = id
+      }
+    },
+
+    pausar_videos(excepto) {
+      const seccion = this.$refs.seccion
+      if (!seccion) return
+      seccion.querySelectorAll('video').forEach(function (video) {
+        if (video !== excepto) video.pause()
+      })
     },
   },
 }
@@ -239,11 +303,13 @@ export default {
   text-align: left;
 }
 
-/* La tarjeta del negocio es un botón: abre sus clips. */
+/* Identidad, video y galería tienen controles independientes dentro de cada tarjeta. */
 .demo-testimonios__negocio {
   width: 100%;
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
   gap: 14px;
   padding: clamp(16px, 2vw, 22px);
   border: 1px solid var(--demo-color-borde-superficie);
@@ -252,7 +318,6 @@ export default {
   color: inherit;
   font: inherit;
   text-align: left;
-  cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
@@ -262,20 +327,22 @@ export default {
   transform: translateY(-2px);
 }
 
-.demo-testimonios__negocio:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(11, 132, 248, 0.35);
-}
-
 .demo-testimonios__negocio--activo {
   border-color: transparent;
   box-shadow: 0 0 0 2px var(--demo-color-azul), 0 14px 32px -16px rgba(11, 132, 248, 0.5);
 }
 
+.demo-testimonios__identidad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
 .demo-testimonios__logo-caja {
   flex: 0 0 auto;
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -300,38 +367,69 @@ export default {
 }
 
 .demo-testimonios__negocio-nombre {
+  margin: 0;
   font-size: clamp(1.05rem, 1.4vw, 1.15rem);
   font-weight: 700;
   color: var(--demo-color-texto);
 }
 
 .demo-testimonios__negocio-rubro {
+  margin: 0;
+  line-height: 1.4;
   font-size: 0.85rem;
   color: var(--demo-color-texto-suave);
 }
 
-.demo-testimonios__cita {
-  margin-top: 8px;
-  font-size: clamp(0.98rem, 1.3vw, 1.05rem);
-  font-style: italic;
-  line-height: 1.45;
+.demo-testimonios__destacado {
+  width: 100%;
+}
+
+.demo-testimonios__destacado-video,
+.demo-testimonios__miniatura.demo-testimonios__destacado-miniatura {
+  display: block;
+  width: 100%;
+  height: clamp(280px, 30vw, 380px);
+  aspect-ratio: auto;
+  border-radius: 14px;
+  background: #0f172a;
+  object-fit: contain;
+}
+
+.demo-testimonios__destacado-miniatura .demo-testimonios__poster {
+  object-fit: contain;
+}
+
+.demo-testimonios__destacado-titulo {
+  margin: 12px 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.4;
   color: var(--demo-color-texto);
 }
 
-.demo-testimonios__cantidad {
-  margin-top: 10px;
-  display: inline-flex;
+.demo-testimonios__ver-videos {
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 0 0;
+  border: 0;
+  border-top: 1px solid var(--demo-color-borde-superficie);
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  font-weight: 600;
+  justify-content: space-between;
+  gap: 8px;
+  background: transparent;
   color: var(--demo-color-azul);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
 }
 
-.demo-testimonios__chevron {
-  flex: 0 0 auto;
-  margin-top: 4px;
-  color: var(--demo-color-texto-suave);
+.demo-testimonios__ver-videos:focus-visible {
+  outline: 3px solid rgba(11, 132, 248, 0.5);
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 
 /* El panel de clips. */
@@ -512,11 +610,6 @@ export default {
   .demo-testimonios__negocio {
     flex-direction: column;
     gap: 12px;
-  }
-
-  .demo-testimonios__chevron {
-    align-self: flex-end;
-    margin-top: 0;
   }
 
   .demo-testimonios__clips {

@@ -1,7 +1,7 @@
 /**
  * Los testimonios en video: un negocio por entrada, con todos los clips que salieron de su
- * videollamada. La sección (SeccionTestimonios.vue) muestra los negocios y, al tocar uno,
- * sus clips.
+ * videollamada. Cada negocio elige un destacado por id estable; la sección permite
+ * reproducirlo en su tarjeta y abrir la galería con todos sus videos.
  *
  * DE DÓNDE SALE CADA COSA.
  *   · Los reels viven en el bucket público de R2 (`videos.comerciocity.store`). No van en el
@@ -52,6 +52,7 @@ function clips(prefijo, lista) {
 export const testimonios = [
   {
     id: 'innovate',
+    destacado_id: 'test-mariel-02-presupuestos',
     negocio: 'Innovate Materiales',
     persona: 'Mariel',
     rubro: 'Corralón y materiales de construcción',
@@ -70,6 +71,8 @@ export const testimonios = [
       ['10-consejos', 'Tres consejos: se puede confiar', 42],
     ]),
     entrevista: {
+      id: 'entrevista-innovate',
+      poster: '/images/testimonials/innovate.jpeg',
       url: '/images/testimonials/innovate_testimonio.mp4',
       titulo: 'La entrevista completa',
       segundos: 602,
@@ -77,6 +80,7 @@ export const testimonios = [
   },
   {
     id: 'ferretotal',
+    destacado_id: 'test-ferretotal-03-antes-10-minutos-por-boleta',
     negocio: 'Ferretotal',
     persona: 'Pablo',
     rubro: 'Ferretería en Matheu, Buenos Aires',
@@ -95,6 +99,7 @@ export const testimonios = [
   },
   {
     id: 'truvari',
+    destacado_id: 'test-truvari-02-google-se-amigo-con-la-pagina',
     negocio: 'Truvari Bebidas',
     persona: 'Fernando',
     rubro: 'Distribuidora de vinos en Córdoba',
@@ -110,6 +115,7 @@ export const testimonios = [
   },
   {
     id: 'san-cayetano',
+    destacado_id: 'test-san-cayetano-01-puse-el-sistema-para-abrir-otra-sucursal',
     negocio: 'Ferretería San Cayetano',
     persona: 'Ernesto y Alejandra',
     rubro: 'Corralón y ferretería con dos sucursales',
@@ -127,6 +133,7 @@ export const testimonios = [
   },
   {
     id: 'fenix',
+    destacado_id: 'test-fenix-01-el-70-por-ciento-de-las-ventas-por-la-tienda',
     negocio: 'Fenix Mayorista',
     persona: 'Federico',
     rubro: 'Mayorista de juguetería y bazar en Rosario',
@@ -141,6 +148,7 @@ export const testimonios = [
   },
   {
     id: 'san-blas',
+    destacado_id: 'test-san-blas-01-la-unica-ferreteria-con-todo-en-el-sistema',
     negocio: 'Ferretería San Blas',
     persona: 'Fabián',
     rubro: 'Ferretería y corralón en Laguna Blanca',
@@ -155,6 +163,7 @@ export const testimonios = [
   },
   {
     id: 'pack-descartables',
+    destacado_id: 'entrevista-pack-descartables',
     negocio: 'Pack Descartables',
     persona: 'Franco',
     rubro: 'Distribuidora de descartables',
@@ -162,6 +171,8 @@ export const testimonios = [
     logo: 'pack-descartables',
     clips: [],
     entrevista: {
+      id: 'entrevista-pack-descartables',
+      poster: '/images/testimonials/pack.png',
       url: '/images/testimonials/pack_testimonio.mp4',
       titulo: 'La entrevista completa',
       segundos: 492,
