@@ -102,6 +102,7 @@ test('el 201 de ensayo apaga el píxel para el resto de la visita y marca el nav
     assert.equal(pixel.iniciar_pixel(), true)
     llamadas.length = 0
     pixel.marcar_sesion_de_ensayo()
+    assert.equal(globalThis.window.fbq.disablePushState, true, 'Sin PageView automático por el cambio de ruta.')
     pixel.registrar_evento('prueba_alta', { meta_eventos: [{ nombre: 'Lead', event_id: 'cc-lead-685-web-lead' }] })
     pixel.registrar_evento('cta_demo_tocado', { desde: 'prueba' })
     assert.deepEqual(llamadas, [])

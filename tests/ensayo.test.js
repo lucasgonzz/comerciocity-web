@@ -76,3 +76,9 @@ test('solo 1 y 0 cuentan como valor del parámetro', () => {
   assert.equal(marca_de_la_url('?otro_cc_ensayo=1'), null)
   assert.equal(marca_de_la_url(''), null)
 })
+
+test('un parámetro mal codificado no tira la página', () => {
+  assert.equal(marca_de_la_url('?q=%E0%A4%A&cc_ensayo=1'), '1')
+  assert.equal(marca_de_la_url('?%=1'), null)
+  assert.equal(es_visita_de_ensayo({ search: '?utm_source=%', storage: almacen(), navegador: HUMANO, ahora: AHORA }), false)
+})

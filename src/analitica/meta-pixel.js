@@ -228,6 +228,12 @@ export function registrar_evento(nombre, payload) {
 export function marcar_sesion_de_ensayo() {
   ensayo = true
   activo = false
+  /* `fbevents.js` ya cargado manda solo un `PageView` en cada cambio de historial de la SPA (el
+     `$router.replace` del alta, por ejemplo). Esta es la bandera que ofrece Meta para apagarlo; se toca
+     solo en un ensayo: el tráfico real sigue con el comportamiento de siempre. */
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq.disablePushState = true
+  }
   marcar_ensayo()
 }
 

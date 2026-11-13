@@ -73,8 +73,16 @@ export function marca_de_la_url(search) {
   const pares = texto.split('&')
   for (let i = 0; i < pares.length; i++) {
     const partes = pares[i].split('=')
-    if (decodeURIComponent(partes[0] || '') === PARAMETRO_ENSAYO) {
-      const valor = decodeURIComponent((partes[1] || '').replace(/\+/g, ' ')).trim()
+    /* Un parámetro mal codificado (un `%` suelto) no puede tirar la página: esto corre antes de montar la app. */
+    let nombre = ''
+    let valor = ''
+    try {
+      nombre = decodeURIComponent(partes[0] || '')
+      valor = decodeURIComponent((partes[1] || '').replace(/\+/g, ' ')).trim()
+    } catch (_) {
+      continue
+    }
+    if (nombre === PARAMETRO_ENSAYO) {
       return valor === '0' ? '0' : (valor === '1' ? '1' : null)
     }
   }
