@@ -25,7 +25,10 @@ test('la promo es la vigente, sin mes inventado, y junto a un monto dice «con»
 })
 
 test('lo que la página afirma no promete lo que no está verificado', () => {
-  assert.doesNotMatch(NEGOCIOS_QUE_LO_USAN, /60/)
+  /* Sin número: el 26/10/2026 Lucas pidió no publicarlo, y el «60» de la maqueta era falso. */
+  assert.doesNotMatch(NEGOCIOS_QUE_LO_USAN, /\d/)
+  /* El asistente no espera confirmación en todo (modo Resuelto y Directo, manual_sistema/ia/asistente.md). */
+  assert.doesNotMatch(JSON.stringify(PREGUNTAS), /no se registra nada|nada se registra/)
   const todo = JSON.stringify({ PREGUNTAS, PARTES, ANTES_AHORA })
   assert.doesNotMatch(todo, /Mercado Libre/, 'Mercado Libre no se habilita a clientes nuevos (posicionamiento)')
   assert.doesNotMatch(todo, /una persona/, 'Martín es el soporte; la página no dice que es una persona')
@@ -53,6 +56,8 @@ test('los botones emiten los mismos eventos que traduce el píxel, con la secci�
   const barra = await leer('src/components/landing/BarraFija.vue')
   assert.match(barra, /prueba_cta_tocado', \{ desde: 'barra_fija' \}/)
   assert.match(barra, /cta_demo_tocado', \{ desde: 'barra_fija' \}/)
+  const precios = await leer('src/components/landing/Precios.vue')
+  assert.match(precios, /<botones-prueba\s+desde="precio"/, 'el precio ofrece la prueba y el WhatsApp, como antes')
   const cierre = await leer('src/components/landing/Cierre.vue')
   assert.match(cierre, /cta_demo_tocado', \{ desde: 'pie' \}/)
 })

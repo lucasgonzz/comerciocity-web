@@ -4,7 +4,7 @@
   <section class="lnd-seccion" data-seccion="clientes">
     <div class="lnd-contenedor lnd-social">
       <div>
-        <p class="lnd-eyebrow">{{ negocios }}</p>
+        <h2 class="lnd-eyebrow">{{ negocios }}</h2>
         <ul class="lnd-logos" aria-label="Algunos de los negocios que usan ComercioCity">
           <li v-for="logo in logos" :key="logo.id">
             <img :src="logo.url" :alt="logo.nombre" width="320" height="320" loading="lazy" decoding="async" />
@@ -65,7 +65,7 @@ const LOGOS = [
   { id: 'ferreteria-san-blas', nombre: 'Ferretería San Blas' },
   { id: 'hb-distribuciones', nombre: 'HB Distribuciones' },
   { id: 'masquito', nombre: 'Masquito' },
-  { id: 'sr-imperio', nombre: 'Sr. Imperio' },
+  { id: 'sr-imperio-gerardo', nombre: 'Sr. Imperio' },
 ]
 
 export default {
@@ -94,6 +94,10 @@ export default {
     reproducir() {
       this.reproduciendo = true
       this.emitir_evento('video_funcionando_abierto', {})
+      /* El botón que tenía el foco desaparece: el foco pasa al reproductor. */
+      this.$nextTick(() => {
+        if (this.$refs.video) this.$refs.video.focus()
+      })
     },
 
     /** Un solo audio a la vez en toda la página (el mismo criterio que los testimonios). */

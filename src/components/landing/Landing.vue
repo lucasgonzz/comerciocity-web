@@ -50,7 +50,7 @@
     <antes-ahora />
     <seccion-robotito />
     <testimonios :emitir_evento="emitir_evento" />
-    <precios :emitir_evento="emitir_evento" />
+    <precios :cta_url="cta_url" :emitir_evento="emitir_evento" />
     <como-arrancas />
     <preguntas :emitir_evento="emitir_evento" />
     <cierre :cta_url="cta_url" :emitir_evento="emitir_evento" />
@@ -195,7 +195,9 @@ export default {
       const self = this
       self.observador_hero = new IntersectionObserver(function (entradas) {
         entradas.forEach(function (entrada) {
-          self.barra_visible = !entrada.isIntersecting
+          /* Solo cuando los botones quedaron ARRIBA: en una pantalla baja (un teléfono acostado) los
+             botones pueden arrancar debajo del borde y la barra no tiene que aparecer de entrada. */
+          self.barra_visible = !entrada.isIntersecting && entrada.boundingClientRect.top < 0
         })
       })
       self.observador_hero.observe(botones)

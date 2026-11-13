@@ -52,7 +52,7 @@
         {{ mas_abierto ? 'Ver menos' : 'Ver más videos de clientes →' }}
       </button>
 
-      <div v-if="mas_abierto" id="lnd-testimonios-mas">
+      <div v-show="mas_abierto" id="lnd-testimonios-mas">
         <template v-for="grupo in resto" :key="grupo.id">
           <p class="lnd-mas-negocio">{{ grupo.persona }} · {{ grupo.negocio }}</p>
           <ul class="lnd-testis lnd-testis--mas">
@@ -185,6 +185,11 @@ export default {
     reproducir(id) {
       this.pausar_videos()
       this.reproduciendo = id
+      /* El botón que tenía el foco desaparece: el foco pasa al reproductor nuevo. */
+      this.$nextTick(() => {
+        const video = this.$el && this.$el.querySelector('video[autoplay]')
+        if (video) video.focus()
+      })
     },
 
     /** @returns {void} */

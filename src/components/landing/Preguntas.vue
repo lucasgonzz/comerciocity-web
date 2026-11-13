@@ -4,7 +4,7 @@
        (pieza 02 de la serie pizarra, la que ya publicaba la página anterior), que se baja recién al tocarlo. -->
   <section class="lnd-seccion lnd-seccion--alt" data-seccion="preguntas">
     <div class="lnd-contenedor">
-      <p class="lnd-eyebrow">Preguntas frecuentes</p>
+      <h2 class="lnd-eyebrow">Preguntas frecuentes</h2>
       <div class="lnd-faq">
         <details v-for="item in preguntas" :key="item.clave" @toggle="al_abrir(item, $event)">
           <summary>{{ item.pregunta }}</summary>

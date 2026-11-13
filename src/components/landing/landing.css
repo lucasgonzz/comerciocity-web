@@ -984,21 +984,31 @@
 .lnd-puntos {
 	display: flex;
 	justify-content: center;
-	gap: 6px;
-	margin-top: 14px;
+	margin-top: 6px;
 }
 
+/* El punto se ve chico, pero el área para el dedo es de 28 × 28. */
 .lnd-puntos button {
-	width: 7px;
-	height: 7px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
 	padding: 0;
 	border: 0;
+	background: none;
+}
+
+.lnd-puntos button::before {
+	content: '';
+	width: 7px;
+	height: 7px;
 	border-radius: 50%;
 	background: #cfd6e6;
 	transition: width 160ms ease;
 }
 
-.lnd-puntos button[aria-current='true'] {
+.lnd-puntos button[aria-current='true']::before {
 	width: 18px;
 	border-radius: 9px;
 	background: var(--lnd-azul);
@@ -1016,6 +1026,7 @@
 
 .lnd-precios__accion {
 	margin-top: 20px;
+	max-width: 420px;
 }
 
 /* ---------- Cómo arrancás ---------- */

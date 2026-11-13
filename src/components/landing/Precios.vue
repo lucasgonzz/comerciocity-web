@@ -45,21 +45,29 @@
       </p>
 
       <div class="lnd-precios__accion">
-        <router-link to="/prueba" class="lnd-btn lnd-btn--pri" @click="emitir_evento('prueba_cta_tocado', { desde: 'precio' })">
-          Probalo 7 días gratis
-        </router-link>
+        <botones-prueba
+          desde="precio"
+          texto_whatsapp="¿Dudas con el plan? Escribinos"
+          :cta_url="cta_url"
+          :emitir_evento="emitir_evento"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script>
+import BotonesPrueba from './BotonesPrueba.vue'
 import { PLANES, PROMO, USUARIO_EXTRA, formatear_pesos } from './datos'
 
 export default {
   name: 'Precios',
 
+  components: { BotonesPrueba },
+
   props: {
+    /** El WhatsApp: el bloque de precio de la página anterior también lo ofrecía (`CtaWhatsApp` con `precio`). */
+    cta_url: { type: String, required: true },
     emitir_evento: { type: Function, default: function () {} },
   },
 

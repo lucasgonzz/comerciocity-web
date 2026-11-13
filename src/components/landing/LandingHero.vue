@@ -18,7 +18,7 @@
         </p>
         <!-- Se observa desde Landing.vue: mientras estos botones están a la vista, la barra fija de abajo no se
              muestra (serían los mismos dos botones dos veces en la misma pantalla). -->
-        <div ref="acciones" class="lnd-hero__acciones">
+        <div class="lnd-hero__acciones">
           <botones-prueba desde="hero" :cta_url="cta_url" :emitir_evento="emitir_evento" />
         </div>
         <ul class="lnd-checks">

@@ -33,12 +33,13 @@ export const PROMO = {
 }
 
 /**
- * Cuántos negocios lo usan. 🔴 La maqueta decía «Más de 60»: era falso. Medido el 13/11/2026 en
- * `claude/query?model=client` del admin de producción: 61 filas, de las que son clientes reales activos
- * 50 (afuera DEMO, el registro de Lucas, Scrap Free, las pruebas gratuitas y los ensayos). Se redondea
- * para abajo a la decena, para que siga siendo cierto si alguno se da de baja.
+ * El rótulo de los logos. 🔴 SIN NÚMERO: la maqueta decía «Más de 60 negocios» y era falso (admin de
+ * producción, 13/11/2026: 50 clientes reales activos, sin DEMO, el registro de Lucas, Scrap Free, las
+ * pruebas gratuitas ni los ensayos). Y el 26/10/2026 Lucas ya había pedido sacar el número de la página
+ * («son pocos negocios, prefiero que no diga el número», ver recorrido/SeccionClientes.vue). Si decide
+ * ponerlo, el número verificado es «Más de 40».
  */
-export const NEGOCIOS_QUE_LO_USAN = 'Más de 40 negocios ya lo usan'
+export const NEGOCIOS_QUE_LO_USAN = 'Ferreterías, corralones y distribuidoras que ya lo usan'
 
 /**
  * La ficha de Google, tal como la muestra Google (copiado de `recorrido/SeccionResenas.vue`, donde está
@@ -52,12 +53,16 @@ export const GOOGLE = {
 
 /**
  * El video de «Miralo funcionando». 🔴 El pedido decía «video de 40 s»: no hay ninguno publicado de esa
- * duración. Se usa la pieza 04 de la campaña Imperio («atención al cliente»): es vertical, ya está en R2,
- * es la que más se vio como anuncio desde el 11/11/2026 (así la landing continúa el anuncio) y termina
- * en «Probá gratis 7 días». Las otras piezas publicadas terminan en «Probá la demo». Se baja solo al tocar.
+ * duración. Se usa la pieza 04 de la campaña Imperio («atención al cliente»): es vertical, es la que más
+ * se vio como anuncio desde el 11/11/2026 (así la landing continúa el anuncio) y termina en «Probá gratis
+ * 7 días». Las otras piezas publicadas terminan en «Probá la demo». Se baja solo al tocar.
+ *
+ * Es una copia LIVIANA del anuncio (`meta-imperio-04-9x16.mp4` pesa 48 MB a 1440×2560): 720×1280, 1,6
+ * Mbps, 4,3 MB, faststart. Subida el 13/11/2026 con nombre nuevo (sha256 84db567f3b56a8c0…065e,
+ * verificada byte a byte contra el dominio público, con rangos 206).
  */
 export const VIDEO_FUNCIONANDO = {
-  url: 'https://videos.comerciocity.store/meta-imperio-04-9x16.mp4',
+  url: 'https://videos.comerciocity.store/landing-miralo-funcionando-i04-720p-v1.mp4',
   segundos: 22,
   titulo: 'Un cliente pregunta por WhatsApp y el agente le contesta con el stock del sistema',
 }
@@ -157,12 +162,12 @@ export const PREGUNTAS = [
   {
     clave: 'cargar',
     pregunta: '¿Tengo que cargar todo yo?',
-    respuesta: 'No. Podés importar tu Excel o el PDF de tu proveedor, o mandárselo a Martín por WhatsApp y te lo cargamos nosotros, sin costo. Cuando cargás tus artículos se borran los de ejemplo.',
+    respuesta: 'No. Podés importar tu Excel o el PDF de tu proveedor, o mandárselo a Martín por WhatsApp y te lo cargamos nosotros, sin costo. Cuando importás tus datos se borran los de ejemplo.',
   },
   {
     clave: 'nunca',
     pregunta: '¿Sirve si nunca usé un sistema?',
-    respuesta: 'Sí. Martín te escribe desde el primer día, Robotito te señala en la pantalla dónde tocar y tenés tutoriales en video adentro del sistema. Para Ernesto, de Ferretería San Cayetano, fue la primera vez que trabajaba con un sistema.',
+    respuesta: 'Sí. Martín te escribe desde el primer día, Robotito te señala en la pantalla dónde tocar y tenés tutoriales en video adentro del sistema. En Ferretería San Cayetano lo cuentan en uno de sus videos: «La primera vez que trabajo con un sistema».',
   },
   {
     clave: 'despues',
@@ -177,7 +182,10 @@ export const PREGUNTAS = [
   {
     clave: 'ia',
     pregunta: '¿Quién controla lo que hace la IA?',
-    respuesta: 'Vos. Cuando le pedís que cargue algo, te muestra los datos y no se registra nada hasta que confirmás. Antes de mandarle un mensaje a tus clientes te muestra a quiénes y el texto exacto. Y si querés, las respuestas del agente de WhatsApp quedan para que las apruebes antes de enviarlas.',
+    /* Fuente: manual_sistema/ia/asistente.md («¿Cuánta confianza le tenés?»). 🔴 NO decir «nada se registra
+       sin confirmar»: en Resuelto (de fábrica) hace solo lo simple y la compra por foto de la factura la carga
+       directo, y en Directo carga en el acto. */
+    respuesta: 'Vos elegís cuánta confianza le tenés: que pregunte antes de todo, que resuelva solo lo simple (así viene) o que haga las cargas directo. Lo que emite un comprobante ante ARCA o borra algo te lo pregunta siempre. Antes de mandarle un mensaje a tus clientes te muestra a quiénes y el texto exacto. Y las respuestas del agente de WhatsApp pueden quedar para que las apruebes antes de enviarlas.',
   },
   {
     clave: 'internet',
