@@ -221,3 +221,34 @@ test('el mock responde el contrato C6 con el tiempo simulado, y pedir_json lo en
   const estado_falla = await (await mock(base + '/landing/prueba/' + uuid_falla + '/estado', { method: 'GET' })).json()
   assert.equal(estado_falla.estado, 'fallida')
 })
+
+test('un 201 de ensayo no dispara ningún evento del píxel, aunque el admin mande ids', () => {
+  const r = interpretar_alta(201, { uuid: 'a1b2c3d4-e5', ensayo: true, meta_eventos: [{ nombre: 'Lead', event_id: 'cc-lead-685-web-lead' }] })
+  assert.equal(r.tipo, 'creada')
+  assert.equal(r.ensayo, true)
+  assert.deepEqual(r.meta_eventos, [])
+  assert.deepEqual(interpretar_alta(201, { uuid: 'a1b2c3d4-e5', ensayo: true }).meta_eventos, [])
+})
+
+test('un alta real se interpreta igual que antes: sin el campo, o con ensayo false o no booleano', () => {
+  const ids = [{ nombre: 'Lead', event_id: 'cc-lead-700-web-lead' }]
+  for (const cuerpo of [
+    { uuid: 'a1b2c3d4-e5', meta_eventos: ids },
+    { uuid: 'a1b2c3d4-e5', meta_eventos: ids, ensayo: false },
+    { uuid: 'a1b2c3d4-e5', meta_eventos: ids, ensayo: 'true' },
+    { uuid: 'a1b2c3d4-e5', meta_eventos: ids, ensayo: 1 },
+  ]) {
+    const r = interpretar_alta(201, cuerpo)
+    assert.equal(r.ensayo, false)
+    assert.deepEqual(r.meta_eventos, ids)
+  }
+})
+
+test('el mock contesta ensayo: true a un correo ensayo@ y nada más', async () => {
+  const mock = crear_mock({ demora_ms: 0 })
+  const base = 'https://admin.test/api'
+  const ensayo = await pedir_json({ url: base + '/landing/prueba/alta', metodo: 'POST', body: armar_body_alta(Object.assign({}, DATOS, { email: 'ensayo@negocio.com' })), timeout: 1000, fetcher: mock })
+  assert.equal(interpretar_alta(ensayo.status, ensayo.cuerpo).ensayo, true)
+  const real = await pedir_json({ url: base + '/landing/prueba/alta', metodo: 'POST', body: armar_body_alta(DATOS), timeout: 1000, fetcher: mock })
+  assert.equal(interpretar_alta(real.status, real.cuerpo).ensayo, false)
+})

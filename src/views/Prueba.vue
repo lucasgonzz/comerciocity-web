@@ -481,7 +481,7 @@ import {
   validar_alta,
 } from '@/analitica/prueba'
 import { PISO_ABIERTO_MS, leer_cookie_meta, pedir_json, unir_url, url_de_origen } from '@/analitica/agenda-demo'
-import { registrar_evento } from '@/analitica/meta-pixel'
+import { registrar_evento, marcar_sesion_de_ensayo } from '@/analitica/meta-pixel'
 import { armar_url_whatsapp, obtener_atribucion, solicitar_referencia } from '@/analitica/atribucion-whatsapp'
 import { ADMIN_API_BASE, WHATSAPP_REFERENCIAS_URL } from '@/config'
 import LOGOTIPO from '@/assets/marca/logotipo-comerciocity-oscuro.png'
@@ -838,6 +838,11 @@ export default {
      */
     resolver(r) {
       if (r.tipo === 'creada') {
+        /* Un ensayo (el admin contestó `ensayo: true`) apaga el píxel ANTES de emitir: no sale el Lead
+           ni ningún evento más de esta visita (misión ensayos-sin-eventos-meta, 13/11/2026). */
+        if (r.ensayo) {
+          marcar_sesion_de_ensayo()
+        }
         /* Solo Lead con el ID de la CAPI. StartTrial espera el primer ingreso real al sistema. */
         this.emitir_evento('prueba_alta', { meta_eventos: r.meta_eventos, rubro: this.datos.rubro || '' })
         /* La contraseña no se guarda en ningún lado de esta página. */

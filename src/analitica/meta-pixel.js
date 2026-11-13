@@ -50,14 +50,21 @@
  *
  * Apagado por defecto: sin `VITE_META_PIXEL_ID` no se inyecta el script, no se define `fbq`,
  * no se piden cookies y `registrar_evento` no hace nada.
+ *
+ * 🔴 Y apagado en las visitas de ENSAYO (misión `ensayos-sin-eventos-meta`, 13/11/2026): con
+ * `?cc_ensayo=1`, después de un alta que el admin contestó con `ensayo: true`, o en un navegador
+ * automatizado, no se carga `fbevents.js` ni sale ningún evento. Ver `analitica/ensayo.js`.
  */
 
 import { META_PIXEL_ID } from '../config'
 import { obtener_atribucion } from './atribucion-whatsapp'
+import { es_visita_de_ensayo, marcar_ensayo } from './ensayo'
 
 /** Snapshot único de esta visita, compartido con la referencia del WhatsApp. */
 let atribucion = {}
 let activo = false
+/** Visita de ensayo (ver `analitica/ensayo.js`): el píxel no se carga y no sale ningún evento. */
+let ensayo = false
 
 /**
  * El snippet oficial de Meta, con el `<script>` inyectado desde acá en vez de escrito en el
@@ -115,6 +122,15 @@ export function iniciar_pixel() {
     return false
   }
 
+  /* Un ensayo no carga el píxel: ni `PageView`, ni cookie `_fbp`, ni pedido a Facebook. */
+  ensayo = es_visita_de_ensayo()
+  if (ensayo) {
+    if (typeof console !== 'undefined' && console.debug) {
+      console.debug('[comerciocity] píxel apagado: visita de ensayo')
+    }
+    return false
+  }
+
   cargar_fbevents()
   /* ANTES del init: sin esto el píxel puede levantar nombre, teléfono y correo del
      formulario de la agenda (ver el encabezado). */
@@ -135,7 +151,7 @@ export function iniciar_pixel() {
  * @returns {void}
  */
 export function registrar_evento(nombre, payload) {
-  if (!activo || !window.fbq) {
+  if (ensayo || !activo || !window.fbq) {
     return
   }
 
@@ -203,6 +219,19 @@ export function registrar_evento(nombre, payload) {
 }
 
 /**
+ * El alta de la prueba resultó un ensayo (el admin contestó `ensayo: true`): desde acá no sale
+ * ningún evento más en esta visita, y el navegador queda marcado (ver `analitica/ensayo.js`) para
+ * que las próximas visitas ni carguen el píxel. Se llama ANTES de emitir `prueba_alta`.
+ *
+ * @returns {void}
+ */
+export function marcar_sesion_de_ensayo() {
+  ensayo = true
+  activo = false
+  marcar_ensayo()
+}
+
+/**
  * Para el informe y para probar a mano desde la consola. No lo usa la página.
  *
  * @returns {object}
@@ -210,6 +239,7 @@ export function registrar_evento(nombre, payload) {
 export function estado_pixel() {
   return {
     activo: activo,
+    ensayo: ensayo,
     id: META_PIXEL_ID || null,
     atribucion: Object.assign({}, atribucion),
   }

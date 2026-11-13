@@ -12,7 +12,10 @@
  *   POST {admin}/landing/prueba/alta
  *     body  { nombre, telefono, email, empresa, password, rubro?, atribucion?, utm_*?, fbp?, fbc?,
  *             event_source_url?, sitio_web (honeypot, vacío), abierto_hace_ms }
- *     201   { uuid, meta_eventos?: [{ nombre, event_id }] }
+ *     201   { uuid, meta_eventos?: [{ nombre, event_id }], ensayo?: boolean }
+ *           `ensayo: true` (misión ensayos-sin-eventos-meta, 13/11/2026): el admin reconoció un ENSAYO
+ *           (correo de la lista de ensayos o cliente marcado). La página no dispara ningún evento del
+ *           píxel y lo apaga; sin el campo (admin anterior) todo sigue como siempre.
  *     409   { code: ya_es_cliente | ya_tiene_prueba | telefono_invalido, mensaje? }
  *     422   { errores: { campo: [texto] } }   (o `errors`, la forma de Laravel)
  *     429 / 503 / otro
@@ -293,7 +296,7 @@ export function eventos_meta_del_alta(uuid, meta_eventos) {
  *
  * | status | tipo                                                              |
  * |--------|-------------------------------------------------------------------|
- * | 201    | `creada` (uuid + meta_eventos)                                    |
+ * | 201    | `creada` (uuid + meta_eventos + ensayo)                           |
  * | 422    | `campos` (errores por campo) o `invalida` (genérico)               |
  * | 409    | `ya_es_cliente` / `ya_tiene_prueba` / `telefono_invalido` (campo)  |
  * | 429    | `limite`                                                          |
@@ -313,10 +316,14 @@ export function interpretar_alta(status, cuerpo) {
       /* Un 201 sin uuid no se puede seguir: se trata como error del lado nuestro. */
       return { tipo: 'error', mensaje: '' }
     }
+    /* Un ensayo no dispara nada, aunque el admin mande ids en `meta_eventos`. Solo con `true`
+       literal; cualquier otra cosa (o la falta del campo) es un alta real, como hasta ahora. */
+    const ensayo = c.ensayo === true
     return {
       tipo: 'creada',
       uuid: String(c.uuid),
-      meta_eventos: eventos_meta_del_alta(String(c.uuid), c.meta_eventos),
+      ensayo: ensayo,
+      meta_eventos: ensayo ? [] : eventos_meta_del_alta(String(c.uuid), c.meta_eventos),
     }
   }
 
@@ -541,6 +548,8 @@ export function crear_mock(opciones) {
     if (email.indexOf('429@') === 0) return respuesta(429, {})
     if (email.indexOf('503@') === 0) return respuesta(503, {})
     if (email.indexOf('500@') === 0) return respuesta(500, {})
+    /* Un correo `ensayo@…` simula un alta de ensayo: el admin la contesta con `ensayo: true`. */
+    const es_ensayo = email.indexOf('ensayo@') === 0
     if (String(b.password || '').length < PASSWORD_MINIMO) {
       return respuesta(422, { errores: { password: ['La contraseña tiene que tener al menos 8 caracteres.'] } })
     }
@@ -551,7 +560,7 @@ export function crear_mock(opciones) {
       empresa: String(b.empresa || ''),
       falla: /falla/i.test(String(b.empresa || '')),
     }
-    return respuesta(201, { uuid: uuid })
+    return respuesta(201, es_ensayo ? { uuid: uuid, ensayo: true } : { uuid: uuid })
   }
 
   function estado(uuid) {
