@@ -9,17 +9,14 @@
   <!-- `demo-scroll-guiado` (el scroll-snap obligatorio) solo con SCROLL_GUIADO prendido: desde
        el 26/10/2026 la página scrollea normal (ver config.js). -->
   <main ref="scroller" class="sitio-scroller" :class="{ 'demo-scroll-guiado': SCROLL_GUIADO }">
-    <div class="demo-experiencia-page">
-      <!-- Se monta recién cuando el controlador de avance existe (ver mounted): las
-           secciones preguntan "¿queda alguna más abajo?" al montarse y una respuesta dada sin
-           controlador quedaría cacheada en false -- el chevron no aparecería en la primera
-           sección hasta que el visitante se fuera y volviera. -->
-      <recorrido
-        v-if="listo"
-        :cta_url="CTA_URL"
-        :emitir_evento="emitir_evento"
-      />
-    </div>
+    <!-- La landing nueva (misión `landing-nueva`, 13/11/2026). El recorrido anterior
+         (`recorrido/Recorrido.vue`, envuelto en `<div class="demo-experiencia-page">`) sigue en el
+         repo sin montar: para volver a él, se cambia este componente por aquel. -->
+    <landing
+      v-if="listo"
+      :cta_url="CTA_URL"
+      :emitir_evento="emitir_evento"
+    />
   </main>
 
   <!-- La agenda de la demo por turno. Desde el 3/11/2026 (programa «Prueba gratuita de 7 días»)
@@ -36,7 +33,7 @@
 </template>
 
 <script>
-import Recorrido from '@/components/recorrido/Recorrido.vue'
+import Landing from '@/components/landing/Landing.vue'
 import AgendaDemoModal from '@/components/recorrido/AgendaDemoModal.vue'
 import crear_avance_guiado from '@/components/recorrido/avance-guiado'
 import { registrar_evento } from '@/analitica/meta-pixel'
@@ -68,7 +65,7 @@ export default {
   name: 'Home',
 
   components: {
-    Recorrido,
+    Landing,
     AgendaDemoModal,
   },
 

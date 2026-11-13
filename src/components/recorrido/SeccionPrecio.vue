@@ -101,90 +101,10 @@
 import BotonesDemo from './BotonesDemo.vue'
 import entrada_por_scroll from './entrada-por-scroll'
 
-/**
- * Los cuatro planes (3/11/2026). Cómo se armaron:
- *
- * - LA REFERENCIA. Contagram (contagram.com, leído el 3/11/2026): es el único competidor que
- *   corta sus planes por OPERACIONES (ventas + compras + gastos) y no por comprobantes de
- *   venta, y es lo que Lucas pidió copiar. Sus planes, sin IVA: Inicial $58.900 (0 a 100
- *   operaciones, 1 usuario, excedente $800), Intermedio $89.900 (101 a 250, 2 usuarios,
- *   $600), Plus $209.900 (251 a 500, 2 usuarios, $200), Empresa $276.900 (501 a 3.000,
- *   3 usuarios, $80); usuario adicional $32.000. Dux y Contabilium se miraron el mismo día
- *   para ubicarse (`00-precios-contagram-y-guion.md` §2b del programa): cortan por
- *   comprobantes de venta y no son la referencia.
- * - EL PRECIO. 5 % menos que el número que publica Contagram (su neto, sin IVA), y ese es el
- *   precio FINAL nuestro: no se le suma IVA (esquema A, elegido por Lucas el 3/11/2026).
- *   Inicial $58.900 × 0,95 = $55.955 → $55.900; Intermedio $85.405 → $85.400; Plus $199.405 →
- *   $199.400; Empresa $263.055 → $263.000. Se redondea siempre para abajo, a la centena, para
- *   que la diferencia nunca quede por debajo del 5 % (como se hizo el 26/10 con Dux).
- *   Excedentes: $760 / $570 / $190 / $76. Usuario extra: $32.000 × 0,95 = $30.400.
- * - LO QUE SE VE. La mitad: $27.950 / $42.700 / $99.700 / $131.500, porque los primeros tres
- *   meses tienen el 50 % de descuento y Lucas pidió mostrar ya ese número, sin decir cuánto
- *   queda después (`mensual` queda acá como referencia y es lo que dice el manual de precios).
- * - LOS NOMBRES Y LOS CORTES. Los de Contagram: Inicial, Intermedio, Plus y Empresa; 0-100,
- *   101-250, 251-500 y 501-3.000. Más de 3.000, a medida.
- * - USUARIOS. 1 / 2 / 2 / 3 incluidos, como Contagram.
- */
-const PLANES = [
-  {
-    clave: 'inicial',
-    nombre: 'Inicial',
-    limite: 'Hasta 100 operaciones por mes',
-    mensual: 55900,
-    promocional: 27950,
-    usuarios: 1,
-    excedente: 760,
-    para: 'Para el comercio que arranca o atiende con un solo mostrador.',
-  },
-  {
-    clave: 'intermedio',
-    nombre: 'Intermedio',
-    limite: 'De 101 a 250 operaciones por mes',
-    mensual: 85400,
-    promocional: 42700,
-    usuarios: 2,
-    excedente: 570,
-    para: 'Para el negocio con movimiento todos los días y un vendedor más.',
-    destacado: true,
-  },
-  {
-    clave: 'plus',
-    nombre: 'Plus',
-    limite: 'De 251 a 500 operaciones por mes',
-    mensual: 199400,
-    promocional: 99700,
-    usuarios: 2,
-    excedente: 190,
-    para: 'Para el que vende mucho: varios vendedores, compras todas las semanas.',
-  },
-  {
-    clave: 'empresa',
-    nombre: 'Empresa',
-    limite: 'De 501 a 3.000 operaciones por mes',
-    mensual: 263000,
-    promocional: 131500,
-    usuarios: 3,
-    excedente: 76,
-    para: 'Para distribuidoras, mayoristas y negocios con varias sucursales.',
-  },
-]
-
-/** Cada usuario adicional, por mes, en cualquier plan (Contagram $32.000 × 0,95 → $30.400). */
-const USUARIO_EXTRA = 30400
-
-/** El punto de miles de Argentina: 27.950. */
-const FORMATO_PESOS = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
-
-/** Lo que incluye la mensualidad, con las palabras de Lucas (26/10/2026 y 3/11/2026). */
-const INCLUYE = [
-  { icono: 'bi-laptop', texto: 'Acceso al sistema desde cualquier dispositivo.' },
-  { icono: 'bi-people', texto: 'Implementación y migración de tus datos, sin costo.' },
-  { icono: 'bi-bag-check', texto: 'La tienda online de tu negocio funcionando 24/7.', etiqueta: 'si sumás Tienda' },
-  { icono: 'bi-stars', texto: 'El sistema de agentes, con los tokens para usarlo.', etiqueta: 'si sumás Agentes' },
-  { icono: 'bi-whatsapp', texto: 'Soporte por WhatsApp de por vida.' },
-  { icono: 'bi-sliders', texto: 'Desarrollo de funcionalidades a medida.' },
-  { icono: 'bi-arrow-repeat', texto: 'Actualizaciones constantes de la plataforma.' },
-]
+/* Los planes, el usuario extra, lo que incluye y el formato de pesos viven en
+   `components/landing/datos.js` desde el 13/11/2026 (misión `landing-nueva`): una sola fuente
+   para la landing nueva y para esta sección, que sigue en el repo sin montar. */
+import { PLANES, USUARIO_EXTRA, INCLUYE, formatear_pesos } from '../landing/datos'
 
 export default {
   name: 'SeccionPrecio',
@@ -230,7 +150,7 @@ export default {
      * @returns {string} "$27.950"
      */
     formatear(monto) {
-      return '$' + FORMATO_PESOS.format(monto)
+      return formatear_pesos(monto)
     },
 
     /** Los grupos cuya entrada sigue al scroll (contrato del mixin). */
