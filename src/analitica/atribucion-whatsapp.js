@@ -1,7 +1,7 @@
 /** La referencia une una visita con su mensaje; los parámetros son declarados por la URL. */
 export const CLAVE_ATRIBUCION = 'cc_atribucion_v2'
 export const TTL_ATRIBUCION = 7 * 24 * 60 * 60 * 1000
-export const TEXTO_CTA = 'Hola, quiero hacer la demo de ComercioCity'
+export const TEXTO_CTA = 'Hola, quiero probar ComercioCity'
 const IDS = ['campaign_id', 'adset_id', 'ad_id']
 const TEXTOS = ['campaign_name', 'adset_name', 'ad_name', 'utm_source', 'utm_medium',
   'utm_campaign', 'utm_content', 'utm_term', 'fbclid']

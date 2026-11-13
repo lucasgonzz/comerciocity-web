@@ -48,9 +48,10 @@ import '@/assets/scss/experiencia.scss'
  * queda como «¿Tenés dudas? Escribinos por WhatsApp», con el mismo número, la misma frase y la
  * misma referencia [CC:…].
  *
- * El CTA de WhatsApp: agendar la demo, por WhatsApp, al número del canal de leads
- * (+54 3444 544199, el mismo que usaba esta web). El texto no saluda a nadie por su nombre
- * (pedido de Lucas, 13/10/2026): «Hola, quiero hacer la demo de ComercioCity».
+ * El CTA de WhatsApp va al número del canal de leads (+54 3444 544199). Desde el 13/11/2026 el
+ * texto es «Hola, quiero probar ComercioCity»: con esa frase el admin (LeadOrigenService::
+ * FRASE_LANDING_PRUEBA) marca el origen landing y Martín contesta con la oferta de la prueba
+ * gratis (LeadOfertaDePruebaService). Las frases viejas de la demo siguen reconocidas.
  *
  * 🔴 La frase es PROPIA DE LA LANDING y distinta de la de la página de experiencia del admin
  * y de la de los anuncios, a propósito (plan del 13/10/2026, decisión 2.1): el primer mensaje

@@ -85,8 +85,8 @@ test('Home monta la landing y sigue armando el WhatsApp con la referencia de la 
   assert.match(home, /registrar_evento\(nombre, payload\)/)
 })
 
-test('el texto del WhatsApp no cambia hasta que el admin de producción reconozca la frase nueva', () => {
-  /* El admin saca `leads.origen` y el primer paso de Martín de esta frase (LeadOrigenService::FRASE_LANDING).
-     «Hola, quiero probar ComercioCity» entra recién cuando `FRASE_LANDING_PRUEBA` esté desplegada. */
-  assert.equal(TEXTO_CTA, 'Hola, quiero hacer la demo de ComercioCity')
+test('el texto del WhatsApp es la frase de la prueba que el admin de producción reconoce', () => {
+  /* El admin saca `leads.origen` y la oferta de la prueba de Martín de esta frase
+     (LeadOrigenService::FRASE_LANDING_PRUEBA, desplegada en el admin d4228635 el 13/11/2026). */
+  assert.equal(TEXTO_CTA, 'Hola, quiero probar ComercioCity')
 })
